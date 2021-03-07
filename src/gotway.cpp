@@ -1,7 +1,6 @@
 #include "gotway.h"
 
 #include <math.h>
-#include <bitset>
 
 #include "utils.h"
 

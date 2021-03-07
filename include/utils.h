@@ -2,7 +2,6 @@
 #define UTILS_H_
 
 #include <Arduino.h>
-
 namespace euc {
 
 class Utils {

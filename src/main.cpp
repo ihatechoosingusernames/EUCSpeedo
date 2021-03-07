@@ -14,7 +14,7 @@ using namespace euc;
 // The remote service we wish to connect to.
 static BLEUUID serviceUUID(GOTWAY_SERVICE_UUID);
 // The characteristic of the remote service we are interested in.
-static BLEUUID    charUUID(GOTWAY_READ_CHARACTER_UUID);
+static BLEUUID charUUID(GOTWAY_READ_CHARACTER_UUID);
 
 static bool doConnect = false;
 static bool connected = false;
