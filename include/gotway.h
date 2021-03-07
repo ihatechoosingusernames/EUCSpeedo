@@ -7,17 +7,17 @@
 namespace euc {
 
 class Gotway : public Euc {
-    public:
-        void ProcessInput(uint8_t data[], size_t data_len) override;
+  public:
+    void ProcessInput(uint8_t data[], size_t data_len) override;
 
-        double getSpeed() override;
+    double getSpeed() override;
 
-        bool isVeteran();
+    bool isVeteran();
 
-    private:
-        bool is_veteran;
-        
-        const double ratio = 0.875; // Gotway Magic number
+  private:
+    bool is_veteran;
+    
+    const double ratio = 0.875; // Gotway Magic number
 };
 
 }
