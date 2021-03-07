@@ -2,28 +2,28 @@
 #define CONSTANTS_H_
 namespace euc {
 
-const static char* KINGSONG_DESCRIPTER_UUID = "00002902-0000-1000-8000-00805f9b34fb";
-const static char* KINGSONG_READ_CHARACTER_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
-const static char* KINGSONG_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
+const static char* kKingsong_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
+const static char* kKingsong_read_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
+const static char* kKingsong_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
 
-const static char* GOTWAY_READ_CHARACTER_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
-const static char* GOTWAY_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
+const static char* kGotway_read_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
+const static char* kGotway_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
 
-const static char* INMOTION_DESCRIPTER_UUID = "00002902-0000-1000-8000-00805f9b34fb";
-const static char* INMOTION_READ_CHARACTER_UUID = "0000ffe4-0000-1000-8000-00805f9b34fb";
-const static char* INMOTION_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
-const static char* INMOTION_WRITE_CHARACTER_UUID = "0000ffe9-0000-1000-8000-00805f9b34fb";
-const static char* INMOTION_WRITE_SERVICE_UUID = "0000ffe5-0000-1000-8000-00805f9b34fb";
+const static char* kInmotion_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
+const static char* kInmotion_read_character_uuid = "0000ffe4-0000-1000-8000-00805f9b34fb";
+const static char* kInmotion_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
+const static char* kInmotion_write_character_uuid = "0000ffe9-0000-1000-8000-00805f9b34fb";
+const static char* kInmotion_write_service_uuid = "0000ffe5-0000-1000-8000-00805f9b34fb";
 
-const static char* NINEBOT_Z_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const static char* NINEBOT_Z_WRITE_CHARACTER_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-const static char* NINEBOT_Z_READ_CHARACTER_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-const static char* NINEBOT_Z_DESCRIPTER_UUID = "00002902-0000-1000-8000-00805f9b34fb";
+const static char* kNinebot_z_service_uuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const static char* kNinebot_z_write_character_uuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const static char* kNinebot_z_read_character_uuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+const static char* kNinebot_z_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
 
-const static char* NINEBOT_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
-const static char* NINEBOT_WRITE_CHARACTER_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
-const static char* NINEBOT_READ_CHARACTER_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
-const static char* NINEBOT_DESCRIPTER_UUID = "00002902-0000-1000-8000-00805f9b34fb";
+const static char* kNinebot_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
+const static char* kNinebot_write_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
+const static char* kNinebot_read_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
+const static char* kNinebot_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
 
 enum class EucType : size_t {
   kKingsong = 0,
@@ -34,8 +34,8 @@ enum class EucType : size_t {
 };
 
 const static size_t kNumEucTypes = 5;
-const static char* kServiceUuids[] = {KINGSONG_SERVICE_UUID, GOTWAY_SERVICE_UUID, INMOTION_SERVICE_UUID, NINEBOT_Z_SERVICE_UUID, NINEBOT_SERVICE_UUID};
-const static char* kReadUuids[] = {KINGSONG_READ_CHARACTER_UUID, GOTWAY_READ_CHARACTER_UUID, INMOTION_READ_CHARACTER_UUID, NINEBOT_Z_READ_CHARACTER_UUID, NINEBOT_READ_CHARACTER_UUID};
+const static char* kServiceUuids[] = {kKingsong_service_uuid, kGotway_service_uuid, kInmotion_service_uuid, kNinebot_z_service_uuid, kNinebot_service_uuid};
+const static char* kReadUuids[] = {kKingsong_read_character_uuid, kGotway_read_character_uuid, kInmotion_read_character_uuid, kNinebot_z_read_character_uuid, kNinebot_read_character_uuid};
 const static char* kBrandName[] = {"Kingsong", "Gotway", "Inmotion", "NinebotZ", "Ninebot"};
 
 }
