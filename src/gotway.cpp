@@ -24,13 +24,13 @@ void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
 
             speed =  Utils::FromTwos((data[6]) << 8 | data[7])*10.0;
 
-            distance = ((data[10] & 0xFF) << 24 | (data[11] & 0xFF) << 16 | (data[8] & 0xFF) << 8 | (data[9] & 0xFF));
+            distance = Utils::FromTwos32(data[10] << 24 | data[11] << 16 | data[8] << 8 | data[9]);
 
-            total_distance = ((data[14] & 0xFF) << 24 | (data[15] & 0xFF) << 16 | (data[12] & 0xFF) << 8 | (data[13] & 0xFF));
+            total_distance = Utils::FromTwos32(data[14] << 24 | data[15] << 16 | data[12] << 8 | data[13]);
 
-            current = ((data[16]) << 8 | (data[17] & 0xFF))*10;
+            current = Utils::FromTwos(data[16] << 8 | data[17]) * 10;
 
-            temperature = (data[18] & 0xFF) << 8 | (data[19] & 0xFF);
+            temperature = (data[18]) << 8 | (data[19]);
             temperature_2 = temperature;
 
             int battery;
@@ -51,7 +51,7 @@ void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
                 if (a1 != 90 || a5 != 85 || a6 != 170) {
                     return;
                 }
-                total_distance = ((data[6] & 0xFF) << 24) | ((data[7] & 0xFF) << 16) | ((data[8] & 0xFF) << 8) | (data[9] & 0xFF);
+                total_distance = ((data[6]) << 24) | ((data[7]) << 16) | ((data[8]) << 8) | (data[9]);
                 return;
             }
 
@@ -90,7 +90,7 @@ void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
         if (a1 != 90 || a5 != 85 || a6 != 170) {
             return;
         }
-        total_distance = ((data[6]&0xFF) <<24) | ((data[7]&0xFF) << 16) | ((data[8] & 0xFF) <<8) | (data[9] & 0xFF);
+        total_distance = ((data[6]&0xFF) <<24) | ((data[7]&0xFF) << 16) | ((data[8]) <<8) | (data[9]);
     }
 }
 
