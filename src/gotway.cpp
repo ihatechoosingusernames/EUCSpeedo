@@ -1,23 +1,28 @@
-#include <math.h>
-
 #include "gotway.h"
+
+#include <math.h>
+#include <bitset>
+
+#include "utils.h"
+
+namespace euc {
 
 void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
     if (data_len >= 20) {
-        int a1 = data[0] & 255;
-        int a2 = data[1] & 255;
-        int a3 = data[2] & 255;
-        int a4 = data[3] & 255;
-        int a5 = data[4] & 255;
-        int a6 = data[5] & 255;
-        int a19 = data[18] & 255;
+        int a1 = data[0];
+        int a2 = data[1];
+        int a3 = data[2];
+        int a4 = data[3];
+        int a5 = data[4];
+        int a6 = data[5];
+        int a19 = data[18];
 
         if ((a1 == 0xDC) && (a2 == 0x5A) && (a3 == 0x5C) && (a4 == 0x20)) {  // Sherman
             is_veteran = true;
 
-            voltage = (data[4] & 0xFF) << 8 | (data[5] & 0xFF);
+            voltage = Utils::FromTwos((data[4]) << 8 | (data[5]));
 
-            speed =  ((data[6]) << 8 | (data[7] & 0xFF))*10;
+            speed =  Utils::FromTwos((data[6]) << 8 | data[7])*10.0;
 
             distance = ((data[10] & 0xFF) << 24 | (data[11] & 0xFF) << 16 | (data[8] & 0xFF) << 8 | (data[9] & 0xFF));
 
@@ -47,22 +52,19 @@ void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
                     return;
                 }
                 total_distance = ((data[6] & 0xFF) << 24) | ((data[7] & 0xFF) << 16) | ((data[8] & 0xFF) << 8) | (data[9] & 0xFF);
+                return;
             }
 
-            if (data[5] >= 0) {
-                speed = abs(((data[4] << 8) & data[5]) * 3.6);
-            } else {
-                speed = abs((((data[4] << 8) + 256.0) + data[5]) * 3.6);
-            }
+            speed = abs((Utils::FromTwos((data[4] << 8) | data[5]) * 3.6));
 
-            temperature = nearbyint(((((data[12] << 8) + data[13]) / 340.0) + 35) * 100);
+            temperature = nearbyint((((Utils::FromTwos(data[12] << 8) | data[13]) / 340.0) + 35) * 100);
             temperature_2 = temperature;
 
-            distance = ByteArrayInt2(data[9], data[8]);
+            distance = Utils::FromTwos((data[9] << 8) | data[8]);
 
-            voltage = (data[2] << 8) + (data[3] & 255);
+            voltage = Utils::FromTwos((data[2] << 8) | data[3]);
 
-            current = ((data[10] << 8) + data[11]);
+            current = Utils::FromTwos((data[10] << 8) | data[11]);
 
             int battery;
 
@@ -83,8 +85,8 @@ void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
 
     } else if (data_len >= 10 && !is_veteran)  {
         int a1 = data[0];
-        int a5 = data[4] & 255;
-        int a6 = data[5] & 255;
+        int a5 = data[4];
+        int a6 = data[5];
         if (a1 != 90 || a5 != 85 || a6 != 170) {
             return;
         }
@@ -100,6 +102,4 @@ bool Gotway::isVeteran() {
     return is_veteran;
 }
 
-int Gotway::ByteArrayInt2(uint8_t low, uint8_t high) {
-    return (low & 255) + ((high & 255) << 8);
 }

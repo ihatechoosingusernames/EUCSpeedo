@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 
+namespace euc {
 class Gotway {
     public:
         void ProcessInput(uint8_t data[], size_t data_len);
@@ -11,14 +12,14 @@ class Gotway {
         bool isVeteran();
 
     private:
-        int ByteArrayInt2(uint8_t low, uint8_t high);
-
         int voltage, current, temperature, temperature_2, battery_percent, voltage_scaler;
         bool is_veteran;
         long distance, total_distance;
         double speed;
         
-        const double ratio = 0.875; // ^
+        const double ratio = 0.875; // Gotway Magic number
 };
+
+}
 
 #endif

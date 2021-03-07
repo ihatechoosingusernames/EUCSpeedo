@@ -1,8 +1,6 @@
 /**
- * A BLE client example that is rich in capabilities.
- * There is a lot new capabilities implemented.
- * author unknown
- * updated by chegewara
+ * First pass at a Gotway BLE client, working from the WheelLog project at https://github.com/palachzzz/WheelLogAndroid.
+ * author Andrew Ellison
  */
 
 #include <Arduino.h>
@@ -10,6 +8,8 @@
 
 #include "constants.h"
 #include "gotway.h"
+
+using namespace euc;
 
 // The remote service we wish to connect to.
 static BLEUUID serviceUUID(GOTWAY_SERVICE_UUID);
@@ -22,22 +22,19 @@ static bool doScan = false;
 static BLERemoteCharacteristic* pRemoteCharacteristic;
 static BLEAdvertisedDevice* myDevice;
 
-Gotway euc = Gotway();
+euc::Gotway wheel = euc::Gotway();
+static euc::Gotway* euc_ref = &wheel;
 
 static void notifyCallback(
   BLERemoteCharacteristic* pBLERemoteCharacteristic,
   uint8_t* pData,
   size_t length,
   bool isNotify) {
-    Serial.print("Data length: ");
-    Serial.print(length);
-    Serial.print(", ");
-
-    euc.ProcessInput(pData, length);
+    euc_ref->ProcessInput(pData, length);
     Serial.print("Speed: ");
-    Serial.print(euc.getSpeed());
+    Serial.print(euc_ref->getSpeed());
 
-    if (euc.isVeteran()) {
+    if (euc_ref->isVeteran()) {
       Serial.println(", is Veteran");
     } else {
       Serial.println();
@@ -140,9 +137,6 @@ void setup() {
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
   pBLEScan->start(5, false);
-
-  Serial.print("Speed: ");
-  Serial.println(euc.getSpeed());
 } // End of setup.
 
 
