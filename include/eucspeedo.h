@@ -15,6 +15,7 @@ class EucSpeedo {
   private:
     void onFoundWheel(EucType type);
     void onProcessInput(uint8_t* data, size_t data_size);
+    void onPress();
 
     Euc* wheel; // Maybe I should use smart pointers
     BleHandler ble;

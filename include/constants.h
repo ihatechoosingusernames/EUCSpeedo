@@ -38,6 +38,17 @@ const static char* kServiceUuids[] = {kKingsong_service_uuid, kGotway_service_uu
 const static char* kReadUuids[] = {kKingsong_read_character_uuid, kGotway_read_character_uuid, kInmotion_read_character_uuid, kNinebot_z_read_character_uuid, kNinebot_read_character_uuid};
 const static char* kBrandName[] = {"Kingsong", "Gotway", "Inmotion", "NinebotZ", "Ninebot"};
 
+enum class PressType : size_t {
+  kNoPress = 0,
+  kSinglePress,
+  kDoublePress,
+  kLongPress
+};
+
+const static long kMinPressTime = 150;  // Minimum button press time in milliseconds.
+const static long kMaxPressTime = 3000; // Maximum button press time before it counts as a long press
+const static long kMaxReleaseTime = 150;  // Maximum button release time between double presses in milliseconds.
+
 }
 
 #endif
