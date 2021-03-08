@@ -7,63 +7,68 @@
 
 namespace euc {
 
-portMUX_TYPE ButtonHandler::mux = portMUX_INITIALIZER_UNLOCKED;
-PressType ButtonHandler::press_type = PressType::kNoPress;
+ButtonHandler* ButtonHandler::instance = 0;
+
+ButtonHandler* ButtonHandler::getInstance() {
+  if (!instance) {
+    instance = new ButtonHandler();
+  }
+
+  return instance;
+}
 
 void ButtonHandler::setCallback(std::function<void(PressType type)> press_callback) {
   callback = press_callback;
+
+  // Now we have a callback we can use the interrupt
+  timerAttachInterrupt(timer, ButtonHandler::onTimer, true);
+  timerAlarmWrite(instance->timer, kMinPressTime / 2, true);
+  timerAlarmEnable(instance->timer);
+
+  callback_set = true;
 }
 
 ButtonHandler::ButtonHandler() {
   pinMode(PIN_223B_VDD, OUTPUT);
-  pinMode(PIN_223B_Q, INPUT);  // By default input is pulled low
-
-  attachInterrupt(PIN_223B_Q, ButtonHandler::onPress, RISING); // By default input is active high
-  attachInterrupt(PIN_223B_Q, ButtonHandler::onRelease, FALLING);
+  pinMode(PIN_223B_Q, INPUT_PULLUP);  // By default input is pulled low, active high
 
   timer = timerBegin(0, BASE_CLOCK_HZ / 1000, true); // Setting up timer with prescaler for milliseconds, and counting up
-
-  timerAttachInterrupt(timer, ButtonHandler::onTimer, true);
 
   digitalWrite(PIN_223B_VDD, HIGH); // Powers on 223B touch button
 }
 
-void ButtonHandler::onPress() {
-  portENTER_CRITICAL_ISR(&mux);
-  press_time = millis();
-  pressed = true;
-  portEXIT_CRITICAL_ISR(&mux);
-}
-
-void ButtonHandler::onRelease() {
-  portENTER_CRITICAL_ISR(&mux);
-  release_time = millis();
-  pressed = false;
-  portEXIT_CRITICAL_ISR(&mux);
-
-  // Debouncing
-  long hold_time = release_time - press_time;
-
-  if (hold_time > kMaxPressTime) {
-    callback(PressType::kLongPress);
-    press_type = PressType::kNoPress;
-  } else if (press_type == PressType::kSinglePress && hold_time > kMinPressTime) {
-    callback(press_type);
-    press_type = PressType::kNoPress;
-  } else if (hold_time > kMinPressTime) {
-    press_type = PressType::kSinglePress;
-    timerAlarmWrite(timer, kMaxReleaseTime, false); // Start Countdown timer for release
-    timerAlarmEnable(timer);
-  }
-}
-
 void ButtonHandler::onTimer() {
-  portENTER_CRITICAL_ISR(&mux);
-  if (!pressed) {
-    callback(press_type);
-    press_type = PressType::kNoPress;
+  ButtonHandler* instance = getInstance();
+
+  portENTER_CRITICAL_ISR(&instance->mux);
+  if(digitalRead(PIN_223B_Q)) {
+    if (!instance->pressed) {
+      instance->press_time = millis();
+      instance->pressed = true;
+
+      if (instance->press_time - instance->release_time < kMaxReleaseTime) {
+        instance->press_type = PressType::kDoublePress;
+      } else {
+        instance->press_type = PressType::kSinglePress;
+      }
+
+      // If press has been held long enough, trigger long press
+    } else if ((millis() - instance->press_time > kMaxPressTime) && (instance->press_type != PressType::kNoPress)) {
+      instance->callback(PressType::kLongPress);
+      instance->press_type = PressType::kNoPress;
+    }
+  } else {
+    if (instance->pressed) {
+      instance->release_time = millis();
+      instance->pressed = false;
+
+      // If button has been either pressed or double pressed and has now been released, send it
+    } else if ((millis() - instance->release_time > kMaxReleaseTime) && (instance->press_type != PressType::kNoPress)) {
+      instance->callback(instance->press_type);
+      instance->press_type = PressType::kNoPress;
+    }
   }
-  portEXIT_CRITICAL_ISR(&mux);
+  portEXIT_CRITICAL_ISR(&instance->mux);
 }
 
 }

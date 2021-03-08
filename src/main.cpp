@@ -9,13 +9,16 @@
 
 using namespace euc;
 
+EucSpeedo speedo;
+
 void setup() {
   Serial.begin(115200);
-  Serial.println("Starting Arduino BLE Client application...");
+  Serial.println("Starting EUC Speedo app");
   
-  EucSpeedo speedo = EucSpeedo();
+  speedo = EucSpeedo();
 }
 
 void loop() {
-  delay(1000); // Delay a second between loops.
+  delay(100);
+  speedo.Process();
 }
