@@ -46,7 +46,7 @@ void ButtonHandler::onTimer() {
       instance->press_time = millis();
       instance->pressed = true;
 
-      if (instance->press_time - instance->release_time < kMaxReleaseTime) {
+      if ((instance->press_time - instance->release_time < kMaxReleaseTime) && (instance->press_type == PressType::kSinglePress)) {
         instance->press_type = PressType::kDoublePress;
       } else {
         instance->press_type = PressType::kSinglePress;

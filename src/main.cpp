@@ -9,16 +9,16 @@
 
 using namespace euc;
 
-EucSpeedo speedo;
+EucSpeedo* speedo_ptr;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting EUC Speedo app");
   
-  speedo = EucSpeedo();
+  speedo_ptr = new EucSpeedo();
 }
 
 void loop() {
   delay(100);
-  speedo.Process();
+  speedo_ptr->Process();
 }
