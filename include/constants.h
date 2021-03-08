@@ -49,6 +49,12 @@ const static long kMinPressTime = 150;  // Minimum button press time in millisec
 const static long kMaxPressTime = 3000; // Maximum button press time before it counts as a long press
 const static long kMaxReleaseTime = 150;  // Maximum button release time between double presses in milliseconds.
 
+const static char* kEucPreferences = "euc";
+const static char* kUiPreferences = "ui-prefs";
+
+const static uint8_t kUiDefaultPreferences[] = {0x01, 0x04, 0x00, 0xFF, 0x00, 0xFE};
+const static size_t kUiDefaultPreferencesLength = 6;
+
 }
 
 #endif
