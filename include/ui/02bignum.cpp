@@ -1,18 +1,20 @@
-#ifndef BIGNUM_H_
-#define BIGNUM_H_
+#ifndef UI_BIGNUM_H_
+#define UI_BIGNUM_H_
 
 #include "uielement.h"
 
 namespace ui {
 
 class BigNum : public euc::UiElement {
+  UI_SETUP(BigNum)
+  
   public:
-    BigNum() {
-      return;
+    BigNum(uint8_t data[], size_t data_len) {
+      size = 1;
     };
 
     void Draw() override {
-      return;
+      printf("BigNum::Draw()\n");
     };
 
     size_t DataSize() override {
@@ -22,6 +24,8 @@ class BigNum : public euc::UiElement {
   private:
     size_t size;
 };
+
+UI_REGISTER(BigNum, 0x02)
 
 }
 
