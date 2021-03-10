@@ -4,6 +4,7 @@
 #include <list>
 
 #include "uielement.h"
+#include "processdata.h"
 
 namespace euc {
 
@@ -11,7 +12,7 @@ class UiHandler {
   public:
     UiHandler();
 
-    void Update();
+    void Update(ProcessData* data);
 
   private:
     void LoadFromPreferences();

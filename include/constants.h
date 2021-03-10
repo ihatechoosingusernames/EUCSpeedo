@@ -2,28 +2,28 @@
 #define CONSTANTS_H_
 namespace euc {
 
-const static char* kKingsong_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
+// const static char* kKingsong_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
 const static char* kKingsong_read_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
 const static char* kKingsong_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
 
 const static char* kGotway_read_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
 const static char* kGotway_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
 
-const static char* kInmotion_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
+// const static char* kInmotion_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
 const static char* kInmotion_read_character_uuid = "0000ffe4-0000-1000-8000-00805f9b34fb";
 const static char* kInmotion_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
-const static char* kInmotion_write_character_uuid = "0000ffe9-0000-1000-8000-00805f9b34fb";
-const static char* kInmotion_write_service_uuid = "0000ffe5-0000-1000-8000-00805f9b34fb";
+// const static char* kInmotion_write_character_uuid = "0000ffe9-0000-1000-8000-00805f9b34fb";
+// const static char* kInmotion_write_service_uuid = "0000ffe5-0000-1000-8000-00805f9b34fb";
 
 const static char* kNinebot_z_service_uuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const static char* kNinebot_z_write_character_uuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+// const static char* kNinebot_z_write_character_uuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 const static char* kNinebot_z_read_character_uuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-const static char* kNinebot_z_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
+// const static char* kNinebot_z_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
 
 const static char* kNinebot_service_uuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
-const static char* kNinebot_write_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
+// const static char* kNinebot_write_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
 const static char* kNinebot_read_character_uuid = "0000ffe1-0000-1000-8000-00805f9b34fb";
-const static char* kNinebot_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
+// const static char* kNinebot_descripter_uuid = "00002902-0000-1000-8000-00805f9b34fb";
 
 enum class EucType : size_t {
   kKingsong = 0,
@@ -52,8 +52,37 @@ const static long kMaxReleaseTime = 150;  // Maximum button release time between
 const static char* kEucPreferences = "euc";
 const static char* kUiPreferences = "ui-prefs";
 
+// These define the default connected UI screen
 const static uint8_t kUiDefaultPreferences[] = {0x01, 0x04, 0x00, 0xFF, 0x00, 0xFE};
 const static size_t kUiDefaultPreferencesLength = 6;
+
+enum class DataType : uint8_t {
+  kSpeed = 0,
+  kTime,
+  kDate,
+  kWatchBattery,
+  kBattery,
+  kTemp,
+  kAlarm1,
+  kAlarm2,
+  kAlarm3,
+  kTripDistance,
+  kTotalDistance,
+  kVoltage,
+  kCurrent,
+  kLastValue  // IMPORTANT this value should stay as last value
+};
+
+enum class ColourType : uint8_t {
+  kConstant = 0,
+  kDynamicBetweenValues
+};
+
+enum class ArgType : uint8_t {
+  kDataType = 0,
+  kColour,
+  kConstant
+};
 
 }
 

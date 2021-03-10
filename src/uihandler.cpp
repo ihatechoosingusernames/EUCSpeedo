@@ -10,9 +10,9 @@ UiHandler::UiHandler() {
   LoadFromPreferences();
 }
 
-void UiHandler::Update() {
+void UiHandler::Update(ProcessData* data) {
   for (UiElement* element : draw_list) {
-    element->Draw();
+    element->Draw(data);
   }
 }
 
