@@ -28,6 +28,16 @@ void ButtonHandler::setCallback(std::function<void(PressType type)> press_callba
   callback_set = true;
 }
 
+void ButtonHandler::Process() {
+  if (xSemaphoreTake(queue_mutex, portMAX_DELAY) == pdPASS) {
+    while (!press_queue.empty()) {
+      callback(press_queue.front());
+      press_queue.pop();
+    }
+    xSemaphoreGive(instance->queue_mutex);
+  }
+}
+
 ButtonHandler::ButtonHandler() {
   pinMode(PIN_223B_VDD, OUTPUT);
   pinMode(PIN_223B_Q, INPUT_PULLUP);  // By default input is pulled low, active high
@@ -35,6 +45,8 @@ ButtonHandler::ButtonHandler() {
   timer = timerBegin(0, BASE_CLOCK_HZ / 1000, true); // Setting up timer with prescaler for milliseconds, and counting up
 
   digitalWrite(PIN_223B_VDD, HIGH); // Powers on 223B touch button
+
+  queue_mutex = xSemaphoreCreateBinary(); // Creates semaphore to protect press queue
 }
 
 void ButtonHandler::onTimer() {
@@ -54,7 +66,9 @@ void ButtonHandler::onTimer() {
 
       // If press has been held long enough, trigger long press
     } else if ((millis() - instance->press_time > kMaxPressTime) && (instance->press_type != PressType::kNoPress)) {
-      instance->callback(PressType::kLongPress);
+      xSemaphoreTakeFromISR(instance->queue_mutex, &instance->xHigherPriorityTaskWoken);
+      instance->press_queue.push(PressType::kLongPress);
+      xSemaphoreGiveFromISR(instance->queue_mutex, &instance->xHigherPriorityTaskWoken);
       instance->press_type = PressType::kNoPress;
     }
   } else {
@@ -64,7 +78,9 @@ void ButtonHandler::onTimer() {
 
       // If button has been either pressed or double pressed and has now been released, send it
     } else if ((millis() - instance->release_time > kMaxReleaseTime) && (instance->press_type != PressType::kNoPress)) {
-      instance->callback(instance->press_type);
+      xSemaphoreTakeFromISR(instance->queue_mutex, &instance->xHigherPriorityTaskWoken);
+      instance->press_queue.push(instance->press_type);
+      xSemaphoreGiveFromISR(instance->queue_mutex, &instance->xHigherPriorityTaskWoken);
       instance->press_type = PressType::kNoPress;
     }
   }

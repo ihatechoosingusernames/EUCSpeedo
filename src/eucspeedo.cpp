@@ -1,6 +1,7 @@
 #include "eucspeedo.h"
 
 #include <functional>
+#include <memory>
 
 #include "gotway.h"
 #include "constants.h"
@@ -12,25 +13,28 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     ble(BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
     std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))) {
   button_handler->setCallback(std::bind(&EucSpeedo::onPress, this, std::placeholders::_1));
-}
-
-EucSpeedo::~EucSpeedo() {
-  delete wheel;
+  ui_handler = UiHandler();
+  process_data = ProcessData();
 }
 
 void EucSpeedo::Process() {
-  // button_handler->Process();
+  process_data.Update(wheel.get());
+  ui_handler.Update(&process_data);
 }
 
 // Creates the correct type of wheel object
 void EucSpeedo::onFoundWheel(EucType type) {
   Serial.printf("Found %s EUC\n", kBrandName[(size_t)type]);
 
+  if (wheel != nullptr) {
+    wheel.reset();  // Remove an old instance if it still exists
+  }
+
   switch (type) {
-    case EucType::kGotway:
-      wheel = new Gotway();
+    case EucType::kGotway: {
+      std::unique_ptr<Euc> wheel (new Gotway());
       wheel_created = true;
-      break;
+      break; }
     default:
       Serial.println("Wheel not yet implemented, uh oh!");
   }
@@ -38,7 +42,7 @@ void EucSpeedo::onFoundWheel(EucType type) {
 
 void EucSpeedo::onProcessInput(uint8_t* data, size_t data_size) {
   if (wheel_created) {
-    wheel->ProcessInput(data, data_size);
+    wheel->ProcessInput(data, data_size);  // Access the base implementation of ProcessInput()
   }
   // Update UI here
 }

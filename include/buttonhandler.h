@@ -2,6 +2,7 @@
 #define BUTTONHANDLER_H_
 
 #include <functional>
+#include <queue>
 
 #include <Arduino.h>
 
@@ -15,7 +16,7 @@ class ButtonHandler {
     static ButtonHandler* getInstance();
 
     void setCallback(std::function<void(PressType type)> press_callback);
-    void Process(); // To be called periodically
+    void Process();
 
   private:
     ButtonHandler();
@@ -27,11 +28,15 @@ class ButtonHandler {
     std::function<void(PressType type)> callback;
     hw_timer_t * timer;
 
-    volatile long int press_time, release_time;
-    volatile bool callback_set = false, pressed = false;
-    volatile PressType press_type = PressType::kNoPress;
+    long int press_time, release_time;
+    bool callback_set = false, pressed = false;
+    PressType press_type = PressType::kNoPress;
+
+    std::queue<PressType> press_queue;
 
     portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+    SemaphoreHandle_t queue_mutex;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;  // Necessary for ISR semaphores
 };
 
 }
