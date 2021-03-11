@@ -1,7 +1,6 @@
 #ifndef BUTTONHANDLER_H_
 #define BUTTONHANDLER_H_
 
-#include <functional>
 #include <queue>
 
 #include <Arduino.h>
@@ -14,9 +13,7 @@ namespace euc {
 class ButtonHandler {
   public:
     static ButtonHandler* getInstance();
-
-    void setCallback(std::function<void(PressType type)> press_callback);
-    void Process();
+    std::queue<PressType> getQueue();
 
   private:
     ButtonHandler();
@@ -24,12 +21,10 @@ class ButtonHandler {
     static void IRAM_ATTR onTimer();
 
     static ButtonHandler* instance;
-
-    std::function<void(PressType type)> callback;
     hw_timer_t * timer;
 
     long int press_time, release_time;
-    bool callback_set = false, pressed = false;
+    bool pressed = false;
     PressType press_type = PressType::kNoPress;
 
     std::queue<PressType> press_queue;

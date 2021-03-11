@@ -11,6 +11,7 @@ namespace euc {
 class UiHandler {
   public:
     UiHandler();
+    ~UiHandler();
 
     void Update(ProcessData* data);
 

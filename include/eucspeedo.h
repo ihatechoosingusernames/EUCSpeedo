@@ -1,7 +1,7 @@
 #ifndef EUCSPEEDO_H_
 #define EUCSPEEDO_H_
 
-#include <memory>
+#include <queue>
 
 #include "euc.h"
 #include "blehandler.h"
@@ -15,19 +15,21 @@ namespace euc {
 class EucSpeedo {
   public:
     EucSpeedo();
+    ~EucSpeedo();
 
     void Process(); // To be called periodically
 
   private:
     void onFoundWheel(EucType type);
     void onProcessInput(uint8_t* data, size_t data_size);
-    void onPress(PressType press_type);
+    void HandlePress(std::queue<PressType> presses);
 
-    std::unique_ptr<Euc> wheel;
+    Euc* wheel;
     ButtonHandler* button_handler;
     BleHandler ble;
     UiHandler ui_handler;
     ProcessData process_data;
+    // Still needs RTC handler and config server handler
 
     bool wheel_created = false;
 };

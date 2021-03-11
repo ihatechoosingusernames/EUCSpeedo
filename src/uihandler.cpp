@@ -10,6 +10,13 @@ UiHandler::UiHandler() {
   LoadFromPreferences();
 }
 
+UiHandler::~UiHandler() {
+  // Clean up draw list when object destructed
+  for (UiElement* element : draw_list) {
+    delete element;
+  }
+}
+
 void UiHandler::Update(ProcessData* data) {
   for (UiElement* element : draw_list) {
     element->Draw(data);

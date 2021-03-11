@@ -23,3 +23,9 @@ void loop() {
   delay(100);
   speedo_ptr->Process();
 }
+
+// TODO: Handle BLE discovery in own thread
+// TODO: Create settings server and webpage
+// TODO: Implement RTC handler
+// TODO: Implement screen handler
+// TODO: Create different screens for watch/EUC/Settings

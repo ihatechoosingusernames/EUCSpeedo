@@ -17,23 +17,9 @@ ButtonHandler* ButtonHandler::getInstance() {
   return instance;
 }
 
-void ButtonHandler::setCallback(std::function<void(PressType type)> press_callback) {
-  callback = press_callback;
-
-  // Now we have a callback we can use the interrupt
-  timerAttachInterrupt(timer, ButtonHandler::onTimer, true);
-  timerAlarmWrite(instance->timer, kMinPressTime / 2, true);
-  timerAlarmEnable(instance->timer);
-
-  callback_set = true;
-}
-
-void ButtonHandler::Process() {
+std::queue<PressType> ButtonHandler::getQueue() {
   if (xSemaphoreTake(queue_mutex, portMAX_DELAY) == pdPASS) {
-    while (!press_queue.empty()) {
-      callback(press_queue.front());
-      press_queue.pop();
-    }
+    return press_queue;
     xSemaphoreGive(instance->queue_mutex);
   }
 }
@@ -43,6 +29,9 @@ ButtonHandler::ButtonHandler() {
   pinMode(PIN_223B_Q, INPUT_PULLUP);  // By default input is pulled low, active high
 
   timer = timerBegin(0, BASE_CLOCK_HZ / 1000, true); // Setting up timer with prescaler for milliseconds, and counting up
+  timerAttachInterrupt(timer, ButtonHandler::onTimer, true);
+  timerAlarmWrite(instance->timer, kMinPressTime / 2, true);
+  timerAlarmEnable(instance->timer);
 
   digitalWrite(PIN_223B_VDD, HIGH); // Powers on 223B touch button
 
