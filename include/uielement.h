@@ -27,7 +27,7 @@ class UiElement {
 
     size_t DataSize();  // Returns the number of bytes the element has used from the arg list
 
-    void Draw(ProcessData* data);  // Draws the element
+    virtual void Draw(ProcessData* data);  // Draws the element
 
     const std::list<ArgType> arg_list = {};  // Stores the number and type of args to help with config generation
   

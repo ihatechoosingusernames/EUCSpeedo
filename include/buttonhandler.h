@@ -12,26 +12,24 @@ namespace euc {
 // This class is a singleton in order to make ISR handling easier, also there is only one button ¯\_(ツ)_/¯
 class ButtonHandler {
   public:
-    static ButtonHandler* getInstance();
+    static IRAM_ATTR ButtonHandler* getInstance();
     PressType getPress();
 
   private:
-    ButtonHandler();
-
     static void IRAM_ATTR onTimer();
+
+    ButtonHandler();
 
     static ButtonHandler* instance;
     hw_timer_t * timer;
 
     long int press_time, release_time;
     bool pressed = false;
-    PressType press_type = PressType::kNoPress;
-
-    std::queue<PressType> press_queue;
+    volatile bool press_complete = false;
+    volatile PressType press_type = PressType::kNoPress;
 
     portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-    SemaphoreHandle_t queue_mutex;
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;  // Necessary for ISR semaphores
+    SemaphoreHandle_t queue_mutex;  // For handling timer
 };
 
 }

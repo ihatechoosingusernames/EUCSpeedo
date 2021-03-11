@@ -11,9 +11,7 @@ namespace euc {
 
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     ble(BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
-    std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))),
-    ui_handler(),
-    process_data() {}
+    std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))) {}
 
 EucSpeedo::~EucSpeedo() {
   delete wheel; // Clean up wheel pointer
