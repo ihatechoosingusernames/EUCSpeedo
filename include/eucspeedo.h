@@ -10,6 +10,7 @@
 #include "processdata.h"
 #include "uihandler.h"
 #include "filehandler.h"
+#include "configserver.h"
 
 namespace euc {
 
@@ -28,10 +29,10 @@ class EucSpeedo {
     Euc* wheel;
     ButtonHandler* button_handler;
     BleHandler ble;
+    FileHandler file_handler;
     UiHandler ui_handler;
     ProcessData process_data;
-    FileHandler file_handler;
-    // Still needs RTC handler and config server handler
+    ConfigServer config_server;
 
     bool wheel_created = false;
 };

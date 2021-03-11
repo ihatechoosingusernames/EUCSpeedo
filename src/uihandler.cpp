@@ -4,8 +4,8 @@
 
 namespace euc {
 
-UiHandler::UiHandler() {
-  LoadFromPreferences();
+UiHandler::UiHandler(FileHandler* file_handler) {
+  LoadFromPreferences(file_handler);
 }
 
 UiHandler::~UiHandler() {
@@ -21,8 +21,19 @@ void UiHandler::Update(ProcessData* data) {
   }
 }
 
-void UiHandler::LoadFromPreferences() {
-  size_t data_len = kUiDefaultPreferencesLength;
+void UiHandler::LoadFromPreferences(FileHandler* file_handler) {
+  size_t data_len = file_handler->FileSize(kUiPreferences);
+
+  // If there are saved UI preferences, load them.
+  if (data_len) {
+    uint8_t data[data_len];
+    file_handler->ReadFile(kUiPreferences, data, &data_len);
+    LoadFromData(data, data_len);
+    return;
+  }
+
+  // If there are no saved prefs, use the defaults
+  data_len = kUiDefaultPreferencesLength;
   uint8_t data[data_len];
 
   std::copy(kUiDefaultPreferences, kUiDefaultPreferences+data_len, data);

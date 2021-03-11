@@ -49,8 +49,7 @@ const static long kMinPressTime = 150;  // Minimum button press time in millisec
 const static long kMaxPressTime = 3000; // Maximum button press time before it counts as a long press
 const static long kMaxReleaseTime = 150;  // Maximum button release time between double presses in milliseconds.
 
-const static char* kEucPreferences = "euc";
-const static char* kUiPreferences = "ui-prefs";
+const static char* kUiPreferences = "/ui_config.txt";
 
 enum class DataType : uint8_t {
   kSpeed = 0,
@@ -83,6 +82,10 @@ enum class ArgType : uint8_t {
 // These define the default connected UI screen, currently a blank green screen
 const static uint8_t kUiDefaultPreferences[] = {0x01, (uint8_t)ColourType::kConstant, 0x00, 0xFF, 0x00};
 const static size_t kUiDefaultPreferencesLength = 5;
+
+// Default port for config server
+const static int kDefaultServerPort = 80;
+const static char* kDefaultServerSSID = "EUC-Speedo";
 
 }
 

@@ -9,7 +9,17 @@ class FileHandler {
   public:
     FileHandler();
 
-    uint8_t* ReadFile(const char* file_name, size_t* size);
+    // Reads <size> bytes to array at data. If available bytes < size, size is changed to the number that there are
+    void ReadFile(const char* file_name, uint8_t data[], size_t* size);
+    // Returns file size in bytes
+    size_t FileSize(const char* file_name);
+
+    // Overwrites file with message
+    void WriteFile(const char * file_name, const char * message);
+
+    void AppendFile(const char * file_name, const char * message);
+    void RenameFile(const char * file_name, const char * new_name);
+    void DeleteFile(const char * file_name);
 };
 
 }

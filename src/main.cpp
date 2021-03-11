@@ -4,11 +4,13 @@
  */
 
 #include <Arduino.h>
-#include <BLEDevice.h>
+#include <configserver.h>
 
 #include "eucspeedo.h"
 
 using namespace euc;
+
+#define FORMAT_SPIFFS_IF_FAILED true
 
 EucSpeedo* speedo_ptr;
 
@@ -25,7 +27,7 @@ void loop() {
 }
 
 // TODO: Handle BLE discovery in own thread
-// TODO: Create settings server and webpage
+// TODO: Create settings webpage
 // TODO: Implement RTC handler
 // TODO: Implement screen handler
 // TODO: Create different screens for watch/EUC/Settings

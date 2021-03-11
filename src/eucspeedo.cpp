@@ -11,25 +11,26 @@ namespace euc {
 
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     ble(BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
-    std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))) {}
+    std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))),
+    file_handler(),
+    ui_handler(&file_handler),
+    process_data(),
+    config_server(&ui_handler) {}
 
 EucSpeedo::~EucSpeedo() {
   delete wheel; // Clean up wheel pointer
 }
 
 void EucSpeedo::Process() {
-  Serial.println("Process()");
+  // Serial.println("Process()");
   HandlePress(button_handler->getPress());
-  ui_handler.Update(&process_data);
+  // ui_handler.Update(&process_data);
+  config_server.Process();
 }
 
 // Creates the correct type of wheel object
 void EucSpeedo::onFoundWheel(EucType type) {
   Serial.printf("Found %s EUC\n", kBrandName[(size_t)type]);
-
-  if (wheel != nullptr) {
-    delete wheel;  // Remove an old instance if it still exists
-  }
 
   switch (type) {
     case EucType::kGotway: {
@@ -58,6 +59,10 @@ void EucSpeedo::HandlePress(PressType press) {
       break;
     case PressType::kLongPress:
       Serial.println("Long press\n");
+      if (config_server.isStarted())
+        config_server.Stop();
+      else
+        config_server.Start();
     default:
       break;
   }
