@@ -16,7 +16,7 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
-  pBLEScan->start(5, false);
+  // pBLEScan->start(5, false); // For testing
 }
 
 bool BleHandler::isConnected() {

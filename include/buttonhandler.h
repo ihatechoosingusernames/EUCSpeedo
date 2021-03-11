@@ -13,7 +13,7 @@ namespace euc {
 class ButtonHandler {
   public:
     static ButtonHandler* getInstance();
-    std::queue<PressType> getQueue();
+    PressType getPress();
 
   private:
     ButtonHandler();

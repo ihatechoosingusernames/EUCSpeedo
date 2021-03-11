@@ -22,7 +22,7 @@ class EucSpeedo {
   private:
     void onFoundWheel(EucType type);
     void onProcessInput(uint8_t* data, size_t data_size);
-    void HandlePress(std::queue<PressType> presses);
+    void HandlePress(PressType press);
 
     Euc* wheel;
     ButtonHandler* button_handler;

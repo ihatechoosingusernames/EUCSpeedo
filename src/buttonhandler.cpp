@@ -17,11 +17,15 @@ ButtonHandler* ButtonHandler::getInstance() {
   return instance;
 }
 
-std::queue<PressType> ButtonHandler::getQueue() {
-  if (xSemaphoreTake(queue_mutex, portMAX_DELAY) == pdPASS) {
-    return press_queue;
+PressType ButtonHandler::getPress() {
+  printf("getQueue()\n");
+  if (xSemaphoreTake(queue_mutex, xHigherPriorityTaskWoken) == pdPASS) {
+    PressType press = press_queue.front();
+    press_queue.pop();
     xSemaphoreGive(instance->queue_mutex);
+    return press;
   }
+  printf("getQueue() returned\n");
 }
 
 ButtonHandler::ButtonHandler() {
@@ -30,15 +34,16 @@ ButtonHandler::ButtonHandler() {
 
   timer = timerBegin(0, BASE_CLOCK_HZ / 1000, true); // Setting up timer with prescaler for milliseconds, and counting up
   timerAttachInterrupt(timer, ButtonHandler::onTimer, true);
-  timerAlarmWrite(instance->timer, kMinPressTime / 2, true);
-  timerAlarmEnable(instance->timer);
+  timerAlarmWrite(timer, kMinPressTime / 2, true);
 
   digitalWrite(PIN_223B_VDD, HIGH); // Powers on 223B touch button
 
   queue_mutex = xSemaphoreCreateBinary(); // Creates semaphore to protect press queue
+  timerAlarmEnable(timer);
 }
 
 void ButtonHandler::onTimer() {
+  // DRAM_ATTR
   ButtonHandler* instance = getInstance();
 
   portENTER_CRITICAL_ISR(&instance->mux);

@@ -11,8 +11,7 @@ class Background : public UiElement {
   public:
     Background(uint8_t data[], size_t data_len) {
       assert(data[0] == 0x01);  // First check that the first piece of data is the code of this UI element 
-      colour_provider = UiElement::getColourProvider(&data[1], data_len - 1, &data_size);
-      data_size += 1;  // Add 1 for the name
+      colour_provider = UiElement::getColourProvider(data, data_len, &data_size);
     };
 
     void Draw(ProcessData* data) {

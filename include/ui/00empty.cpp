@@ -8,9 +8,7 @@ namespace euc {
 class Empty : public UiElement {
   UI_SETUP(Empty)
   public:
-    Empty(uint8_t data[], size_t data_len) {
-      data_size = 1;
-    }
+    Empty(uint8_t data[], size_t data_len) {}
 
     void Draw(ProcessData* data) {
       printf("Empty::Draw()\n");

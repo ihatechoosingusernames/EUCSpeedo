@@ -11,17 +11,17 @@ namespace euc {
 
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     ble(BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
-    std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))) {
-  ui_handler = UiHandler();
-  process_data = ProcessData();
-}
+    std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))),
+    ui_handler(),
+    process_data() {}
 
 EucSpeedo::~EucSpeedo() {
   delete wheel; // Clean up wheel pointer
 }
 
 void EucSpeedo::Process() {
-  HandlePress(button_handler->getQueue());
+  Serial.println("Process()");
+  HandlePress(button_handler->getPress());
   ui_handler.Update(&process_data);
 }
 
@@ -50,24 +50,18 @@ void EucSpeedo::onProcessInput(uint8_t* data, size_t data_size) {
   }
 }
 
-void EucSpeedo::HandlePress(std::queue<PressType> presses) {
-  while (!presses.empty()) {
-    PressType press = presses.front();
-    presses.pop();
-
-    Serial.print("Received press of type ");
-    switch (press) {
-      case PressType::kSinglePress:
-        Serial.println("Single press");
-        break;
-      case PressType::kDoublePress:
-        Serial.println("Double press");
-        break;
-      case PressType::kLongPress:
-        Serial.println("Long press");
-      default:
-        break;
-    }
+void EucSpeedo::HandlePress(PressType press) {
+  switch (press) {
+    case PressType::kSinglePress:
+      Serial.println("Single press\n");
+      break;
+    case PressType::kDoublePress:
+      Serial.println("Double press\n");
+      break;
+    case PressType::kLongPress:
+      Serial.println("Long press\n");
+    default:
+      break;
   }
 }
 

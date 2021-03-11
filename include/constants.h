@@ -52,10 +52,6 @@ const static long kMaxReleaseTime = 150;  // Maximum button release time between
 const static char* kEucPreferences = "euc";
 const static char* kUiPreferences = "ui-prefs";
 
-// These define the default connected UI screen
-const static uint8_t kUiDefaultPreferences[] = {0x01, 0x04, 0x00, 0xFF, 0x00, 0xFE};
-const static size_t kUiDefaultPreferencesLength = 6;
-
 enum class DataType : uint8_t {
   kSpeed = 0,
   kTime,
@@ -83,6 +79,10 @@ enum class ArgType : uint8_t {
   kColour,
   kConstant
 };
+
+// These define the default connected UI screen, currently a blank green screen
+const static uint8_t kUiDefaultPreferences[] = {0x01, (uint8_t)ColourType::kConstant, 0x00, 0xFF, 0x00};
+const static size_t kUiDefaultPreferencesLength = 5;
 
 }
 

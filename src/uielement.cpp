@@ -4,14 +4,15 @@
 
 namespace euc {
 
-std::function<UiElement*(uint8_t data[], size_t data_len)> UiElement::ui_element_lookup[256];
+UiElement* (*UiElement::ui_element_lookup[256])(uint8_t data[], size_t data_len);
 uint8_t UiElement::ui_element_codes[256] = {4};
 
 UiElement* UiElement::Factory(uint8_t data[], size_t data_len) {\
   // Check that the code is valid and has been registered
   if (data_len > 0 && UiElement::ui_element_codes[data[0]] == data[0]) {
     // Call the stored builder function
-    return UiElement::ui_element_lookup[data[0]](&data[0], data_len);
+    Serial.printf("Factory recognised code %X\n", data[0]);
+    return UiElement::ui_element_lookup[data[0]](data, data_len);
   }
   
   Serial.println("UI Code isn't registered");
@@ -21,10 +22,6 @@ UiElement* UiElement::Factory(uint8_t data[], size_t data_len) {\
 
 size_t UiElement::DataSize() {
   return data_size;
-}
-
-std::list<ArgType> UiElement::getArgs() {
-  return arg_list;
 }
 
 void UiElement::Draw(ProcessData* data) {

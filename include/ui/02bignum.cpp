@@ -11,9 +11,8 @@ class BigNum : public UiElement {
   public:
     BigNum(uint8_t data[], size_t data_len) {
       assert (data[0] == 0x02);
-      data_size = 1;
       colour_provider = UiElement::getColourProvider(data, data_len, &data_size);
-      type = (DataType)data[data_size++]; // Get type and add to data_size
+      type = (DataType)data[data_size++]; // Get type and increment to data_size
     };
 
     void Draw(ProcessData* data) {
