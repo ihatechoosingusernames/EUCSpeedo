@@ -1,13 +1,21 @@
 #include "configserver.h"
 
-#include <functional>
+#include "SPIFFS.h"
 
 #include "constants.h"
 
 namespace euc {
 
 ConfigServer::ConfigServer(UiHandler* ui_handler) : server(kDefaultServerPort), ui_handler(ui_handler) {
-  server.on("/", HTTP_GET, std::bind(&ConfigServer::HandleRoot, this, std::placeholders::_1));
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/ui_settings.html", "text/html");
+  });
+
+
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
+    printf("Favicon requested\n");
+    request->send(SPIFFS, "/favicon.png","image/png");
+  });
 }
 
 ConfigServer::~ConfigServer() {
@@ -32,11 +40,6 @@ void ConfigServer::Stop() {
 
 bool ConfigServer::isStarted() {
   return started;
-}
-
-void ConfigServer::HandleRoot(AsyncWebServerRequest *request) {
-  printf("ConfigServer::HandleRoot()\n");
-  request->send(200, "text/plain", "Hello!");
 }
 
 }

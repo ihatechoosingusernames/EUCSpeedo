@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Title of the document</title>
+</head>
+
+<body>
+  <h2>UI Creator</h2><br>
+  <table class="inlineTable">
+    <th><strong>Draw Queue:</strong></th>
+    <tr>
+      <td>Background</td>
+    </tr>
+    <tr>
+      <td><button onclick="openForm()"><strong>Add Element</strong></button></td>
+    </tr>
+  </table>
+  <table class="inlineTable">
+    <th><strong>Data:</strong></th>
+    <tr>
+      <td>Cell content</td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <div class="loginPopup">
+    <div class="formPopup" id="popupForm">
+      <form action="/action_page.php" class="formContainer">
+        <h2>Please Log in</h2>
+        <label for="email">
+          <strong>E-mail</strong>
+        </label>
+        <input type="text" id="email" placeholder="Your Email" name="email" required>
+        <label for="psw">
+          <strong>Password</strong>
+        </label>
+        <input type="password" id="psw" placeholder="Your Password" name="psw" required>
+        <select name=”color”>
+          <option value=”1”>Red</option>
+          <option value=”2”>Purple </option>
+        </select>
+        <button type="submit" class="btn">Log in</button>
+        <button type="button" class="btn cancel" onclick="closeForm()">Cancel</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    function openForm() {
+      document.getElementById("popupForm").style.display = "block";
+    }
+
+    function closeForm() {
+      document.getElementById("popupForm").style.display = "none";
+    }
+
+  </script>
+</body>
+
+</html>

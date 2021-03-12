@@ -19,8 +19,6 @@ class ConfigServer {
     bool isStarted();
 
   private:
-    void HandleRoot(AsyncWebServerRequest *request);
-
     bool started = false, connected = false;
 
     AsyncWebServer server;

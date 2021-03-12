@@ -29,3 +29,5 @@ void loop() {
 // TODO: Implement RTC handler
 // TODO: Implement screen handler
 // TODO: Create different screens for watch/EUC/Settings
+// TODO: Gestures?
+// TODO: Change ui_config format to CSV

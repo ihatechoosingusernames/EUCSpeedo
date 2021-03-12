@@ -7,10 +7,7 @@ namespace euc {
 FileHandler::FileHandler() {
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
-    SPIFFS.format();
   }
-
-  Serial.println(SPIFFS.totalBytes());
 }
 
 FileHandler::~FileHandler() {
