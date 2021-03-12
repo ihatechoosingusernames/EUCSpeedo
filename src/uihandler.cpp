@@ -32,6 +32,8 @@ void UiHandler::LoadFromPreferences(FileHandler* file_handler) {
     return;
   }
 
+  printf("No data to load from file, loading factory config\n");
+
   // If there are no saved prefs, use the defaults
   data_len = kUiDefaultPreferencesLength;
   uint8_t data[data_len];

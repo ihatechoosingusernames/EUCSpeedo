@@ -10,8 +10,6 @@
 
 using namespace euc;
 
-#define FORMAT_SPIFFS_IF_FAILED true
-
 EucSpeedo* speedo_ptr;
 
 void setup() {

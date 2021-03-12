@@ -1,7 +1,6 @@
 #ifndef CONFIGSERVER_H_
 #define CONFIGSERVER_H_
 
-#include <WiFi.h>
 #include <WebServer.h>
 
 #include "uihandler.h"

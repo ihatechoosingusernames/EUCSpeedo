@@ -15,7 +15,9 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     file_handler(),
     ui_handler(&file_handler),
     process_data(),
-    config_server(&ui_handler) {}
+    config_server(&ui_handler) {
+  file_handler.listDir("/", 1);
+}
 
 EucSpeedo::~EucSpeedo() {
   delete wheel; // Clean up wheel pointer

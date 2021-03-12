@@ -7,7 +7,14 @@ namespace euc {
 FileHandler::FileHandler() {
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
+    SPIFFS.format();
   }
+
+  Serial.println(SPIFFS.totalBytes());
+}
+
+FileHandler::~FileHandler() {
+  SPIFFS.end();
 }
 
 void FileHandler::ReadFile(const char * path, uint8_t data[], size_t* size) {
@@ -30,7 +37,7 @@ void FileHandler::ReadFile(const char * path, uint8_t data[], size_t* size) {
 size_t FileHandler::FileSize(const char * filename) {
   File file = SPIFFS.open(filename);
 
-  if(!file || file.isDirectory()){
+  if(!file || file.isDirectory()) {
     Serial.println("- failed to open file for checking size");
     return 0;
   }
@@ -72,6 +79,38 @@ void FileHandler::DeleteFile(const char * file_name) {
   if(!SPIFFS.remove(file_name)){
     Serial.println("- delete failed");
   }
+}
+
+void FileHandler::listDir(const char * dirname, uint8_t levels){
+  fs::FS fs = SPIFFS;
+    Serial.printf("Listing directory: %s\r\n", dirname);
+
+    File root = fs.open(dirname);
+    if(!root){
+        Serial.println("- failed to open directory");
+        return;
+    }
+    if(!root.isDirectory()){
+        Serial.println(" - not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while(file){
+        if(file.isDirectory()){
+            Serial.print("  DIR : ");
+            Serial.println(file.name());
+            if(levels){
+                listDir(file.name(), levels -1);
+            }
+        } else {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("\tSIZE: ");
+            Serial.println(file.size());
+        }
+        file = root.openNextFile();
+    }
 }
 
 }
