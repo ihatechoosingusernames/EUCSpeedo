@@ -1,7 +1,8 @@
 #ifndef CONFIGSERVER_H_
 #define CONFIGSERVER_H_
 
-#include <WebServer.h>
+#include "ESPAsyncWebServer.h"
+#include "AsyncTCP.h"
 
 #include "uihandler.h"
 
@@ -14,17 +15,15 @@ class ConfigServer {
 
     void Start();
     void Stop();
-    void Process();
     
     bool isStarted();
 
   private:
-    void HandleRoot();
-    void HandleNotFound();
+    void HandleRoot(AsyncWebServerRequest *request);
 
     bool started = false, connected = false;
 
-    WebServer server;
+    AsyncWebServer server;
 
     UiHandler* ui_handler;
 };

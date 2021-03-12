@@ -7,8 +7,7 @@
 namespace euc {
 
 ConfigServer::ConfigServer(UiHandler* ui_handler) : server(kDefaultServerPort), ui_handler(ui_handler) {
-  server.on("/", std::bind(&ConfigServer::HandleRoot, this));
-  server.onNotFound(std::bind(&ConfigServer::HandleNotFound, this));
+  server.on("/", HTTP_GET, std::bind(&ConfigServer::HandleRoot, this, std::placeholders::_1));
 }
 
 ConfigServer::~ConfigServer() {
@@ -27,29 +26,17 @@ void ConfigServer::Start() {
 void ConfigServer::Stop() {
   printf("ConfigServer::Stop()\n");
   started = false;
-  server.stop();
+  server.end();
   WiFi.disconnect();
-}
-
-void ConfigServer::Process() {
-  if (!started) {
-    return;
-  }
-  server.handleClient();
 }
 
 bool ConfigServer::isStarted() {
   return started;
 }
 
-void ConfigServer::HandleRoot() {
+void ConfigServer::HandleRoot(AsyncWebServerRequest *request) {
   printf("ConfigServer::HandleRoot()\n");
-  server.send(200, "text/plain", "Hello!");
-}
-
-void ConfigServer::HandleNotFound() {
-  printf("ConfigServer::HandleNotFound()\n");
-  server.send(404, "text/plain", "Uh Ohs!");
+  request->send(200, "text/plain", "Hello!");
 }
 
 }

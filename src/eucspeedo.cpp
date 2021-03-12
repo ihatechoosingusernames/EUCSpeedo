@@ -24,10 +24,8 @@ EucSpeedo::~EucSpeedo() {
 }
 
 void EucSpeedo::Process() {
-  // Serial.println("Process()");
   HandlePress(button_handler->getPress());
   // ui_handler.Update(&process_data);
-  config_server.Process();
 }
 
 // Creates the correct type of wheel object
