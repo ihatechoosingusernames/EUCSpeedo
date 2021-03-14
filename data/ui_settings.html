@@ -40,8 +40,7 @@
             <td><label class="lab">Element Type</label></td>
             <td><select name=”UiElement” id="ui_element" onchange="checkUiAlert(event)">
                 <option value="" selected disabled hidden>Choose here</option>
-                <option value="1">Background</option>
-                <option value="2">BigNum</option>
+                %UI_ELEM_SELECT%
               </select></td>
           </tr>
 
@@ -49,8 +48,7 @@
             <td><label class="lab">Element Data Type</label></td>
             <td><select name=”data_arg” id="data_arg">
                 <option value="" selected disabled hidden>Choose here</option>
-                <option value="0">Speed</option>
-                <option value="1">Time</option>
+                %UI_DATA_TYPE_SELECT%
               </select></td>
           </tr>
 
@@ -72,8 +70,7 @@
             <td><label class="lab">Dynamic Colour Data</label></td>
             <td><select name=”colour_data_type” id="colour_data_type">
                 <option value="" selected disabled hidden>Choose here</option>
-                <option value="0">Speed</option>
-                <option value="1">Time</option>
+                %UI_DATA_TYPE_SELECT%
               </select></td>
           </tr>
 
@@ -155,8 +152,9 @@
 
     // Stores all ui element types and args
     var ui_elems = {
-      "1": ["1"],
-      "2": ["0", "1"],
+      // "1": ["1"],
+      // "2": ["0", "1"],
+      %UI_ELEM_DATA%
     };
   </script>
 </body>

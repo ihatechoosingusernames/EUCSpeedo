@@ -4,8 +4,8 @@
 
 namespace euc {
 
-UiElement* (*UiElement::ui_element_lookup[256])(uint8_t data[], size_t data_len);
-uint8_t UiElement::ui_element_codes[256] = {4};
+UiElement* (*UiElement::ui_element_lookup[kMaxUiElementCode])(uint8_t data[], size_t data_len);
+uint8_t UiElement::ui_element_codes[kMaxUiElementCode] = {4};
 
 UiElement* UiElement::Factory(uint8_t data[], size_t data_len) {\
   // Check that the code is valid and has been registered

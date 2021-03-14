@@ -10,12 +10,11 @@
 namespace euc {
 
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
-    ble(BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
-    std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))),
+    ble(BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1), std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))),
     file_handler(),
     ui_handler(&file_handler),
     process_data(),
-    config_server(&ui_handler) {
+    config_server(&ui_handler, &file_handler) {
   file_handler.listDir("/", 1);
 }
 
@@ -25,6 +24,7 @@ EucSpeedo::~EucSpeedo() {
 
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
+  // if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
   // ui_handler.Update(&process_data);
 }
 
@@ -59,10 +59,13 @@ void EucSpeedo::HandlePress(PressType press) {
       break;
     case PressType::kLongPress:
       Serial.println("Long press\n");
-      if (config_server.isStarted())
+      if (config_server.isStarted()) {
+        config_server_active = false;
         config_server.Stop();
-      else
+      } else {
+        config_server_active = true;
         config_server.Start();
+      }
     default:
       break;
   }

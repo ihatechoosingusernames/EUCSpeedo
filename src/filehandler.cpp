@@ -14,7 +14,7 @@ FileHandler::~FileHandler() {
   SPIFFS.end();
 }
 
-void FileHandler::ReadFile(const char * path, uint8_t data[], size_t* size) {
+void FileHandler::ReadFile(const char * path, char data[], size_t* size) {
   File file = SPIFFS.open(path);
 
   if(!file || file.isDirectory()){
@@ -26,9 +26,33 @@ void FileHandler::ReadFile(const char * path, uint8_t data[], size_t* size) {
   if (file.size() < *size)
     *size = file.size();
 
-  file.read(data, *size);
+  size_t counter = 0;
+  while (file.available() && counter++ < *size)
+    data[counter] = static_cast<char>(file.read());
   
   file.close();
+}
+
+// Interprets file as a CSV of bytes, returns the raw bytes
+std::list<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
+  size_t temp_len = 0, data_len = FileSize(file_name);
+  char data[data_len];  // Char data
+  char temp_buffer[3];  // Max size of a written decimal byte "255"
+  std::list<uint8_t> out_buffer;  // Output buffer
+
+  ReadFile(file_name, data, &data_len);
+  
+  for (size_t copy_len = 0; copy_len < data_len; copy_len++) {
+    if (data[copy_len] == ',') {
+      out_buffer.push_back(std::atoi(temp_buffer));
+      temp_len = 0;
+    } else if (data[copy_len] == ' ') { // Ignore spaces
+    } else {  // Assume everything else is numbers, which is lazy
+      temp_buffer [temp_len++] = data[copy_len];
+    }
+  }
+
+  return out_buffer;
 }
 
 size_t FileHandler::FileSize(const char * filename) {

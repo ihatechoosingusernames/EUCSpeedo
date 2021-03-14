@@ -22,20 +22,25 @@ void UiHandler::Update(ProcessData* data) {
 }
 
 void UiHandler::LoadFromPreferences(FileHandler* file_handler) {
-  size_t data_len = file_handler->FileSize(kUiPreferences);
-
   // If there are saved UI preferences, load them.
-  if (data_len) {
-    uint8_t data[data_len];
-    file_handler->ReadFile(kUiPreferences, data, &data_len);
-    LoadFromData(data, data_len);
+  if (file_handler->FileSize(kUiPreferences)) {
+    std::list<uint8_t> from_csv = file_handler->ReadCsvBytes(kUiPreferences);
+    uint8_t data[from_csv.size()];
+    
+    size_t counter = 0;
+    for (uint8_t byte : from_csv) {
+      data[counter] = byte;
+      counter++;
+    }
+
+    LoadFromData(data, from_csv.size());
     return;
   }
 
   printf("No data to load from file, loading factory config\n");
 
   // If there are no saved prefs, use the defaults
-  data_len = kUiDefaultPreferencesLength;
+  size_t data_len = kUiDefaultPreferencesLength;
   uint8_t data[data_len];
 
   std::copy(kUiDefaultPreferences, kUiDefaultPreferences+data_len, data);

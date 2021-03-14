@@ -2,6 +2,7 @@
 #define FILEHANDLER_H_
 
 #include <Arduino.h>
+#include <list>
 
 namespace euc {
 
@@ -11,7 +12,9 @@ class FileHandler {
     ~FileHandler();
 
     // Reads <size> bytes to array at data. If available bytes < size, size is changed to the number that there are
-    void ReadFile(const char* file_name, uint8_t data[], size_t* size);
+    void ReadFile(const char* file_name, char data[], size_t* size);
+    // Reads a full CSV file of bytes
+    std::list<uint8_t> ReadCsvBytes(const char* file_name);
     // Returns file size in bytes
     size_t FileSize(const char* file_name);
 
