@@ -19,6 +19,8 @@ class ConfigServer {
     bool isStarted();
 
   private:
+    void ProcessUiPage(String elem);
+    
     bool started = false, connected = false;
 
     AsyncWebServer server;

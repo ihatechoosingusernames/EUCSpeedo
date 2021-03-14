@@ -13,7 +13,7 @@
       <td>Background</td>
     </tr>
     <tr>
-      <td><button onclick="openForm()"><strong>Add Element</strong></button></td>
+      <td><button class="btn" onclick="openForm()"><strong>Add Element</strong></button></td>
     </tr>
   </table>
   <table class="inlineTable">
@@ -23,26 +23,81 @@
     </tr>
   </table>
 
+  <br>
+
+  <form action="/save_changes" , method="POST">
+    <button type="submit" class="btn">Save Changes</button>
+  </form>
+
   <hr>
 
   <div class="loginPopup">
     <div class="formPopup" id="popupForm">
-      <form action="/action_page.php" class="formContainer">
-        <h2>Please Log in</h2>
-        <label for="email">
-          <strong>E-mail</strong>
-        </label>
-        <input type="text" id="email" placeholder="Your Email" name="email" required>
-        <label for="psw">
-          <strong>Password</strong>
-        </label>
-        <input type="password" id="psw" placeholder="Your Password" name="psw" required>
-        <select name=”color”>
-          <option value=”1”>Red</option>
-          <option value=”2”>Purple </option>
-        </select>
-        <button type="submit" class="btn">Log in</button>
-        <button type="button" class="btn cancel" onclick="closeForm()">Cancel</button>
+      <form action="/new_element" method="POST" class="formContainer">
+        <h2>New Element</h2>
+        <table class="inlineTable">
+          <tr>
+            <td><label class="lab">Element Type</label></td>
+            <td><select name=”UiElement” id="ui_element" onchange="checkUiAlert(event)">
+                <option value="" selected disabled hidden>Choose here</option>
+                <option value="1">Background</option>
+                <option value="2">BigNum</option>
+              </select></td>
+          </tr>
+
+          <tr class="formHiddenFields" id="data_type">
+            <td><label class="lab">Element Data Type</label></td>
+            <td><select name=”data_arg” id="data_arg">
+                <option value="" selected disabled hidden>Choose here</option>
+                <option value="0">Speed</option>
+                <option value="1">Time</option>
+              </select></td>
+          </tr>
+
+          <tr class="formHiddenFields" id="colour">
+            <td><label class="lab">Element Colour</label></td>
+            <td><select name=”ColourArg” id="colour_arg" onchange="checkColourAlert(event)">
+                <option value="" selected disabled hidden>Choose here</option>
+                <option value="1">Solid Colour</option>
+                <option value="2">Dynamic Colour</option>
+              </select></td>
+          </tr>
+
+          <tr class="formHiddenFields" id="solid_color">
+            <td><label class="lab">Solid Colour</label></td>
+            <td><input type="color" name="solid_colour_arg" id="solid_colour_arg" value="#ffffff"></td>
+          </tr>
+
+          <tr class="formHiddenFields" id="dynamic_colour_data">
+            <td><label class="lab">Dynamic Colour Data</label></td>
+            <td><select name=”colour_data_type” id="colour_data_type">
+                <option value="" selected disabled hidden>Choose here</option>
+                <option value="0">Speed</option>
+                <option value="1">Time</option>
+              </select></td>
+          </tr>
+
+          <tr class="formHiddenFields" id="dynamic_colour_low_label">
+            <td><label class="lab">Lowest Value Colour</label></td>
+          </tr>
+          <tr class="formHiddenFields" id="dynamic_colour_low">
+            <td><input type="number" name="arg_low_data" id="arg_low_data" value="0"></td>
+            <td><input type="color" name="arg_low_colour" id="arg_low_colour" value="#00ffff"></td>
+          </tr>
+
+          <tr class="formHiddenFields" id="dynamic_colour_high_label">
+            <td><label class="lab">Highest Value Colour</label></td>
+          </tr>
+          <tr class="formHiddenFields" id="dynamic_colour_high">
+            <td><input type="number" name="arg_high_data" id="arg_high_data" value="100"></td>
+            <td><input type="color" name="arg_high_colour" id="arg_high_colour" value="#ff0000"></td>
+          </tr>
+
+          <tr>
+            <td><button type="submit" class="btn">Create</button></td>
+            <td><button type="button" class="btn cancel" onclick="closeForm()">Cancel</button></td>
+          </tr>
+        </table>
       </form>
     </div>
   </div>
@@ -50,11 +105,59 @@
     function openForm() {
       document.getElementById("popupForm").style.display = "block";
     }
-
     function closeForm() {
       document.getElementById("popupForm").style.display = "none";
     }
+    function checkUiAlert(evt) {
+      // Hiding all hideable args
+      var selects = document.getElementsByClassName("formHiddenFields");
+      for (var i = 0, il = selects.length; i < il; i++) {
+        selects[i].style.display = "none";
+      }
 
+      // Showing only the relevant args
+      var arglist = ui_elems[evt.target.value];
+      for (var arg = 0, arg_len = arglist.length; arg < arg_len; arg++) {
+        switch (arglist[arg]) {
+          case "0":
+            document.getElementById("data_type").style.display = "table-row";
+            break;
+          case "1":
+            document.getElementById("colour").style.display = "table-row";
+            break;
+          case "2":
+            // TODO: Handle constants
+            break;
+        }
+      }
+    }
+
+    // Switches colour type args on or off
+    function checkColourAlert(evt) {
+      if (evt.target.value == "1") {
+        document.getElementById("solid_color").style.display = "table-row";
+
+        document.getElementById("dynamic_colour_data").style.display = "none";
+        document.getElementById("dynamic_colour_low_label").style.display = "none";
+        document.getElementById("dynamic_colour_low").style.display = "none";
+        document.getElementById("dynamic_colour_high_label").style.display = "none";
+        document.getElementById("dynamic_colour_high").style.display = "none";
+      } else if (evt.target.value == "2") {
+        document.getElementById("dynamic_colour_data").style.display = "table-row";
+        document.getElementById("dynamic_colour_low_label").style.display = "table-row";
+        document.getElementById("dynamic_colour_low").style.display = "table-row";
+        document.getElementById("dynamic_colour_high_label").style.display = "table-row";
+        document.getElementById("dynamic_colour_high").style.display = "table-row";
+
+        document.getElementById("solid_color").style.display = "none";
+      }
+    }
+
+    // Stores all ui element types and args
+    var ui_elems = {
+      "1": ["1"],
+      "2": ["0", "1"],
+    };
   </script>
 </body>
 

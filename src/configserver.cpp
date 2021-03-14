@@ -12,9 +12,11 @@ ConfigServer::ConfigServer(UiHandler* ui_handler) : server(kDefaultServerPort), 
   });
 
 
-  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
-    printf("Favicon requested\n");
-    request->send(SPIFFS, "/favicon.png","image/png");
+  // TODO: add filter function for data elements
+  // - "ui_element"
+  server.on("/new_element", HTTP_POST, [](AsyncWebServerRequest *request){
+    printf("New Element created\n");
+    uint8_t elem_type = std::atoi(request->getParam("ui_element")->value().c_str());
   });
 }
 
