@@ -102,6 +102,12 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
     // <tr><td>Background</td></tr>
     for (UiElement* draw_elem : *ui_handler->getDrawList())
       out += "<tr><td>" + String(draw_elem->Name()) + "</td></tr>\n";
+  } else if (placeholder == "UI_DATA_TABLE") {
+    // Replace with table rows representing each type of data that is being displayed by the UI in
+    // the format: <tr><td>Speed</td></tr>
+    for (size_t data_type = 0; data_type < (size_t)DataType::kLastValue; data_type++)
+      if (test_data_types[data_type])
+        out += "<tr><td>" + String(kDataTypeNames[(size_t)data_type]) + "</td></tr>\n";
   }
 
   return out;
@@ -133,10 +139,12 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
   for (ArgType arg : args) {
     switch (arg) {
       case ArgType::kDataType:
-        if (request->hasParam("data_arg", true))
+        if (request->hasParam("data_arg", true)) {
           data.emplace_back(std::atoi(request->getParam("data_arg", true)->value().c_str()));
-        else
+          test_data_types[std::atoi(request->getParam("data_arg", true)->value().c_str())] = true;  // Mark this datatype as being used
+        } else {
           has_error = true;
+        }
         break;
       case ArgType::kColour:
         if (request->hasParam("colour_arg", true))
@@ -156,6 +164,8 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
             if (request->hasParam("colour_data_type", true) && request->hasParam("arg_low_data", true) && request->hasParam("arg_low_colour", true)
                 && request->hasParam("arg_high_data", true) && request->hasParam("arg_high_colour", true)) {
               data.emplace_back(std::atoi(request->getParam("colour_data_type", true)->value().c_str()));
+              test_data_types[std::atoi(request->getParam("colour_data_type", true)->value().c_str())] = true;  // Mark this datatype as being used
+
               data.emplace_back(std::atoi(request->getParam("arg_low_data", true)->value().c_str()));
               data.emplace_back(std::atoi(request->getParam("arg_high_data", true)->value().c_str()));
 
@@ -214,13 +224,14 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 
 std::list<uint8_t> ConfigServer::ParseColour(String colour) {
   std::list<uint8_t> out;
-  // Colour is represented by a string like "#ff00bb" where each pair of digits a number representing
+  // Colour is represented by a string like "#ff00bb" where each pair of digits is a number representing
   // red, green, and blue (in that order) in hexadecimal
 
   if (colour.length() < 7) {
     return out;
   }
   
+  // Converts from string to unsigned long in base 16
   out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16)); // Red
   out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16)); // Green
   out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue

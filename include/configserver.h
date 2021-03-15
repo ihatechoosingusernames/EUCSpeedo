@@ -40,6 +40,7 @@ class ConfigServer {
     FileHandler* file_handler;
 
     std::list<uint8_t> test_ui_data;
+    bool test_data_types[(size_t)DataType::kLastValue] = {{false}};
 
     String ui_elem_data, ui_elem_select, ui_data_type_select;
 };
