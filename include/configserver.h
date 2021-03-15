@@ -28,6 +28,9 @@ class ConfigServer {
 
   private:
     String ProcessUiPage(const String& placeholder);
+    void ProcessNewElementRequest(AsyncWebServerRequest *request);
+
+    std::list<uint8_t> ParseColour(String colour);
     
     bool started = false, connected = false;
 
@@ -37,6 +40,8 @@ class ConfigServer {
     FileHandler* file_handler;
 
     std::list<uint8_t> test_ui_data;
+
+    String ui_elem_data, ui_elem_select, ui_data_type_select;
 };
 
 }

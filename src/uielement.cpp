@@ -14,8 +14,6 @@ UiElement* UiElement::Factory(uint8_t data[], size_t data_len) {\
     Serial.printf("Factory recognised code %X\n", data[0]);
     return UiElement::ui_element_lookup[data[0]](data, data_len);
   }
-  
-  Serial.println("UI Code isn't registered");
 
   return UiElement::ui_element_lookup[0](data, 0); // An empty UI element that draws nothing
 }
@@ -36,7 +34,7 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
 
   // Make sure that the value of bytes_used is subtracted from the data we have
   data_len -= *bytes_used;
-  data = &data[*bytes_used];
+  data += *bytes_used;
 
   switch ((ColourType)data[0]) {
 
@@ -55,13 +53,13 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
       if (data_len >= 10) {
         // The first byte should be a data type
         DataType type = (DataType)data[1];
-        // Next byte is a starting value for the data type
+        // Next byte is a low value for the data type
         int8_t min_val = static_cast<int8_t>(data[2]);
-        // Next byte is an ending value for the data type
+        // Next byte is an high value for the data type
         int8_t max_val = static_cast<int8_t>(data[3]);
-        // The next three bytes are the starting colour
+        // The next three bytes are the low colour
         uint8_t min_colour[3] = {data[4], data[5], data[6]};
-        // The next three bytes are the ending colour
+        // The next three bytes are the high colour
         uint8_t max_colour[3] = {data[7], data[8], data[9]};
 
         *bytes_used += 10;

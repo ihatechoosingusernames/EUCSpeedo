@@ -29,6 +29,8 @@ class UiElement {
 
     size_t DataSize();  // Returns the number of bytes the element has used from the arg list
 
+    virtual ~UiElement() = default;         // Declaring virtual destructor to allow safe "delete" calls on base classes
+    
     virtual void Draw(ProcessData* data);   // Draws the element
     virtual std::list<ArgType> ArgList();   // Returns the number and type of args to help with config generation
     virtual char* Name();                   // Returns the name to help with config generation

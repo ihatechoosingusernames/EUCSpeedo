@@ -2,16 +2,15 @@
 <html>
 
 <head>
-  <title>Title of the document</title>
+  <title>UI Settings</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
   <h2>UI Creator</h2><br>
   <table class="inlineTable">
     <th><strong>Draw Queue:</strong></th>
-    <tr>
-      <td>Background</td>
-    </tr>
+    %UI_DRAW_QUEUE_TABLE%
     <tr>
       <td><button class="btn" onclick="openForm()"><strong>Add Element</strong></button></td>
     </tr>
@@ -38,7 +37,7 @@
         <table class="inlineTable">
           <tr>
             <td><label class="lab">Element Type</label></td>
-            <td><select name=”UiElement” id="ui_element" onchange="checkUiAlert(event)">
+            <td><select name=ui_element id="ui_element" onchange="checkUiAlert(event)">
                 <option value="" selected disabled hidden>Choose here</option>
                 %UI_ELEM_SELECT%
               </select></td>
@@ -46,7 +45,7 @@
 
           <tr class="formHiddenFields" id="data_type">
             <td><label class="lab">Element Data Type</label></td>
-            <td><select name=”data_arg” id="data_arg">
+            <td><select name="data_arg" id="data_arg">
                 <option value="" selected disabled hidden>Choose here</option>
                 %UI_DATA_TYPE_SELECT%
               </select></td>
@@ -54,10 +53,10 @@
 
           <tr class="formHiddenFields" id="colour">
             <td><label class="lab">Element Colour</label></td>
-            <td><select name=”ColourArg” id="colour_arg" onchange="checkColourAlert(event)">
+            <td><select name="colour_arg" id="colour_arg" onchange="checkColourAlert(event)">
                 <option value="" selected disabled hidden>Choose here</option>
-                <option value="1">Solid Colour</option>
-                <option value="2">Dynamic Colour</option>
+                <option value="0">Solid Colour</option>
+                <option value="1">Dynamic Colour</option>
               </select></td>
           </tr>
 
@@ -68,7 +67,7 @@
 
           <tr class="formHiddenFields" id="dynamic_colour_data">
             <td><label class="lab">Dynamic Colour Data</label></td>
-            <td><select name=”colour_data_type” id="colour_data_type">
+            <td><select name="colour_data_type" id="colour_data_type">
                 <option value="" selected disabled hidden>Choose here</option>
                 %UI_DATA_TYPE_SELECT%
               </select></td>
@@ -131,7 +130,7 @@
 
     // Switches colour type args on or off
     function checkColourAlert(evt) {
-      if (evt.target.value == "1") {
+      if (evt.target.value == "0") {
         document.getElementById("solid_color").style.display = "table-row";
 
         document.getElementById("dynamic_colour_data").style.display = "none";
@@ -139,7 +138,7 @@
         document.getElementById("dynamic_colour_low").style.display = "none";
         document.getElementById("dynamic_colour_high_label").style.display = "none";
         document.getElementById("dynamic_colour_high").style.display = "none";
-      } else if (evt.target.value == "2") {
+      } else if (evt.target.value == "1") {
         document.getElementById("dynamic_colour_data").style.display = "table-row";
         document.getElementById("dynamic_colour_low_label").style.display = "table-row";
         document.getElementById("dynamic_colour_low").style.display = "table-row";
