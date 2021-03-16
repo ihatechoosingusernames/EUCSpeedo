@@ -25,9 +25,7 @@ void loop() {
 }
 
 // TODO: Handle BLE discovery in own thread
-// TODO: Fix settings webpage not loading CSS
 // TODO: Implement RTC handler
 // TODO: Implement screen handler
 // TODO: Create different screens for watch/EUC/Settings
 // TODO: Gestures?
-// TODO: Change ui_config format to CSV

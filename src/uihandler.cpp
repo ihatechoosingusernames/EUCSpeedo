@@ -46,11 +46,11 @@ void UiHandler::LoadFromPreferences(FileHandler* file_handler) {
     
     size_t counter = 0;
     for (uint8_t byte : from_csv) {
-      data[counter] = byte;
-      counter++;
+      printf("Copying data %d\n", byte);
+      data[counter++] = byte;
     }
 
-    LoadFromData(data, from_csv.size());
+    LoadFromData(data, counter);
     return;
   }
 

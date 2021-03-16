@@ -20,7 +20,13 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
   server.on("/new_element", HTTP_POST, std::bind(&ConfigServer::ProcessNewElementRequest, this, std::placeholders::_1));
 
   server.on("/save_changes", HTTP_POST, [this](AsyncWebServerRequest *request){
-    // Process saved changes here
+    // Convert test data to a CSV string and store it in the ui data file
+    String ui_data_string;
+    for (uint8_t byte : test_ui_data) {
+      ui_data_string += String(byte) + ", ";
+    }
+    file_handler->WriteFile(kUiPreferences, ui_data_string.c_str());
+
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
@@ -225,7 +231,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 std::list<uint8_t> ConfigServer::ParseColour(String colour) {
   std::list<uint8_t> out;
   // Colour is represented by a string like "#ff00bb" where each pair of digits is a number representing
-  // red, green, and blue (in that order) in hexadecimal
+  // red (0xff), green (0x00), and blue (0xbb) in hexadecimal
 
   if (colour.length() < 7) {
     return out;
