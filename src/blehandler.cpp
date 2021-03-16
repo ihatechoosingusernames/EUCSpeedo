@@ -1,7 +1,7 @@
 #include "blehandler.h"
 
 #include <functional>
-#include <memory>
+#include <pthread.h>
 
 namespace euc {
 
@@ -9,18 +9,28 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
       std::function<void(uint8_t* data, size_t data_size)> notify) :
     connection_callback(connection), notify_callback(notify) {
   BLEDevice::init("");
+}
 
-  BLEScan* pBLEScan = BLEDevice::getScan();
-  
-  pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedDeviceCallbacks(this));
-  pBLEScan->setInterval(1349);
-  pBLEScan->setWindow(449);
-  pBLEScan->setActiveScan(true);
-  // pBLEScan->start(5, false); // For testing
+void BleHandler::Scan() {
+  if (!scanning) {
+    scanning = true;
+    pthread_create(&scan_thread, NULL, BleHandler::Scan, (void*)this);
+  }
 }
 
 bool BleHandler::isConnected() {
   return connected;
+}
+
+void* BleHandler::Scan(void* in) {
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  
+  pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedDeviceCallbacks((BleHandler*)in));
+  pBLEScan->setInterval(1349);
+  pBLEScan->setWindow(449);
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(10, false); // For testing
+  ((BleHandler*)in)->scanning = false;
 }
 
 bool BleHandler::Connect(BLEAdvertisedDevice* device, EucType type) {

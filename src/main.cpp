@@ -24,8 +24,8 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Handle BLE discovery in own thread
 // TODO: Implement RTC handler
 // TODO: Implement screen handler
 // TODO: Create different screens for watch/EUC/Settings
+// TODO: Create settings object that loads stored global settings
 // TODO: Gestures?

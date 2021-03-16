@@ -16,6 +16,7 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     process_data(),
     config_server(&ui_handler, &file_handler) {
   file_handler.listDir("/", 1);
+  ble.Scan();
 }
 
 EucSpeedo::~EucSpeedo() {
@@ -24,8 +25,8 @@ EucSpeedo::~EucSpeedo() {
 
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
-  // if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
-  // ui_handler.Update(&process_data);
+  if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
+    ui_handler.Update(&process_data);
 }
 
 // Creates the correct type of wheel object
