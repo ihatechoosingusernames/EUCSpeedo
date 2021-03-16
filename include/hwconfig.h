@@ -23,6 +23,13 @@ namespace euc {
 #define PIN_ST7735_CS 5
 #define PIN_ST7735_LEDK 27
 
+// Accelerometer/Gyroscope/Magnetometer
+#define PIN_LSM9DS1_SCL 22
+#define PIN_LSM9DS1_SDA 21
+#define PIN_LSM9DS1_INT_M 37
+#define PIN_LSM9DS1_INT_1AG 38
+#define PIN_LSM9DS1_INT_2AG 39
+
 // LED
 #define PIN_LED 4
 

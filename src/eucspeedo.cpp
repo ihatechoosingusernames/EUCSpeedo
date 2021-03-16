@@ -6,6 +6,7 @@
 #include "gotway.h"
 #include "constants.h"
 #include "buttonhandler.h"
+#include "hwconfig.h"
 
 namespace euc {
 
@@ -45,7 +46,7 @@ void EucSpeedo::onFoundWheel(EucType type) {
 
 void EucSpeedo::onProcessInput(uint8_t* data, size_t data_size) {
   if (wheel_created) {
-    wheel->ProcessInput(data, data_size);  // Access the base implementation of ProcessInput()
+    wheel->ProcessInput(data, data_size);  // Let the specific wheel process the data
     process_data.Update(wheel); // Update the wheel data supplied to the UI
   }
 }

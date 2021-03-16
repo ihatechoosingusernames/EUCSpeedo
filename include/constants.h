@@ -55,14 +55,16 @@ const static size_t kMaxUiElementCode = 255;
 
 enum class DataType : uint8_t {
   kSpeed = 0,
-  kTime,
-  kDate,
+  kSecond,
+  kMinute,
+  kHour,
+  kDay,
+  kMonth,
+  kYear,
   kWatchBattery,
   kBattery,
   kTemp,
-  kAlarm1,
-  kAlarm2,
-  kAlarm3,
+  kAlarmLevel,
   kTripDistance,
   kTotalDistance,
   kVoltage,
@@ -70,7 +72,7 @@ enum class DataType : uint8_t {
   kLastValue  // IMPORTANT this value should stay as last value
 };
 
-const static char* kDataTypeNames[] = {"Speed", "Time", "Date", "Watch Battery", "Battery", "Temperature", "Alarm 1", "Alarm 2", "Alarm 3", "Trip Distance", "Total Distance", "Voltage", "Current"};
+const static char* kDataTypeNames[] = {"Speed", "Second", "Minute", "Hour", "Day", "Month", "Year", "Watch Battery", "Battery", "Temperature", "Alarm Level", "Trip Distance", "Total Distance", "Voltage", "Current"};
 
 enum class ColourType : uint8_t {
   kConstant = 0,

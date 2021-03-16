@@ -24,7 +24,6 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Implement RTC handler
 // TODO: Implement screen handler
 // TODO: Create different screens for watch/EUC/Settings
 // TODO: Create settings object that loads stored global settings

@@ -3,6 +3,7 @@
 
 #include "euc.h"
 #include "constants.h"
+#include "rtchandler.h"
 
 namespace euc {
 
@@ -15,11 +16,12 @@ class ProcessData {
     ProcessData();
 
     void Update(Euc* euc);
+    void Update(RtcHandler* rtc);
 
     double getDoubleData(DataType data_type);
 
   private:
-    double data[(size_t)DataType::kLastValue] = {0.0};  // Of this size to fit all DataType's
+    double data[(size_t)DataType::kLastValue] = {0.0};  // Of this size to fit all DataTypes
 
     SemaphoreHandle_t data_mutex; // Semaphore to protect the data array
 };

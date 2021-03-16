@@ -33,6 +33,7 @@ class EucSpeedo {
     UiHandler ui_handler;
     ProcessData process_data;
     ConfigServer config_server;
+    Rtc_Pcf8563 rtc;
 
     bool wheel_created = false;
     bool config_server_active = false;
