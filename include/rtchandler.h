@@ -55,7 +55,7 @@ class RtcHandler {
     uint8_t DecimalToBcd(uint8_t decimal);
 
     uint8_t second, minute, hour, day, month, year;
-}
+};
 
 }
 

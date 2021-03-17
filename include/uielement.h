@@ -16,7 +16,7 @@ using ColourProvider = std::function<uint32_t(ProcessData*)>;
       return (UiElement*) new element(data, data_len);                  \
     };                                                                  \
     std::list<ArgType> ArgList() { return {__VA_ARGS__}; }              \
-    char* Name() { return #element; }                                   \
+    String Name() { return #element; }                                   \
   private: static bool registered;
 
 #define UI_REGISTER(element, code)  \

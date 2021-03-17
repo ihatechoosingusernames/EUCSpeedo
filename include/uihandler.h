@@ -3,10 +3,11 @@
 
 #include <list>
 
+#include <TFT_eSPI.h>
+
 #include "uielement.h"
 #include "processdata.h"
 #include "filehandler.h"
-
 namespace euc {
 
 class UiHandler {
@@ -24,6 +25,8 @@ class UiHandler {
     void ClearDrawList();
 
     std::list<UiElement*> draw_list = std::list<UiElement*>();  // Stores the elements in their draw order
+    TFT_eSPI screen;  // Screen object
+    TFT_eSprite sprite; // Sprite object acts as a screen buffer to allow fast screen changes
 };
 
 }

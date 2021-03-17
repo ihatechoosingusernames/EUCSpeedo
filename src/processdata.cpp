@@ -14,7 +14,7 @@ void ProcessData::Update(Euc* euc) {
   xSemaphoreGive(data_mutex);
 }
 
-void ProcessData::Update(RtcHandler* rtc_handler, bool update_date = false) {
+void ProcessData::Update(RtcHandler* rtc_handler, bool update_date) {
   rtc_handler->UpdateTime();
 
   xSemaphoreTake(data_mutex, portMAX_DELAY);  // Protecting the data array

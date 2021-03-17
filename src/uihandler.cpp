@@ -4,8 +4,9 @@
 
 namespace euc {
 
-UiHandler::UiHandler(FileHandler* file_handler) {
+UiHandler::UiHandler(FileHandler* file_handler) : sprite(&screen) {
   LoadFromPreferences(file_handler);
+  screen.init();
 }
 
 UiHandler::~UiHandler() {
