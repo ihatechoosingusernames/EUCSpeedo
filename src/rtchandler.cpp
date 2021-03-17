@@ -38,6 +38,29 @@ void RtcHandler::UpdateDate() {
   year = BcdToDecimal(Wire.read());  
 }
 
+void RtcHandler::SetTime(uint8_t hour, uint8_t minute, uint8_t second) {
+  Wire.beginTransmission(RTCC_ADDR);
+  Wire.write(RTCC_SEC_ADDR);
+
+  Wire.write(DecimalToBcd(second)); //set seconds
+  Wire.write(DecimalToBcd(minute)); //set minutes
+  Wire.write(DecimalToBcd(hour)); //set hour
+  Wire.endTransmission();
+}
+
+void RtcHandler::SetDate(byte day, byte weekday, byte month, byte year) {
+  month = DecimalToBcd(month);
+  month &= ~RTCC_CENTURY_MASK; // Century is always > 2000
+
+  Wire.beginTransmission(RTCC_ADDR);
+  Wire.write(RTCC_DAY_ADDR);
+  Wire.write(DecimalToBcd(day)); // set day
+  Wire.write(DecimalToBcd(weekday)); // set weekday
+  Wire.write(month); // set month, century
+  Wire.write(DecimalToBcd(year)); // set year
+  Wire.endTransmission();
+}
+
 uint8_t RtcHandler::getSecond() { return second; }
 uint8_t RtcHandler::getMinute() { return minute; }
 uint8_t RtcHandler::getHour() { return hour; }

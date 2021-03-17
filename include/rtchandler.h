@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+// Code for RtcHandler adapted for ESP32 from https://github.com/orbitalair/Rtc_Pcf8563
+
 namespace euc {
 
 #define RTCC_ADDR 0x51
@@ -28,6 +30,7 @@ namespace euc {
 #define RTCC_YEAR_ADDR 0x08
 #define RTCC_ALRM_MIN_ADDR 0x09
 #define RTCC_SQW_ADDR 0x0D
+#define RTCC_CENTURY_MASK 0x80
 
 class RtcHandler {
   public:
@@ -37,7 +40,7 @@ class RtcHandler {
     void UpdateDate();
 
     void SetTime(uint8_t hour, uint8_t minute, uint8_t second);
-    void SetDate(byte day, byte weekday, byte month, byte century, byte year);
+    void SetDate(byte day, byte weekday, byte month, byte year);
 
     uint8_t getSecond();
     uint8_t getMinute();

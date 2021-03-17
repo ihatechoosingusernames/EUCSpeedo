@@ -16,7 +16,7 @@ class ProcessData {
     ProcessData();
 
     void Update(Euc* euc);
-    void Update(RtcHandler* rtc);
+    void Update(RtcHandler* rtc, bool update_date = false);
 
     double getDoubleData(DataType data_type);
 

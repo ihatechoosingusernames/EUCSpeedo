@@ -18,6 +18,8 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     config_server(&ui_handler, &file_handler) {
   file_handler.listDir("/", 1);
   ble.Scan();
+
+  process_data.Update(&rtc_handler, true);  // Check the date on first start
 }
 
 EucSpeedo::~EucSpeedo() {
@@ -26,6 +28,7 @@ EucSpeedo::~EucSpeedo() {
 
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
+  process_data.Update(&rtc_handler);
   if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
     ui_handler.Update(&process_data);
 }

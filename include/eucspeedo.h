@@ -11,6 +11,7 @@
 #include "uihandler.h"
 #include "filehandler.h"
 #include "configserver.h"
+#include "rtchandler.h"
 
 namespace euc {
 
@@ -32,8 +33,8 @@ class EucSpeedo {
     FileHandler file_handler;
     UiHandler ui_handler;
     ProcessData process_data;
+    RtcHandler rtc_handler;
     ConfigServer config_server;
-    Rtc_Pcf8563 rtc;
 
     bool wheel_created = false;
     bool config_server_active = false;
