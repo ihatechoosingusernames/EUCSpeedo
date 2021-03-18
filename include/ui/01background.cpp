@@ -15,8 +15,8 @@ class Background : public UiElement {
       colour_provider = UiElement::getColourProvider(data, data_len, &data_size);
     };
 
-    void Draw(ProcessData* data) override {
-      printf("Background::Draw() with colour %X\n", colour_provider(data));
+    void Draw(ProcessData* data, TFT_eSprite* sprite) override {
+      sprite->fillScreen(colour_provider(data));
     };
 
   private:

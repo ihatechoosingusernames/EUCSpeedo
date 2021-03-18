@@ -5,6 +5,7 @@
 #include <list>
 
 #include <Arduino.h>
+#include <TFT_eSPI.h>
 
 #include "processdata.h"
 namespace euc {
@@ -16,7 +17,7 @@ using ColourProvider = std::function<uint32_t(ProcessData*)>;
       return (UiElement*) new element(data, data_len);                  \
     };                                                                  \
     std::list<ArgType> ArgList() { return {__VA_ARGS__}; }              \
-    String Name() { return #element; }                                   \
+    String Name() { return #element; }                                  \
   private: static bool registered;
 
 #define UI_REGISTER(element, code)  \
@@ -31,9 +32,9 @@ class UiElement {
 
     virtual ~UiElement() = default;         // Declaring virtual destructor to allow safe "delete" calls on base classes
     
-    virtual void Draw(ProcessData* data);   // Draws the element
+    virtual void Draw(ProcessData* data, TFT_eSprite* sprite);   // Draws the element
     virtual std::list<ArgType> ArgList();   // Returns the number and type of args to help with config generation
-    virtual char* Name();                   // Returns the name to help with config generation
+    virtual String Name();                  // Returns the name to help with config generation
   
   protected:
     // Registers each UI element and stores it in the lookup array

@@ -23,9 +23,6 @@ namespace euc {
 #define PIN_ST7735_CS 5
 #define PIN_ST7735_LEDK 27
 
-#define SCREEN_WIDTH  80
-#define SCREEN_HEIGHT 160
-
 // Accelerometer/Gyroscope/Magnetometer
 #define PIN_LSM9DS1_SCL 22
 #define PIN_LSM9DS1_SDA 21

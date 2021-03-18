@@ -22,10 +22,6 @@ size_t UiElement::DataSize() {
   return data_size;
 }
 
-void UiElement::Draw(ProcessData* data) {
-  printf("UiElement::Draw()\n");
-}
-
 ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, size_t* bytes_used) {
   if (!data_len || *bytes_used >= data_len) {  // No Data provided, default is to return #000000 (black)
     *bytes_used += 0;

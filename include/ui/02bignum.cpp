@@ -15,7 +15,7 @@ class BigNum : public UiElement {
       type = (DataType)data[data_size++]; // Get type and increment to data_size
     };
 
-    void Draw(ProcessData* data) {
+    void Draw(ProcessData* data, TFT_eSprite* sprite) {
       printf("BigNum::Draw()\n");
       double num = data->getDoubleData(type);  // Retrieve the data
     };

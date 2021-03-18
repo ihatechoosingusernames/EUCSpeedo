@@ -10,7 +10,7 @@ class Empty : public UiElement {
   public:
     Empty(uint8_t data[], size_t data_len) {}
 
-    void Draw(ProcessData* data) {
+    void Draw(ProcessData* data, TFT_eSprite* sprite) {
       printf("Empty::Draw()\n");
     }
 };
