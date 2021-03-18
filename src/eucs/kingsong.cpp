@@ -2,7 +2,7 @@
 
 namespace euc {
 
-void Kingsong::ProcessInput(uint8_t data[], size_t size) {
+void Kingsong::ProcessInput(uint8_t data[], size_t data_len) {
   // if (rideStartTime == 0) {
   //         rideStartTime = Calendar.getInstance().getTimeInMillis();
   //   mRidingTime = 0;

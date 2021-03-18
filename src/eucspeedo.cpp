@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "gotway.h"
+#include "eucs/includes.h"
 #include "constants.h"
 #include "buttonhandler.h"
 #include "hwconfig.h"
