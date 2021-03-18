@@ -11,7 +11,7 @@ class Euc {
     
     virtual void ProcessInput(uint8_t data[], size_t data_len);
 
-    virtual double getSpeed();
+    double getSpeed() {return speed / 100.0; };
 
   protected:
     int voltage, current, temperature, temperature_2, battery_percent, voltage_scaler;

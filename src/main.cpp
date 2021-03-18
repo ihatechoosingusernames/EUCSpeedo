@@ -26,4 +26,5 @@ void loop() {
 
 // TODO: Create different screens for watch/EUC/Settings
 // TODO: Create settings object that loads stored global settings
+// TODO: Implement controllers for different EUC brands
 // TODO: Gestures?

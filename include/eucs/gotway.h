@@ -10,8 +10,7 @@ class Gotway : public Euc {
   public:
     void ProcessInput(uint8_t data[], size_t data_len) override;
 
-    double getSpeed() override;
-
+  private:
     bool isVeteran();
 
   private:

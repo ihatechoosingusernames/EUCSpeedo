@@ -1,4 +1,4 @@
-#include "gotway.h"
+#include "eucs/gotway.h"
 
 #include <math.h>
 
@@ -91,10 +91,6 @@ void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
     }
     total_distance = ((data[6]&0xFF) <<24) | ((data[7]&0xFF) << 16) | ((data[8]) <<8) | (data[9]);
   }
-}
-
-double Gotway::getSpeed() {
-  return speed / 100.0;
 }
 
 bool Gotway::isVeteran() {
