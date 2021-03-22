@@ -7,7 +7,7 @@ namespace euc {
 
 class Euc {
   public:
-    virtual ~Euc() = default;  // Declaring virtual destructor to allow safe "delete" calls on base classes
+    virtual ~Euc() = default;  // Declaring virtual destructor to allow safe "delete" calls on base class pointers
     
     virtual void ProcessInput(uint8_t data[], size_t data_len);
 
