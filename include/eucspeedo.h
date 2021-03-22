@@ -36,7 +36,7 @@ class EucSpeedo {
     RtcHandler rtc_handler;
     ConfigServer config_server;
 
-    bool wheel_created = false;
+    bool wheel_connected = false;
     bool config_server_active = false;
 };
 
