@@ -4,8 +4,8 @@
 
 namespace euc {
 
-UiHandler::UiHandler(FileHandler* file_handler) : sprite(&screen) {
-  LoadFromPreferences(file_handler);
+UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : sprite(&screen), ui_screen(start_screen) {
+  LoadFromFile(file_handler);
   screen.init();
 }
 
@@ -43,10 +43,15 @@ void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
 
 std::list<UiElement*>* UiHandler::getDrawList() { return &draw_list; }
 
-void UiHandler::LoadFromPreferences(FileHandler* file_handler) {
+void UiHandler::LoadFromFile(FileHandler* file_handler) {
+  printf("Loading screen %d\n", static_cast<uint8_t>(ui_screen));
+
+  // Building the screen's filename
+  String ui_screen_prefs = kUiScreenFilePrefix + String(static_cast<uint8_t>(ui_screen)) + "." + kUiScreenFileType;
+
   // If there are saved UI preferences, load them.
-  if (file_handler->FileSize(kUiPreferences)) {
-    std::list<uint8_t> from_csv = file_handler->ReadCsvBytes(kUiPreferences);
+  if (file_handler->FileSize(ui_screen_prefs.c_str())) {
+    std::list<uint8_t> from_csv = file_handler->ReadCsvBytes(ui_screen_prefs.c_str());
     uint8_t data[from_csv.size()];
     
     size_t counter = 0;
@@ -56,7 +61,6 @@ void UiHandler::LoadFromPreferences(FileHandler* file_handler) {
     }
 
     LoadFromData(data, counter);
-    return;
   }
 
   printf("No data to load from file, loading factory config\n");

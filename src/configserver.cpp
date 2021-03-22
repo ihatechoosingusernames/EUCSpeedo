@@ -25,7 +25,8 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
     for (uint8_t byte : test_ui_data) {
       ui_data_string += String(byte) + ", ";
     }
-    file_handler->WriteFile(kUiPreferences, ui_data_string.c_str());
+    String ui_screen_prefs = kUiScreenFilePrefix + String(ui_screen) + "." + kUiScreenFileType;
+    file_handler->WriteFile(ui_screen_prefs.c_str(), ui_data_string.c_str());
 
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
@@ -60,8 +61,10 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
   }
 
   // If there are saved UI preferences, load them.
-  if (file_handler->FileSize(kUiPreferences)) {
-    test_ui_data = file_handler->ReadCsvBytes(kUiPreferences);
+  String ui_screen_prefs = kUiScreenFilePrefix + String(ui_screen) + "." + kUiScreenFileType;
+
+  if (file_handler->FileSize(ui_screen_prefs.c_str())) {
+    test_ui_data = file_handler->ReadCsvBytes(ui_screen_prefs.c_str());
   } else {  // If not, use the "factory" settings
     for (size_t counter = 0; counter < kUiDefaultPreferencesLength; counter++)
       test_ui_data.push_back(kUiDefaultPreferences[counter]);
