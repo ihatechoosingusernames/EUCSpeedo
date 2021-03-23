@@ -31,8 +31,10 @@ class ConfigServer {
     void ProcessNewElementRequest(AsyncWebServerRequest *request);
 
     std::list<uint8_t> ParseColour(String colour);
+    void RemoveElement(size_t index);
+    void ReloadTestData();
     
-    bool started = false, connected = false;
+    bool started = false;
 
     AsyncWebServer server;
 

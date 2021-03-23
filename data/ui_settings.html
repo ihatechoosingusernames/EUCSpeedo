@@ -96,6 +96,11 @@
     </div>
   </div>
   <script>
+    function deleteElement(id) {
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("DELETE", "remove_element?id=" + id, false);
+      xhttp.send(); 
+    }
     function openForm() {
       document.getElementById("popupForm").style.display = "block";
     }

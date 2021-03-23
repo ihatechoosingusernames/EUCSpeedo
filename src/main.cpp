@@ -3,6 +3,11 @@
  * author: Andrew Ellison
  */
 
+  /*
+   * #include "esp_task_wdt.h"          // At beginning of code.
+   * esp_task_wdt_reset();                // In your routine.
+  */
+
 #include <Arduino.h>
 #include <configserver.h>
 

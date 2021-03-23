@@ -16,6 +16,7 @@ using ColourProvider = std::function<uint32_t(ProcessData*)>;
   public: static UiElement* Builder(uint8_t data[], size_t data_len) {  \
       return (UiElement*) new element(data, data_len);                  \
     };                                                                  \
+    ~element() {};                                                      \
     std::list<ArgType> ArgList() { return {__VA_ARGS__}; }              \
     String Name() { return #element; }                                  \
   private: static bool registered;

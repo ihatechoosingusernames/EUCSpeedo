@@ -17,7 +17,7 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     process_data(),
     config_server(&ui_handler, &file_handler) {
   file_handler.listDir("/", 1);
-  ble.Scan();
+  // ble.Scan();
 
   process_data.Update(&rtc_handler, true);  // Check the date on first start
 }
@@ -29,7 +29,7 @@ EucSpeedo::~EucSpeedo() {
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
   process_data.Update(&rtc_handler);
-  if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
+  if (!config_server.isStarted())  // Config server is asynchronous and takes over control of the UI
     ui_handler.Update(&process_data);
 }
 
@@ -69,10 +69,8 @@ void EucSpeedo::HandlePress(PressType press) {
     case PressType::kLongPress:
       Serial.println("Long press\n");
       if (config_server.isStarted()) {
-        config_server_active = false;
         config_server.Stop();
       } else {
-        config_server_active = true;
         config_server.Start();
       }
     default:

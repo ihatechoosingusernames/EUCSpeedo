@@ -12,6 +12,7 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
+  // server.serveStatic("/", SPIFFS, "/ui_settings.html").setTemplateProcessor(std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
 
   server.on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/style.css", "text/css");
@@ -27,6 +28,16 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
     }
     String ui_screen_prefs = kUiScreenFilePrefix + String(ui_screen) + "." + kUiScreenFileType;
     file_handler->WriteFile(ui_screen_prefs.c_str(), ui_data_string.c_str());
+
+    request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
+  });
+
+  server.on("/remove_element", HTTP_DELETE, [this](AsyncWebServerRequest *request){
+    printf("Delete element\n");
+    if(request->hasParam("id")) {
+      RemoveElement(std::atoi(request->getParam("id")->value().c_str()));
+      ReloadTestData();
+    }
 
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
@@ -109,8 +120,11 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
   } else if (placeholder == "UI_DRAW_QUEUE_TABLE") {
     // Replace with table rows representing each UI Element in the current draw list in the format:
     // <tr><td>Background</td></tr>
-    for (UiElement* draw_elem : *ui_handler->getDrawList())
-      out += "<tr><td>" + String(draw_elem->Name()) + "</td></tr>\n";
+    size_t elem_count = 0;
+    for (UiElement* draw_elem : *ui_handler->getDrawList()) {
+      out += "<tr><td>" + String(draw_elem->Name()) + "</td><td><button onclick=\"deleteElement(" + String(elem_count) + ")\">Delete</button></td></tr>\n";
+      elem_count++;
+    }
   } else if (placeholder == "UI_DATA_TABLE") {
     // Replace with table rows representing each type of data that is being displayed by the UI in
     // the format: <tr><td>Speed</td></tr>
@@ -118,6 +132,8 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
       if (test_data_types[data_type])
         out += "<tr><td>" + String(kDataTypeNames[(size_t)data_type]) + "</td></tr>\n";
   }
+
+  Serial.println(out);
 
   return out;
 }
@@ -211,12 +227,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 
     // Appending this new element to the test data.
     test_ui_data.insert(test_ui_data.end(), data.begin(), data.end());
-    uint8_t new_data[test_ui_data.size()];
-    size_t counter = 0;
-    for (uint8_t byte : test_ui_data)
-      new_data[counter++] = byte;
-
-    ui_handler->LoadFromData(new_data, counter);
+    ReloadTestData();
   } else {
     printf("Element has error\n");
     printf("Data: ");
@@ -246,6 +257,44 @@ std::list<uint8_t> ConfigServer::ParseColour(String colour) {
   out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue
 
   return out;
+}
+
+// TODO: See about optimising this, it's currently O(n^2)
+void ConfigServer::RemoveElement(size_t index) {
+  if (index >= ui_handler->getDrawList()->size()) // Don't waste time on out of range elements
+    return;
+  
+  size_t data_size = 0, num_elems = 0;
+  for (UiElement* elem : *(ui_handler->getDrawList())) {  // Find the element to be deleted
+    if (num_elems == index) {
+      auto start_iterator = test_ui_data.begin(), end_iterator = test_ui_data.begin();
+
+      for (size_t count = 0; count <= data_size; count++) { // Move two iterators to the start and end of the data range that defines this element
+        start_iterator++;
+        end_iterator++;
+      }
+
+      for (size_t count = 0; count <= elem->DataSize(); count++) { end_iterator++; }
+
+      test_ui_data.erase(start_iterator, end_iterator); // Remove the data that defines this element
+      return;
+    }
+
+    data_size += elem->DataSize();
+    num_elems++;
+  }
+}
+
+void ConfigServer::ReloadTestData() {
+  uint8_t new_data[test_ui_data.size()];
+  size_t counter = 0;
+  for (uint8_t byte : test_ui_data)
+    new_data[counter++] = byte;
+
+  ui_handler->LoadFromData(new_data, counter);
+  ProcessData* pd = new ProcessData();
+  ui_handler->Update(pd);
+  delete pd;
 }
 
 }

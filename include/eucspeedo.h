@@ -37,7 +37,6 @@ class EucSpeedo {
     ConfigServer config_server;
 
     bool wheel_connected = false;
-    bool config_server_active = false;
 };
 
 }

@@ -41,6 +41,8 @@ void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
   }
 }
 
+UiScreen UiHandler::getCurrentScreen() { return ui_screen; }
+
 std::list<UiElement*>* UiHandler::getDrawList() { return &draw_list; }
 
 void UiHandler::LoadFromFile(FileHandler* file_handler) {
