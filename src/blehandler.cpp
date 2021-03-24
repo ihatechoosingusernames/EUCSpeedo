@@ -90,15 +90,15 @@ void BleHandler::NotifyCallBack(BLERemoteCharacteristic* rc, uint8_t* data, size
 
 BleHandler::AdvertisedDeviceCallbacks::AdvertisedDeviceCallbacks(BleHandler* super_ref) : super_reference(super_ref) {}
 
-void BleHandler::AdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice device) {
+void BleHandler::AdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice* device) {
   Serial.print("BLE Advertised Device found: ");
-  Serial.println(device.toString().c_str());
+  Serial.println(device->toString().c_str());
 
   for (size_t type = 0; type < kNumEucTypes; type++) {
-    if (device.haveServiceUUID() && device.isAdvertisingService(BLEUUID(kServiceUuids[type]))) {
+    if (device->haveServiceUUID() && device->isAdvertisingService(BLEUUID(kServiceUuids[type]))) {
       // Found an EUC, now stopping scan and connecting
       BLEDevice::getScan()->stop();
-      super_reference->Connect(&device, (EucType)type);
+      super_reference->Connect(device, (EucType)type);
     }
   }
 }

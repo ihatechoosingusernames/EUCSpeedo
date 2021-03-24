@@ -21,7 +21,7 @@ void UiHandler::Update(ProcessData* data) {
     element->Draw(data, &sprite);
   }
 
-  sprite.pushSprite(0, 0);  // Push the sprite to the screen
+  // sprite.pushSprite(0, 0);  // Push the sprite to the screen TODO: Uncomment this when actually running a screen
 }
 
 void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
@@ -74,7 +74,7 @@ void UiHandler::ClearDrawList() {
     delete element;
   }
 
-  draw_list = std::vector<UiElement*>();  // Reset draw list
+  draw_list.clear();  // Reset draw list
 }
 
 }

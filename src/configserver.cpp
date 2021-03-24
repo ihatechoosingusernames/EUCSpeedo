@@ -31,7 +31,7 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
 
     file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
 
-    request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
+    // request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   server.on("/remove_element", HTTP_DELETE, [this](AsyncWebServerRequest *request){
@@ -41,11 +41,11 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
       ReloadTestData();
     }
 
-    request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
+    // request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   // Create the element selection and data strings for the ui_settings.html template
-  for (size_t ui_code = 0; ui_code < kMaxUiElementCode; ui_code++) {
+  for (size_t ui_code = 1; ui_code < kMaxUiElementCode; ui_code++) {
     uint8_t data[] = {static_cast<uint8_t>(ui_code)};
     UiElement* elem = UiElement::Factory(data, 1);
 
@@ -88,6 +88,8 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
     UiElement *elem = UiElement::Factory(csv_data.data() + counter, csv_data.size() - counter);
     // Construct an array of all the bytes representing this element, and place it into the larger array of elements
     test_ui_data.emplace_back(csv_data.data() + counter, csv_data.data() + counter + elem->DataSize());
+
+    counter += elem->DataSize(); // Add the data size to the running total
 
     delete elem;  // Clean up memory
   }
@@ -133,7 +135,7 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
     // <tr><td>Background</td></tr>
     size_t elem_count = 0;
     for (UiElement* draw_elem : *ui_handler->getDrawList()) {
-      out += "<tr><td>" + String(draw_elem->Name()) + "</td><td><button onclick=\"deleteElement(" + String(elem_count) + ")\">Delete</button></td></tr>\n";
+      out += "<tr><td>" + String(draw_elem->Name()) + "</td><td><button type=\"button\" onclick=\"deleteElement(this)\">Delete</button></td></tr>\n";
       elem_count++;
     }
   } else if (placeholder == "UI_DATA_TABLE") {
@@ -151,12 +153,6 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
 
 void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
   printf("New Element created\n");
-
-  int params = request->params();
-  for(int i=0;i<params;i++){
-    AsyncWebParameter* p = request->getParam(i);
-    Serial.printf("%s: %s\n", p->name().c_str(), p->value().c_str());
-  }
 
   bool has_error = false;
   uint8_t elem_type;
@@ -183,7 +179,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
         }
         break;
       case ArgType::kColour:
-        if (request->hasParam("colour_arg", true))
+        if (request->hasParam("colour_arg", true)) {
           if (request->getParam("colour_arg", true)->value() == String((int)ColourType::kConstant)) {  // Solid Colour
             data.emplace_back((uint8_t)ColourType::kConstant);
             if (request->hasParam("solid_colour_arg", true)) {
@@ -215,8 +211,9 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
               data.insert(data.end(), parsed_high_colour.begin(), parsed_high_colour.end());
             }
           }
-        else
+        } else {
           has_error = true;
+        }
         break;
       case ArgType::kConstant:
         if (request->hasParam("constant_arg", true))
@@ -273,10 +270,15 @@ std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
 }
 
 void ConfigServer::RemoveElement(size_t index) {
+  printf("RemoveElement: %d\n", index);
   if (index >= test_ui_data.size()) // Avoid out of range elements
     return;
 
   test_ui_data.erase(test_ui_data.begin() + index);
+  printf("Resulting data: ");
+  for (std::vector<uint8_t> data_obj : test_ui_data)
+    for (uint8_t data : data_obj)
+      printf(" %d ", data);
 }
 
 void ConfigServer::ReloadTestData() {
@@ -288,6 +290,7 @@ void ConfigServer::ReloadTestData() {
 
   ui_handler->LoadFromData(new_data.data(), new_data.size());
   ui_handler->Update(&test_process_data);
+  printf("295\n");
 }
 
 }

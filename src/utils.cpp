@@ -32,7 +32,7 @@ const char* Utils::getUiScreenFileName(UiScreen screen) {
 }
 
 const char* Utils::getUiScreenFileName(uint8_t screen) {
-  return (kUiScreenFilePrefix + String(static_cast<uint8_t>(screen)) + "." + kUiScreenFileType).c_str();
+  return (kUiScreenFilePrefix + String(screen) + "." + kUiScreenFileType).c_str();
 }
 
 }

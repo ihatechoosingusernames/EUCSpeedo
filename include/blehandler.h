@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #include <Arduino.h>
-#include <BLEDevice.h>
+#include <NimBLEDevice.h>
 
 #include "constants.h"
 
@@ -27,10 +27,11 @@ class BleHandler {
     class AdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
       public:
         AdvertisedDeviceCallbacks(BleHandler* super_ref);
-      private:
-        void onResult(BLEAdvertisedDevice device) override;
 
-      BleHandler* super_reference;
+        void onResult(BLEAdvertisedDevice* device) override;
+
+      private:
+        BleHandler* super_reference;
     };
 
     class ClientCallback : public BLEClientCallbacks {

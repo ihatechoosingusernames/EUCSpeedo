@@ -8,14 +8,14 @@
 
 <body>
   <h2>UI Creator</h2><br>
-  <table class="inlineTable">
+  <table class="inlineTable" id="draw_queue_table">
     <th><strong>Draw Queue:</strong></th>
     %UI_DRAW_QUEUE_TABLE%
     <tr>
       <td><button class="btn" onclick="openForm()"><strong>Add Element</strong></button></td>
     </tr>
   </table>
-  <table class="inlineTable">
+  <table class="inlineTable" id="data_table">
     <th><strong>Data:</strong></th>
     %UI_DATA_TABLE%
   </table>
@@ -96,10 +96,13 @@
     </div>
   </div>
   <script>
-    function deleteElement(id) {
+    function deleteElement(ele) {
+      var index = ele.parentNode.parentNode.rowIndex;
+      document.getElementById("draw_queue_table").deleteRow(index);
+
       var xhttp = new XMLHttpRequest();
-      xhttp.open("DELETE", "remove_element?id=" + id, false);
-      xhttp.send(); 
+      xhttp.open("DELETE", "remove_element?id=" + (index - 1), false);
+      xhttp.send();
     }
     function openForm() {
       document.getElementById("popupForm").style.display = "block";
