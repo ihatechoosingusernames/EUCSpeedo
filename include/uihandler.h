@@ -19,13 +19,13 @@ class UiHandler {
     void LoadFromData(uint8_t data[], size_t data_len);
 
     UiScreen getCurrentScreen();
-    std::list<UiElement*>* getDrawList();
+    std::vector<UiElement*>* getDrawList();
 
   private:
     void LoadFromFile(FileHandler* file_handler);
     void ClearDrawList();
 
-    std::list<UiElement*> draw_list = std::list<UiElement*>();  // Stores the elements in their draw order
+    std::vector<UiElement*> draw_list;  // Stores the elements in their draw order
     TFT_eSPI screen;  // Actual Screen object
     TFT_eSprite sprite; // Sprite object acts as a screen buffer to allow fast screen changes
 

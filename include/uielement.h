@@ -17,7 +17,7 @@ using ColourProvider = std::function<uint32_t(ProcessData*)>;
       return (UiElement*) new element(data, data_len);                  \
     };                                                                  \
     ~element() {};                                                      \
-    std::list<ArgType> ArgList() { return {__VA_ARGS__}; }              \
+    std::vector<ArgType> ArgList() { return {__VA_ARGS__}; }              \
     String Name() { return #element; }                                  \
   private: static bool registered;
 
@@ -34,7 +34,7 @@ class UiElement {
     virtual ~UiElement() = default;         // Declaring virtual destructor to allow safe "delete" calls on base classes
     
     virtual void Draw(ProcessData* data, TFT_eSprite* sprite);   // Draws the element
-    virtual std::list<ArgType> ArgList();   // Returns the number and type of args to help with config generation
+    virtual std::vector<ArgType> ArgList();   // Returns the number and type of args to help with config generation
     virtual String Name();                  // Returns the name to help with config generation
   
   protected:

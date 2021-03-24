@@ -29,6 +29,8 @@ void loop() {
   speedo_ptr->Process();
 }
 
+// TODO: Update BLE controller to nimBLE
+// TODO: Fix Async server only serving half a page
 // TODO: Create different screens for watch/EUC/Settings
 // TODO: Create settings object that loads stored global settings
 // TODO: Implement controllers for different EUC brands

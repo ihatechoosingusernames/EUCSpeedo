@@ -14,7 +14,7 @@ class FileHandler {
     // Reads <size> bytes to array at data. If available bytes < size, size is changed to the number that there are
     void ReadFile(const char* file_name, char data[], size_t* size);
     // Reads a full CSV file of bytes
-    std::list<uint8_t> ReadCsvBytes(const char* file_name);
+    std::vector<uint8_t> ReadCsvBytes(const char* file_name);
     // Returns file size in bytes
     size_t FileSize(const char* file_name);
 

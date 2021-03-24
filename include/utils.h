@@ -19,6 +19,9 @@ class Utils {
 
     // Interprets num_elements of the array in descending order of byte position (MSB, LSB, ...)
     static double FromArrayDescending(uint8_t array[], size_t num_elements);
+
+    static const char* getUiScreenFileName(UiScreen screen);
+    static const char* getUiScreenFileName(uint8_t screen);
 };
 
 }

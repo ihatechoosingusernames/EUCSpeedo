@@ -34,13 +34,15 @@ void FileHandler::ReadFile(const char * path, char data[], size_t* size) {
 }
 
 // Interprets file as a CSV of bytes, returns the raw bytes
-std::list<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
+std::vector<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
   size_t temp_len = 0, data_len = FileSize(file_name);
   char data[data_len];  // Char data
-  std::list<uint8_t> out_buffer;  // Output buffer
+  std::vector<uint8_t> out_buffer;  // Output buffer
   String temp_buffer = ""; // Temporary buffer for char data being interpreted
 
   ReadFile(file_name, data, &data_len);
+
+  out_buffer.reserve(data_len / 3);   // Just a guess at the appropriate vector size to avoid expensive reallocating
   
   for (size_t copy_len = 1; copy_len < data_len; copy_len++) {  // Start reading at [1] to avoid first garbage digit
     if (temp_buffer.length() && (data[copy_len] == ',' || data[copy_len] == ' ')) { // Commas and spaces act as delimiters

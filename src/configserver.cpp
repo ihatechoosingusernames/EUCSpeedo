@@ -5,6 +5,7 @@
 
 #include "constants.h"
 #include "uielement.h"
+#include "utils.h"
 
 namespace euc {
 
@@ -12,7 +13,6 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
-  // server.serveStatic("/", SPIFFS, "/ui_settings.html").setTemplateProcessor(std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
 
   server.on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/style.css", "text/css");
@@ -23,11 +23,13 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
   server.on("/save_changes", HTTP_POST, [this](AsyncWebServerRequest *request){
     // Convert test data to a CSV string and store it in the ui data file
     String ui_data_string;
-    for (uint8_t byte : test_ui_data) {
-      ui_data_string += String(byte) + ", ";
+    for (std::vector<uint8_t> byte_vec : test_ui_data) {
+      for (uint8_t byte : byte_vec)
+        ui_data_string += String(byte) + ", ";
+      ui_data_string += "\n";
     }
-    String ui_screen_prefs = kUiScreenFilePrefix + String(ui_screen) + "." + kUiScreenFileType;
-    file_handler->WriteFile(ui_screen_prefs.c_str(), ui_data_string.c_str());
+
+    file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
 
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
@@ -72,13 +74,22 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
   }
 
   // If there are saved UI preferences, load them.
-  String ui_screen_prefs = kUiScreenFilePrefix + String(ui_screen) + "." + kUiScreenFileType;
+  String ui_screen_prefs = Utils::getUiScreenFileName(ui_screen);
 
+  std::vector<uint8_t> csv_data;
   if (file_handler->FileSize(ui_screen_prefs.c_str())) {
-    test_ui_data = file_handler->ReadCsvBytes(ui_screen_prefs.c_str());
+    csv_data = file_handler->ReadCsvBytes(ui_screen_prefs.c_str());
   } else {  // If not, use the "factory" settings
-    for (size_t counter = 0; counter < kUiDefaultPreferencesLength; counter++)
-      test_ui_data.push_back(kUiDefaultPreferences[counter]);
+    csv_data = std::vector<uint8_t>(kUiDefaultPreferences, kUiDefaultPreferences + kUiDefaultPreferencesLength);
+  }
+
+  // Now separate the bytes into their respective elements
+  for (size_t counter = 0; counter < csv_data.size();) {
+    UiElement *elem = UiElement::Factory(csv_data.data() + counter, csv_data.size() - counter);
+    // Construct an array of all the bytes representing this element, and place it into the larger array of elements
+    test_ui_data.emplace_back(csv_data.data() + counter, csv_data.data() + counter + elem->DataSize());
+
+    delete elem;  // Clean up memory
   }
 }
 
@@ -156,8 +167,8 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
     has_error = true;
 
   UiElement* elem = UiElement::Factory(&elem_type, 1);
-  std::list<ArgType> args = elem->ArgList();
-  std::list<uint8_t> data = {elem_type};
+  std::vector<ArgType> args = elem->ArgList();
+  std::vector<uint8_t> data = {elem_type};
 
   delete elem;  // Clean up to avoid memory leaks
 
@@ -176,7 +187,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
           if (request->getParam("colour_arg", true)->value() == String((int)ColourType::kConstant)) {  // Solid Colour
             data.emplace_back((uint8_t)ColourType::kConstant);
             if (request->hasParam("solid_colour_arg", true)) {
-              std::list<uint8_t> parsed_colour = ParseColour(request->getParam("solid_colour_arg", true)->value());
+              std::vector<uint8_t> parsed_colour = ParseColour(request->getParam("solid_colour_arg", true)->value());
               if (parsed_colour.size() < 3)
                 has_error = true;
               else
@@ -194,8 +205,8 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
               data.emplace_back(std::atoi(request->getParam("arg_low_data", true)->value().c_str()));
               data.emplace_back(std::atoi(request->getParam("arg_high_data", true)->value().c_str()));
 
-              std::list<uint8_t> parsed_low_colour = ParseColour(request->getParam("arg_low_colour", true)->value());
-              std::list<uint8_t> parsed_high_colour = ParseColour(request->getParam("arg_high_colour", true)->value());
+              std::vector<uint8_t> parsed_low_colour = ParseColour(request->getParam("arg_low_colour", true)->value());
+              std::vector<uint8_t> parsed_high_colour = ParseColour(request->getParam("arg_high_colour", true)->value());
 
               if (parsed_low_colour.size() < 3 || parsed_high_colour.size() < 3)
                 has_error = true;
@@ -226,7 +237,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
     printf("\n");
 
     // Appending this new element to the test data.
-    test_ui_data.insert(test_ui_data.end(), data.begin(), data.end());
+    test_ui_data.emplace_back(data);
     ReloadTestData();
   } else {
     printf("Element has error\n");
@@ -235,15 +246,17 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
       printf("%d, ", (int)byte);
 
     printf("\n");
-    // Handle notifying user of errors here
+    // TODO: Handle notifying user of errors here
   }
 
   // Resend the updated UI page
   request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
 }
 
-std::list<uint8_t> ConfigServer::ParseColour(String colour) {
-  std::list<uint8_t> out;
+std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
+  std::vector<uint8_t> out;
+  out.reserve(3); // Always 3 bytes
+
   // Colour is represented by a string like "#ff00bb" where each pair of digits is a number representing
   // red (0xff), green (0x00), and blue (0xbb) in hexadecimal
 
@@ -251,7 +264,7 @@ std::list<uint8_t> ConfigServer::ParseColour(String colour) {
     return out;
   }
   
-  // Converts from string to unsigned long in base 16
+  // Converts from string to unsigned long in base 16, and from there to unsigned byte
   out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16)); // Red
   out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16)); // Green
   out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue
@@ -259,42 +272,22 @@ std::list<uint8_t> ConfigServer::ParseColour(String colour) {
   return out;
 }
 
-// TODO: See about optimising this, it's currently O(n^2)
 void ConfigServer::RemoveElement(size_t index) {
-  if (index >= ui_handler->getDrawList()->size()) // Don't waste time on out of range elements
+  if (index >= test_ui_data.size()) // Avoid out of range elements
     return;
-  
-  size_t data_size = 0, num_elems = 0;
-  for (UiElement* elem : *(ui_handler->getDrawList())) {  // Find the element to be deleted
-    if (num_elems == index) {
-      auto start_iterator = test_ui_data.begin(), end_iterator = test_ui_data.begin();
 
-      for (size_t count = 0; count <= data_size; count++) { // Move two iterators to the start and end of the data range that defines this element
-        start_iterator++;
-        end_iterator++;
-      }
-
-      for (size_t count = 0; count <= elem->DataSize(); count++) { end_iterator++; }
-
-      test_ui_data.erase(start_iterator, end_iterator); // Remove the data that defines this element
-      return;
-    }
-
-    data_size += elem->DataSize();
-    num_elems++;
-  }
+  test_ui_data.erase(test_ui_data.begin() + index);
 }
 
 void ConfigServer::ReloadTestData() {
-  uint8_t new_data[test_ui_data.size()];
-  size_t counter = 0;
-  for (uint8_t byte : test_ui_data)
-    new_data[counter++] = byte;
+  std::vector<uint8_t> new_data;
+  new_data.reserve(test_ui_data.size() * 2);  // Just a guess at the total size to minimise the reallocations needed
 
-  ui_handler->LoadFromData(new_data, counter);
-  ProcessData* pd = new ProcessData();
-  ui_handler->Update(pd);
-  delete pd;
+  for (std::vector<uint8_t> byte_vec : test_ui_data)  // Combine all the vectors into one
+    new_data.insert(new_data.end(), byte_vec.begin(), byte_vec.end());
+
+  ui_handler->LoadFromData(new_data.data(), new_data.size());
+  ui_handler->Update(&test_process_data);
 }
 
 }

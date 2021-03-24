@@ -30,7 +30,7 @@ class ConfigServer {
     String ProcessUiPage(const String& placeholder);
     void ProcessNewElementRequest(AsyncWebServerRequest *request);
 
-    std::list<uint8_t> ParseColour(String colour);
+    std::vector<uint8_t> ParseColour(String colour);
     void RemoveElement(size_t index);
     void ReloadTestData();
     
@@ -41,7 +41,9 @@ class ConfigServer {
     UiHandler* ui_handler;
     FileHandler* file_handler;
 
-    std::list<uint8_t> test_ui_data;
+    std::vector<std::vector<uint8_t>> test_ui_data; // Stores the data that represents each UI element in draw order
+    ProcessData test_process_data;
+    
     bool test_data_types[(size_t)DataType::kLastValue] = {{false}};
 
     String ui_elem_data, ui_elem_select, ui_data_type_select;
