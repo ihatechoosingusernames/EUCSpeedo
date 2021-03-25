@@ -32,61 +32,22 @@
     <div class="formPopup" id="popupForm">
       <form action="/new_element" method="POST" class="formContainer">
         <h2>New Element</h2>
-        <table class="inlineTable">
-          <tr>
-            <td><label class="lab">Element Type</label></td>
-            <td><select name=ui_element id="ui_element" onchange="checkUiAlert(event)">
-                <option value="" selected disabled hidden>Choose here</option>
-                %UI_ELEM_SELECT%
-              </select></td>
-          </tr>
+        <table class="inlineTable" id="argTable">
+          <thead>
+            <tr>
+              <td><label class="lab">Element Type</label></td>
+              <td><select name=ui_element id="ui_element" onchange="checkUiAlert(event)">
+                  <option value="" selected disabled hidden>Choose here</option>
+                  %UI_ELEM_SELECT%
+                </select></td>
+            </tr>
+          </thead>
+          <tbody id="form_body">
 
-          <tr class="formHiddenFields" id="data_type">
-            <td><label class="lab">Element Data Type</label></td>
-            <td><select name="data_arg" id="data_arg">
-                <option value="" selected disabled hidden>Choose here</option>
-                %UI_DATA_TYPE_SELECT%
-              </select></td>
-          </tr>
+          </tbody>
+        </table>
 
-          <tr class="formHiddenFields" id="colour">
-            <td><label class="lab">Element Colour</label></td>
-            <td><select name="colour_arg" id="colour_arg" onchange="checkColourAlert(event)">
-                <option value="" selected disabled hidden>Choose here</option>
-                <option value="0">Solid Colour</option>
-                <option value="1">Dynamic Colour</option>
-              </select></td>
-          </tr>
-
-          <tr class="formHiddenFields" id="solid_color">
-            <td><label class="lab">Solid Colour</label></td>
-            <td><input type="color" name="solid_colour_arg" id="solid_colour_arg" value="#ffffff"></td>
-          </tr>
-
-          <tr class="formHiddenFields" id="dynamic_colour_data">
-            <td><label class="lab">Dynamic Colour Data</label></td>
-            <td><select name="colour_data_type" id="colour_data_type">
-                <option value="" selected disabled hidden>Choose here</option>
-                %UI_DATA_TYPE_SELECT%
-              </select></td>
-          </tr>
-
-          <tr class="formHiddenFields" id="dynamic_colour_low_label">
-            <td><label class="lab">Lowest Value Colour</label></td>
-          </tr>
-          <tr class="formHiddenFields" id="dynamic_colour_low">
-            <td><input type="number" name="arg_low_data" id="arg_low_data" value="0"></td>
-            <td><input type="color" name="arg_low_colour" id="arg_low_colour" value="#00ffff"></td>
-          </tr>
-
-          <tr class="formHiddenFields" id="dynamic_colour_high_label">
-            <td><label class="lab">Highest Value Colour</label></td>
-          </tr>
-          <tr class="formHiddenFields" id="dynamic_colour_high">
-            <td><input type="number" name="arg_high_data" id="arg_high_data" value="100"></td>
-            <td><input type="color" name="arg_high_colour" id="arg_high_colour" value="#ff0000"></td>
-          </tr>
-
+        <table>
           <tr>
             <td><button type="submit" class="btn">Create</button></td>
             <td><button type="button" class="btn cancel" onclick="closeForm()">Cancel</button></td>
@@ -109,56 +70,120 @@
     }
     function closeForm() {
       document.getElementById("popupForm").style.display = "none";
+      form_body.innerHTML = `<tbody id="form_body"></tbody>`;
     }
     function checkUiAlert(evt) {
-      // Hiding all hideable args
-      var selects = document.getElementsByClassName("formHiddenFields");
-      for (var i = 0, il = selects.length; i < il; i++) {
-        selects[i].style.display = "none";
-      }
+      // Reset Form
+      var form_body = document.getElementById("form_body");
+      form_body.innerHTML = `<tbody id="form_body"></tbody>`;
 
-      // Showing only the relevant args
-      var arglist = ui_elems[evt.target.value];
-      for (var arg = 0, arg_len = arglist.length; arg < arg_len; arg++) {
-        switch (arglist[arg]) {
+      // Creating the relevant args
+      var arg_list = ui_elems[evt.target.value];
+      for (var arg_num = 0; arg_num < arg_list.length; arg_num++) {
+        arg = arg_list[arg_num]
+        switch (arg[0]) {
           case "0":
-            document.getElementById("data_type").style.display = "table-row";
+            var data_arg = document.createElement('tr');
+            data_arg.id = "arg" + arg_num;
+            data_arg.innerHTML = `<tr>
+                <td><label class="lab" >` + arg[1] + `</label></td>
+                <td><select id="data_arg` + arg_num + `" required>
+                    <option value="" selected disabled hidden>Choose here</option>
+                    %UI_DATA_TYPE_SELECT%
+                  </select></td>
+              </tr>`;
+            form_body.append(data_arg);
             break;
           case "1":
-            document.getElementById("colour").style.display = "table-row";
+            var colour_arg = document.createElement('tr');
+            colour_arg.id = "arg" + arg_num;
+            colour_arg.innerHTML = `<tr>
+                <td><label class="lab">` + arg[1] + `</label></td>
+                <td><select id="colour_arg` + arg_num + `" onchange="checkColourAlert(event, ` + arg_num + `, this.parentNode.parentNode)" required>
+                    <option value="" disabled selected hidden >Choose here</option>
+                    <option value="0">Solid Colour</option>
+                    <option value="1">Dynamic Colour</option>
+                  </select></td>
+              </tr>`;
+            form_body.append(colour_arg);
             break;
           case "2":
-            // TODO: Handle constants
+            var constant_arg = document.createElement("tr");
+            constant_arg.id = "arg" + arg_num;
+            constant_arg.innerHTML = `<tr>
+            	<td><label class="lab">` + arg[1] + `</label></td>
+              <td><input id="constant_arg` + arg_num + `" type="number" required></input></td>
+            </tr>`
+            form_body.append(constant_arg);
             break;
         }
       }
     }
 
     // Switches colour type args on or off
-    function checkColourAlert(evt) {
-      if (evt.target.value == "0") {
-        document.getElementById("solid_color").style.display = "table-row";
+    function checkColourAlert(evt, num, sibling) {
+      if (evt.target.value == "0" && !document.getElementById("solid_colour" + num)) {
+        var solid_colour_arg = document.createElement('tr');
+        solid_colour_arg.id = "solid_colour" + num;
+        solid_colour_arg.innerHTML += `<tr><td><label class='lab'>Solid Colour</label></td><td><input type='color' id='solid_colour_arg` + num + `' value=''#ffffff' required></td></tr>`;
+        sibling.after(solid_colour_arg);
 
-        document.getElementById("dynamic_colour_data").style.display = "none";
-        document.getElementById("dynamic_colour_low_label").style.display = "none";
-        document.getElementById("dynamic_colour_low").style.display = "none";
-        document.getElementById("dynamic_colour_high_label").style.display = "none";
-        document.getElementById("dynamic_colour_high").style.display = "none";
-      } else if (evt.target.value == "1") {
-        document.getElementById("dynamic_colour_data").style.display = "table-row";
-        document.getElementById("dynamic_colour_low_label").style.display = "table-row";
-        document.getElementById("dynamic_colour_low").style.display = "table-row";
-        document.getElementById("dynamic_colour_high_label").style.display = "table-row";
-        document.getElementById("dynamic_colour_high").style.display = "table-row";
+        // Remove the other type of colour if it exists
+        document.getElementById("dynamic_colour_data" + num).remove();
+        document.getElementById("dynamic_colour_low_label" + num).remove();
+        document.getElementById("dynamic_colour_low" + num).remove();
+        document.getElementById("dynamic_colour_high_label" + num).remove();
+        document.getElementById("dynamic_colour_high" + num).remove();
 
-        document.getElementById("solid_color").style.display = "none";
+      } else if (evt.target.value == "1" && !document.getElementById("dynamic_colour_data" + num)) {
+        var dynamic_colour_data = document.createElement('tr');
+        var dynamic_colour_low_label = document.createElement('tr');
+        var dynamic_colour_low = document.createElement('tr');
+        var dynamic_colour_high_label = document.createElement('tr');
+        var dynamic_colour_high = document.createElement('tr');
+
+        dynamic_colour_data.id = "dynamic_colour_data" + num;
+        dynamic_colour_data.innerHTML = `<tr>
+            <td><label class="lab">Dynamic Colour Data</label></td>
+            <td><select name="colour_data_type" id="colour_data_type` + num + `" required>
+                <option value="" disabled selected hidden>Choose here</option>
+                %UI_DATA_TYPE_SELECT%
+              </select></td>
+          </tr>`;
+
+        dynamic_colour_low_label.id = "dynamic_colour_low_label" + num;
+        dynamic_colour_low_label.innerHTML = `<tr>
+            <td><label class="lab">Lowest Value Colour</label></td>
+          </tr>`;
+
+        dynamic_colour_low.id = "dynamic_colour_low" + num;
+        dynamic_colour_low.innerHTML = `<tr>
+            <td><input type="number" name="arg_low_data" id="arg_low_data` + num + `" value="0" required></td>
+            <td><input type="color" name="arg_low_colour" id="arg_low_colour` + num + `" value="#00ffff" required></td>
+          </tr>`;
+
+        dynamic_colour_high_label.id = "dynamic_colour_high_label" + num;
+        dynamic_colour_high_label.innerHTML = `<tr>
+            <td><label class="lab">Highest Value Colour</label></td>
+          </tr>`;
+
+        dynamic_colour_high.id = "dynamic_colour_high" + num;
+        dynamic_colour_high.innerHTML = `<tr>
+            <td><input type="number" name="arg_high_data" id="arg_high_data` + num + `" value="100" required></td>
+            <td><input type="color" name="arg_high_colour" id="arg_high_colour` + num + `" value="#ff0000" required></td>
+          </tr>`;
+
+        sibling.after(dynamic_colour_data, dynamic_colour_low_label, dynamic_colour_low, dynamic_colour_high_label, dynamic_colour_high);
+
+        document.getElementById("solid_colour" + num).remove();
       }
     }
 
     // Stores all ui element types and args
     var ui_elems = {
-      // "1": ["1"],
-      // "2": ["0", "1"],
+      // "1": [["1", "Background Colour"]],
+      // "2": [["0", "Data to Display"], ["1", "Letter Colour"]],
+      // "3": [["2", "constant 1"], ["1", "colour 2"], ["1", "colour 3"], ["1", "colour 4"], ["1", "colour 5"]]
       %UI_ELEM_DATA%
     };
   </script>

@@ -17,9 +17,12 @@ using ColourProvider = std::function<uint32_t(ProcessData*)>;
       return (UiElement*) new element(data, data_len);                  \
     };                                                                  \
     ~element() {};                                                      \
-    std::vector<ArgType> ArgList() { return {__VA_ARGS__}; }              \
+    std::vector<ArgType> ArgList() { return {__VA_ARGS__}; }            \
     String Name() { return #element; }                                  \
   private: static bool registered;
+
+#define UI_ARGS(arg, ...)                                               \
+  public: static std::vector<String> ArgNames() { return {arg, __VA_ARGS__}; }
 
 #define UI_REGISTER(element, code)  \
   bool element::registered = euc::UiElement::RegisterElement<element, code>();
@@ -30,12 +33,14 @@ class UiElement {
     static size_t getElementSize();
 
     size_t DataSize();  // Returns the number of bytes the element has used from the arg list
+    std::vector<String> ArgNames();   // Returns optional names of the args to help with config generation
 
     virtual ~UiElement() = default;         // Declaring virtual destructor to allow safe "delete" calls on base classes
     
     virtual void Draw(ProcessData* data, TFT_eSprite* sprite);   // Draws the element
+    
     virtual std::vector<ArgType> ArgList();   // Returns the number and type of args to help with config generation
-    virtual String Name();                  // Returns the name to help with config generation
+    virtual String Name();                  // Returns the element name to help with config generation
   
   protected:
     // Registers each UI element and stores it in the lookup array

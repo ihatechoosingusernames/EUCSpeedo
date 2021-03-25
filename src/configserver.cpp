@@ -30,8 +30,6 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
     }
 
     file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
-
-    // request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   server.on("/remove_element", HTTP_DELETE, [this](AsyncWebServerRequest *request){
@@ -40,8 +38,6 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
       RemoveElement(std::atoi(request->getParam("id")->value().c_str()));
       ReloadTestData();
     }
-
-    // request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   // Create the element selection and data strings for the ui_settings.html template
@@ -49,7 +45,7 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
     uint8_t data[] = {static_cast<uint8_t>(ui_code)};
     UiElement* elem = UiElement::Factory(data, 1);
 
-    // This means the code was not valid. We could return here, but the ui namespace may not be contiguous
+    // This means the code was not valid.
     if (String(elem->Name()) == String("Empty")) {
       delete elem;
       continue;
@@ -59,8 +55,18 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
 
     ui_elem_data += "\"" + String(ui_code) + "\": [";
 
-    for (ArgType arg : elem->ArgList()) {
-      ui_elem_data += "\"" + String(static_cast<uint8_t>(arg)) + "\",";
+    std::vector<String> name_list = elem->ArgNames();
+    std::vector<ArgType> arg_list = elem->ArgList();
+    for (size_t arg = 0; arg < arg_list.size(); arg++) {
+      ui_elem_data += "[\"" + String(static_cast<uint8_t>(arg_list.at(arg))) + "\":\"";
+
+      // Fill in the custom name where applicable, use the default name otherwise
+      if (arg < name_list.size())
+        ui_elem_data += name_list.at(arg);
+      else
+        ui_elem_data += kArgTypeNames[static_cast<size_t>(arg_list.at(arg))];
+
+      ui_elem_data += "\"],";
     }
 
     ui_elem_data += "],";
@@ -122,25 +128,28 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
   String out = "";
 
   if (placeholder == "UI_ELEM_DATA") {
-    // Replace with UI element code and args in the form "1": ["0", "1"],
+    // Replace with UI element code and args
+    // format: "1": [["0":"argument name"], ["1":"other argument name"]],
     out = ui_elem_data;
   } else if (placeholder == "UI_ELEM_SELECT") {
-    // Replace with UI element code and name in the format <option value="1">Background</option>
+    // Replace with UI element code and name
+    // format: <option value="1">Background</option>
     out = ui_elem_select;
   } else if (placeholder == "UI_DATA_TYPE_SELECT") {
-    // Replace with Data Type code and name in the format <option value="1">Time</option>
+    // Replace with Data Type code and name
+    // format: <option value="1">Time</option>
     out = ui_data_type_select;
   } else if (placeholder == "UI_DRAW_QUEUE_TABLE") {
-    // Replace with table rows representing each UI Element in the current draw list in the format:
-    // <tr><td>Background</td></tr>
+    // Replace with table rows representing each UI Element in the current draw list
+    // format: <tr><td>Background</td></tr>
     size_t elem_count = 0;
     for (UiElement* draw_elem : *ui_handler->getDrawList()) {
       out += "<tr><td>" + String(draw_elem->Name()) + "</td><td><button type=\"button\" onclick=\"deleteElement(this)\">Delete</button></td></tr>\n";
       elem_count++;
     }
   } else if (placeholder == "UI_DATA_TABLE") {
-    // Replace with table rows representing each type of data that is being displayed by the UI in
-    // the format: <tr><td>Speed</td></tr>
+    // Replace with table rows representing each type of data that is being displayed by the UI
+    // format: <tr><td>Speed</td></tr>
     for (size_t data_type = 0; data_type < (size_t)DataType::kLastValue; data_type++)
       if (test_data_types[data_type])
         out += "<tr><td>" + String(kDataTypeNames[(size_t)data_type]) + "</td></tr>\n";
@@ -168,22 +177,28 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 
   delete elem;  // Clean up to avoid memory leaks
 
-  for (ArgType arg : args) {
-    switch (arg) {
-      case ArgType::kDataType:
-        if (request->hasParam("data_arg", true)) {
-          data.emplace_back(std::atoi(request->getParam("data_arg", true)->value().c_str()));
-          test_data_types[std::atoi(request->getParam("data_arg", true)->value().c_str())] = true;  // Mark this datatype as being used
+  for (size_t arg = 0; arg < args.size(); arg++) {
+    switch (args.at(arg)) {
+      case ArgType::kDataType: {
+        const char* data_name = (String("data_arg") + arg).c_str();
+        if (request->hasParam(data_name, true)) {
+          data.emplace_back(std::atoi(request->getParam(data_name, true)->value().c_str()));
+          test_data_types[std::atoi(request->getParam(data_name, true)->value().c_str())] = true;  // Mark this datatype as being used
         } else {
           has_error = true;
         }
-        break;
-      case ArgType::kColour:
-        if (request->hasParam("colour_arg", true)) {
-          if (request->getParam("colour_arg", true)->value() == String((int)ColourType::kConstant)) {  // Solid Colour
+        break; }
+      case ArgType::kColour: {
+        const char* param_name = (String("colour_arg") + arg).c_str();
+
+        if (request->hasParam(param_name, true)) {
+          if (request->getParam(param_name, true)->value() == String((int)ColourType::kConstant)) {  // Solid Colour
             data.emplace_back((uint8_t)ColourType::kConstant);
-            if (request->hasParam("solid_colour_arg", true)) {
-              std::vector<uint8_t> parsed_colour = ParseColour(request->getParam("solid_colour_arg", true)->value());
+
+            const char* colour_type = (String("solid_colour_arg") + arg).c_str();
+
+            if (request->hasParam(colour_type, true)) {
+              std::vector<uint8_t> parsed_colour = ParseColour(request->getParam(colour_type, true)->value());
               if (parsed_colour.size() < 3)
                 has_error = true;
               else
@@ -191,18 +206,22 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
             } else {
               has_error = true;
             }
-          } else if (request->getParam("colour_arg", true)->value() == String((int)ColourType::kDynamicBetweenValues)) { // Dynamic Colour
+          } else if (request->getParam(param_name, true)->value() == String((int)ColourType::kDynamicBetweenValues)) { // Dynamic Colour
             data.emplace_back((uint8_t)ColourType::kDynamicBetweenValues);
-            if (request->hasParam("colour_data_type", true) && request->hasParam("arg_low_data", true) && request->hasParam("arg_low_colour", true)
-                && request->hasParam("arg_high_data", true) && request->hasParam("arg_high_colour", true)) {
-              data.emplace_back(std::atoi(request->getParam("colour_data_type", true)->value().c_str()));
-              test_data_types[std::atoi(request->getParam("colour_data_type", true)->value().c_str())] = true;  // Mark this datatype as being used
 
-              data.emplace_back(std::atoi(request->getParam("arg_low_data", true)->value().c_str()));
-              data.emplace_back(std::atoi(request->getParam("arg_high_data", true)->value().c_str()));
+            if (request->hasParam((String("colour_data_type") + arg).c_str(), true)
+                && request->hasParam((String("arg_low_data") + arg).c_str(), true)
+                && request->hasParam((String("arg_low_colour") + arg).c_str(), true)
+                && request->hasParam((String("arg_high_data") + arg).c_str(), true)
+                && request->hasParam((String("arg_high_colour") + arg).c_str(), true)) {
+              data.emplace_back(std::atoi(request->getParam((String("colour_data_type") + arg).c_str(), true)->value().c_str()));
+              test_data_types[std::atoi(request->getParam((String("colour_data_type") + arg).c_str(), true)->value().c_str())] = true;  // Mark this datatype as being used
 
-              std::vector<uint8_t> parsed_low_colour = ParseColour(request->getParam("arg_low_colour", true)->value());
-              std::vector<uint8_t> parsed_high_colour = ParseColour(request->getParam("arg_high_colour", true)->value());
+              data.emplace_back(std::atoi(request->getParam((String("arg_low_data") + arg).c_str(), true)->value().c_str()));
+              data.emplace_back(std::atoi(request->getParam((String("arg_high_data") + arg).c_str(), true)->value().c_str()));
+
+              std::vector<uint8_t> parsed_low_colour = ParseColour(request->getParam((String("arg_low_colour") + arg).c_str(), true)->value());
+              std::vector<uint8_t> parsed_high_colour = ParseColour(request->getParam((String("arg_high_colour") + arg).c_str(), true)->value());
 
               if (parsed_low_colour.size() < 3 || parsed_high_colour.size() < 3)
                 has_error = true;
@@ -214,13 +233,13 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
         } else {
           has_error = true;
         }
-        break;
-      case ArgType::kConstant:
+        break; }
+      case ArgType::kConstant: {
         if (request->hasParam("constant_arg", true))
-          data.emplace_back(std::atoi(request->getParam("constant_arg", true)->value().c_str()));
+          data.emplace_back(std::atoi(request->getParam((String("constant_arg") + arg).c_str(), true)->value().c_str()));
         else
           has_error = true;
-        break;
+        break; }
     }
   }
 
