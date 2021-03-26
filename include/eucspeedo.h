@@ -29,14 +29,14 @@ class EucSpeedo {
 
     Euc* wheel;
     ButtonHandler* button_handler;
-    BleHandler ble;
+    BleHandler* ble;
+    ConfigServer* config_server;
     FileHandler file_handler;
     UiHandler ui_handler;
     ProcessData process_data;
     RtcHandler rtc_handler;
-    ConfigServer config_server;
 
-    bool wheel_connected = false;
+    bool wheel_connected = false, config_server_active = false, ble_handler_active = false;
 };
 
 }

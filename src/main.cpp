@@ -3,11 +3,6 @@
  * author: Andrew Ellison
  */
 
-  /*
-   * #include "esp_task_wdt.h"          // At beginning of code.
-   * esp_task_wdt_reset();                // In your routine.
-  */
-
 #include <Arduino.h>
 #include <configserver.h>
 
@@ -30,6 +25,8 @@ void loop() {
 }
 
 // TODO: Create different screens for watch/EUC/Settings
+// TODO: Add buttons to change order of UI elements
+// TODO: Make mock data functional
 // TODO: Create settings object that loads stored global settings
 // TODO: Implement controllers for different EUC brands
 // TODO: Gestures?

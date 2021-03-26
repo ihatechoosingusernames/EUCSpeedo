@@ -11,13 +11,10 @@
 namespace euc {
 
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
-    ble(BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1), std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2))),
     file_handler(),
     ui_handler(&file_handler),
-    process_data(),
-    config_server(&ui_handler, &file_handler) {
+    process_data() {
   file_handler.listDir("/", 1);
-  // ble.Scan();
 
   process_data.Update(&rtc_handler, true);  // Check the date on first start
 }
@@ -29,7 +26,7 @@ EucSpeedo::~EucSpeedo() {
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
   process_data.Update(&rtc_handler);
-  if (!config_server.isStarted())  // Config server is asynchronous and takes over control of the UI
+  if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
     ui_handler.Update(&process_data);
 }
 
@@ -65,13 +62,26 @@ void EucSpeedo::HandlePress(PressType press) {
       break;
     case PressType::kDoublePress:
       Serial.println("Double press\n");
+      if (ble_handler_active) {
+        delete ble;
+        ble_handler_active = false;
+      } else {
+        ble = new BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
+          std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2));
+        ble_handler_active = true;
+        ble->Scan();
+      }
       break;
     case PressType::kLongPress:
       Serial.println("Long press\n");
-      if (config_server.isStarted()) {
-        config_server.Stop();
+      if (config_server_active) {
+        config_server->Stop();
+        delete config_server;
+        config_server_active = false;
       } else {
-        config_server.Start();
+        config_server = new ConfigServer(&ui_handler, &file_handler);
+        config_server->Start();
+        config_server_active = true;
       }
     default:
       break;
