@@ -4,7 +4,7 @@
 
 namespace euc {
 
-UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : sprite(&screen), ui_screen(start_screen) {
+UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : sprite(&screen), ui_screen(start_screen), file_handler(file_handler) {
   LoadFromFile(file_handler);
   screen.init();
 }
@@ -12,6 +12,11 @@ UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : sprite(
 UiHandler::~UiHandler() {
   // Clean up draw list when object destructed
   ClearDrawList();
+}
+
+void UiHandler::ChangeScreen(UiScreen new_ui_screen) {
+  ui_screen = new_ui_screen;
+  LoadFromFile(file_handler);
 }
 
 void UiHandler::Update(ProcessData* data) {

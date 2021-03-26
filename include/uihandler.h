@@ -15,6 +15,7 @@ class UiHandler {
     UiHandler(FileHandler* file_handler, UiScreen start_screen = UiScreen::kHome);
     ~UiHandler();
 
+    void ChangeScreen(UiScreen new_ui_screen);
     void Update(ProcessData* data);
     void LoadFromData(uint8_t data[], size_t data_len);
 
@@ -30,6 +31,7 @@ class UiHandler {
     TFT_eSprite sprite; // Sprite object acts as a screen buffer to allow fast screen changes
 
     UiScreen ui_screen; // Which 'screen' of the UI is currently being displayed
+    FileHandler* file_handler;
 };
 
 }

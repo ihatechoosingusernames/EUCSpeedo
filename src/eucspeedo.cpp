@@ -21,6 +21,12 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
 
 EucSpeedo::~EucSpeedo() {
   delete wheel; // Clean up wheel pointer
+  if (config_server_active) {
+    config_server->Stop();
+    delete config_server;
+  }
+  if (ble_handler_active)
+    delete ble;
 }
 
 void EucSpeedo::Process() {
@@ -59,6 +65,11 @@ void EucSpeedo::HandlePress(PressType press) {
   switch (press) {
     case PressType::kSinglePress:
       Serial.println("Single press\n");
+      if (static_cast<uint8_t>(ui_handler.getCurrentScreen()) >= static_cast<uint8_t>(UiScreen::kCustom)) {
+        ui_handler.ChangeScreen(UiScreen::kHome);
+      } else {
+        ui_handler.ChangeScreen(static_cast<UiScreen>(static_cast<uint8_t>(ui_handler.getCurrentScreen()) + 1));
+      }
       break;
     case PressType::kDoublePress:
       Serial.println("Double press\n");

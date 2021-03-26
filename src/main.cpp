@@ -24,7 +24,6 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Create different screens for watch/EUC/Settings
 // TODO: Add buttons to change order of UI elements
 // TODO: Make mock data functional
 // TODO: Create settings object that loads stored global settings
