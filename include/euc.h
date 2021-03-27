@@ -12,6 +12,12 @@ class Euc {
     virtual void ProcessInput(uint8_t data[], size_t data_len);
 
     double getSpeed() {return speed / 100.0; };
+    double getVoltage() { return voltage; };
+    double getCurrent() { return current; };
+    double getTemperature() { return temperature; };
+    double getBatteryPercent() { return battery_percent; };
+    double getDistance() { return distance; };
+    double getTotalDistance() { return total_distance; };
 
   protected:
     int voltage, current, temperature, temperature_2, battery_percent, voltage_scaler;
