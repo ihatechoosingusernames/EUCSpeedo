@@ -11,6 +11,7 @@ namespace euc {
 
 ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : server(kDefaultServerPort), ui_handler(arg_ui_handler), file_handler(files) {
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
+    printf("/\n");
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
@@ -21,6 +22,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : serv
   server.on("/new_element", HTTP_POST, std::bind(&ConfigServer::ProcessNewElementRequest, this, std::placeholders::_1));
 
   server.on("/save_changes", HTTP_POST, [this](AsyncWebServerRequest *request){
+    printf("/save_changes\n");
     // Convert test data to a CSV string and store it in the ui data file
     String ui_data_string;
     for (std::vector<uint8_t> byte_vec : test_ui_data) {
@@ -33,7 +35,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : serv
   });
 
   server.on("/remove_element", HTTP_DELETE, [this](AsyncWebServerRequest *request){
-    printf("Delete element\n");
+    printf("/remove_element\n");
     if(request->hasParam("id")) {
       RemoveElement(std::atoi(request->getParam("id")->value().c_str()));
       ReloadTestData();
@@ -57,13 +59,18 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : serv
     ui_handler->Update(&test_process_data);
   });
 
-  server.on("update_elem_order", HTTP_POST, [this](AsyncWebServerRequest * request){
+  server.on("/update_elem_order", HTTP_POST, [this](AsyncWebServerRequest * request){
+    printf("/update_elem_order\n");
+    for (size_t param = 0; param < request->params(); param++) {
+      printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+    }
     if (!request->hasParam("elem", true))
       return;
     if (!request->hasParam("move", true))
       return;
     
     ReorderElement(std::atoi(request->getParam("elem", true)->value().c_str()), std::atoi(request->getParam("move", true)->value().c_str()));
+    ReloadTestData();
   });
 
   // Create the element selection and data strings for the ui_settings.html template
@@ -189,7 +196,7 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
 }
 
 void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
-  printf("New Element created\n");
+  printf("/new_element\n");
 
   bool has_error = false;
   uint8_t elem_type;
@@ -198,6 +205,10 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
     elem_type = std::atoi(request->getParam("ui_element", true)->value().c_str());
   else
     has_error = true;
+
+  for (size_t param = 0; param < request->params(); param++) {
+    printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+  }
 
   UiElement* elem = UiElement::Factory(&elem_type, 1);
   std::vector<ArgType> args = elem->ArgList();
@@ -208,16 +219,17 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
   for (size_t arg = 0; arg < args.size(); arg++) {
     switch (args.at(arg)) {
       case ArgType::kDataType: {
-        const char* data_name = (String("data_arg") + arg).c_str();
-        if (request->hasParam(data_name, true)) {
-          data.emplace_back(std::atoi(request->getParam(data_name, true)->value().c_str()));
-          test_data_types[std::atoi(request->getParam(data_name, true)->value().c_str())] = true;  // Mark this datatype as being used
+        if (request->hasParam((String("data_arg") + arg).c_str(), true)) {
+          data.emplace_back(std::atoi(request->getParam((String("data_arg") + arg).c_str(), true)->value().c_str()));
+          test_data_types[std::atoi(request->getParam((String("data_arg") + arg).c_str(), true)->value().c_str())] = true;  // Mark this datatype as being used
         } else {
           has_error = true;
+          printf("Has Error: %d\n", __LINE__);
         }
         break; }
       case ArgType::kColour: {
         const char* param_name = (String("colour_arg") + arg).c_str();
+        printf("Looking for arg: %s\n", param_name);
 
         if (request->hasParam(param_name, true)) {
           if (request->getParam(param_name, true)->value() == String((int)ColourType::kConstant)) {  // Solid Colour
@@ -227,12 +239,15 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 
             if (request->hasParam(colour_type, true)) {
               std::vector<uint8_t> parsed_colour = ParseColour(request->getParam(colour_type, true)->value());
-              if (parsed_colour.size() < 3)
+              if (parsed_colour.size() < 3) {
                 has_error = true;
-              else
+                printf("Has Error: %d\n", __LINE__);
+              } else {
                 data.insert(data.end(), parsed_colour.begin(), parsed_colour.end());
+              }
             } else {
               has_error = true;
+              printf("Has Error: %d\n", __LINE__);
             }
           } else if (request->getParam(param_name, true)->value() == String((int)ColourType::kDynamicBetweenValues)) { // Dynamic Colour
             data.emplace_back((uint8_t)ColourType::kDynamicBetweenValues);
@@ -251,8 +266,10 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
               std::vector<uint8_t> parsed_low_colour = ParseColour(request->getParam((String("arg_low_colour") + arg).c_str(), true)->value());
               std::vector<uint8_t> parsed_high_colour = ParseColour(request->getParam((String("arg_high_colour") + arg).c_str(), true)->value());
 
-              if (parsed_low_colour.size() < 3 || parsed_high_colour.size() < 3)
+              if (parsed_low_colour.size() < 3 || parsed_high_colour.size() < 3) {
                 has_error = true;
+                printf("Has Error: %d\n", __LINE__);
+              }
 
               data.insert(data.end(), parsed_low_colour.begin(), parsed_low_colour.end());
               data.insert(data.end(), parsed_high_colour.begin(), parsed_high_colour.end());
@@ -260,13 +277,16 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
           }
         } else {
           has_error = true;
+          printf("Has Error: %d\n", __LINE__);
         }
         break; }
       case ArgType::kConstant: {
-        if (request->hasParam("constant_arg", true))
+        if (request->hasParam("constant_arg", true)) {
           data.emplace_back(std::atoi(request->getParam((String("constant_arg") + arg).c_str(), true)->value().c_str()));
-        else
+        } else {
           has_error = true;
+          printf("Has Error: %d\n", __LINE__);
+        }
         break; }
     }
   }
@@ -321,31 +341,17 @@ void ConfigServer::RemoveElement(size_t index) {
     return;
 
   test_ui_data.erase(test_ui_data.begin() + index);
-
-  for (std::vector<uint8_t> data_obj : test_ui_data)
-    for (uint8_t data : data_obj)
-      printf(" %d ", data);
 }
 
 void ConfigServer::ReorderElement(size_t index, int move) {
-  printf("ReorderElement\n");
-
   if (index >= test_ui_data.size()) // Avoid out of range elements
     return;
 
   if (move > 0 && index == (test_ui_data.size() - 1)) // If the last element is being moved forward, ignore it
     return;
-
-  // Because the original element will be deleted, a move of one element forward will end it up where it started
-  if (move > 0)
-    move += 1;
   
-  test_ui_data.insert(test_ui_data.begin() + (index + move), test_ui_data.at(index));
+  test_ui_data.insert(test_ui_data.begin() + (index + move + (move > 0? 1 : 0)), test_ui_data.at(index));
   test_ui_data.erase(test_ui_data.begin() + (index + (move < 0? 1 : 0)));
-
-  for (std::vector<uint8_t> data_obj : test_ui_data)
-    for (uint8_t data : data_obj)
-      printf(" %d ", data);
 }
 
 void ConfigServer::ReloadTestData() {

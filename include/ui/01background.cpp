@@ -7,6 +7,7 @@ namespace euc {
 
 class Background : public UiElement {
   UI_SETUP(Background, ArgType::kColour)  // Declaring arguments in correct order to help with config generation
+  UI_ARGS("Background Colour")  // Optional, but setting the argument names for display in the config server
   
   public:
     Background(uint8_t data[], size_t data_len) {

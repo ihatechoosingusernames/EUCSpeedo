@@ -20,13 +20,14 @@ void UiHandler::ChangeScreen(UiScreen new_ui_screen) {
 }
 
 void UiHandler::Update(ProcessData* data) {
+  return; // TODO: REMOVE THIS WHEN SCREEN CONNECTED
   sprite.createSprite(screen.width(), screen.height()); // Create a sprite the size of the screen
 
   for (UiElement* element : draw_list) {
     element->Draw(data, &sprite);
   }
 
-  // sprite.pushSprite(0, 0);  // Push the sprite to the screen TODO: Uncomment this when actually running a screen
+  sprite.pushSprite(0, 0);  // Push the sprite to the screen TODO: Uncomment this when actually running a screen
 }
 
 void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {

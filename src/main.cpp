@@ -24,8 +24,6 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Add buttons to change order of UI elements
-// TODO: Make mock data functional
 // TODO: Create settings object that loads stored global settings
-// TODO: Implement controllers for different EUC brands
+// TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?
