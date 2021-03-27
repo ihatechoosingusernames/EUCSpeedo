@@ -9,7 +9,7 @@
 
 namespace euc {
 
-ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(kDefaultServerPort), ui_handler(ui_handler), file_handler(files) {
+ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : server(kDefaultServerPort), ui_handler(arg_ui_handler), file_handler(files) {
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
@@ -40,6 +40,32 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
     }
   });
 
+  server.on("/update_data", HTTP_POST, [this](AsyncWebServerRequest * request){
+    printf("/update_data\n");
+    if (!request->hasParam("id", true))
+      return;
+    if (!request->hasParam("data", true))
+      return;
+
+    printf(("Updated data type " + request->getParam("id", true)->value() + " with data " + request->getParam("data", true)->value()).c_str());
+
+    // Get data type as a string, then convert to String -> const char* -> int -> DataType. Very efficient.
+    DataType data = static_cast<DataType>(std::atoi(request->getParam("id", true)->value().c_str()));
+    double val = std::atof(request->getParam("data", true)->value().c_str());
+
+    test_process_data.Update(data, val);
+    ui_handler->Update(&test_process_data);
+  });
+
+  server.on("update_elem_order", HTTP_POST, [this](AsyncWebServerRequest * request){
+    if (!request->hasParam("elem", true))
+      return;
+    if (!request->hasParam("move", true))
+      return;
+    
+    ReorderElement(std::atoi(request->getParam("elem", true)->value().c_str()), std::atoi(request->getParam("move", true)->value().c_str()));
+  });
+
   // Create the element selection and data strings for the ui_settings.html template
   for (size_t ui_code = 1; ui_code < kMaxUiElementCode; ui_code++) {
     uint8_t data[] = {static_cast<uint8_t>(ui_code)};
@@ -53,12 +79,12 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
 
     ui_elem_select += "<option value=\"" + String(ui_code) + "\">" + elem->Name() + "</option>\n";
 
-    ui_elem_data += "\"" + String(ui_code) + "\": [";
+    ui_elem_data += String(ui_code > 1? "," : "") + "\"" + String(ui_code) + "\": [";
 
     std::vector<String> name_list = elem->ArgNames();
     std::vector<ArgType> arg_list = elem->ArgList();
     for (size_t arg = 0; arg < arg_list.size(); arg++) {
-      ui_elem_data += "[\"" + String(static_cast<uint8_t>(arg_list.at(arg))) + "\":\"";
+      ui_elem_data += String(arg > 0? "," : "") + "[\"" + String(static_cast<uint8_t>(arg_list.at(arg))) + "\",\"";
 
       // Fill in the custom name where applicable, use the default name otherwise
       if (arg < name_list.size())
@@ -66,10 +92,10 @@ ConfigServer::ConfigServer(UiHandler* ui_handler, FileHandler* files) : server(k
       else
         ui_elem_data += kArgTypeNames[static_cast<size_t>(arg_list.at(arg))];
 
-      ui_elem_data += "\"],";
+      ui_elem_data += "\"]";
     }
 
-    ui_elem_data += "],";
+    ui_elem_data += "]";
 
     delete elem;
   }
@@ -144,7 +170,8 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
     // format: <tr><td>Background</td></tr>
     size_t elem_count = 0;
     for (UiElement* draw_elem : *ui_handler->getDrawList()) {
-      out += "<tr><td>" + String(draw_elem->Name()) + "</td><td><button type=\"button\" onclick=\"deleteElement(this)\">Delete</button></td></tr>\n";
+      out += "<tr><td>" + String(draw_elem->Name())
+        + "</td><td><button type=\"button\" onclick=\"deleteElement(this)\">Delete</button></td><td><button onclick=\"moveElemUp(this)\">↑</button></td><td><button onclick=\"moveElemDown(this)\">↓</button></td></tr>\n";
       elem_count++;
     }
   } else if (placeholder == "UI_DATA_TABLE") {
@@ -152,7 +179,8 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
     // format: <tr><td>Speed</td></tr>
     for (size_t data_type = 0; data_type < (size_t)DataType::kLastValue; data_type++)
       if (test_data_types[data_type])
-        out += "<tr><td>" + String(kDataTypeNames[(size_t)data_type]) + "</td></tr>\n";
+        out += "<tr id=\"" + String(data_type) + "\"><td>" + String(kDataTypeNames[static_cast<size_t>(data_type)])
+          + "</td><td><input type=\"number\" onchange=\"updateData(this)\"></td></tr>\n";
   }
 
   Serial.println(out);
@@ -289,12 +317,32 @@ std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
 }
 
 void ConfigServer::RemoveElement(size_t index) {
-  printf("RemoveElement: %d\n", index);
   if (index >= test_ui_data.size()) // Avoid out of range elements
     return;
 
   test_ui_data.erase(test_ui_data.begin() + index);
-  printf("Resulting data: ");
+
+  for (std::vector<uint8_t> data_obj : test_ui_data)
+    for (uint8_t data : data_obj)
+      printf(" %d ", data);
+}
+
+void ConfigServer::ReorderElement(size_t index, int move) {
+  printf("ReorderElement\n");
+
+  if (index >= test_ui_data.size()) // Avoid out of range elements
+    return;
+
+  if (move > 0 && index == (test_ui_data.size() - 1)) // If the last element is being moved forward, ignore it
+    return;
+
+  // Because the original element will be deleted, a move of one element forward will end it up where it started
+  if (move > 0)
+    move += 1;
+  
+  test_ui_data.insert(test_ui_data.begin() + (index + move), test_ui_data.at(index));
+  test_ui_data.erase(test_ui_data.begin() + (index + (move < 0? 1 : 0)));
+
   for (std::vector<uint8_t> data_obj : test_ui_data)
     for (uint8_t data : data_obj)
       printf(" %d ", data);
@@ -309,7 +357,6 @@ void ConfigServer::ReloadTestData() {
 
   ui_handler->LoadFromData(new_data.data(), new_data.size());
   ui_handler->Update(&test_process_data);
-  printf("295\n");
 }
 
 }

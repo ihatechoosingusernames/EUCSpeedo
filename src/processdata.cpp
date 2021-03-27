@@ -33,6 +33,12 @@ void ProcessData::Update(RtcHandler* rtc_handler, bool update_date) {
   xSemaphoreGive(data_mutex);
 }
 
+void ProcessData::Update(DataType type, double val) {
+  xSemaphoreTake(data_mutex, portMAX_DELAY);  // Protecting the data array
+  data[static_cast<size_t>(type)] = val;
+  xSemaphoreGive(data_mutex);
+}
+
 double ProcessData::getDoubleData(DataType data_type) {
   xSemaphoreTake(data_mutex, portMAX_DELAY);  // Protecting the data array
 

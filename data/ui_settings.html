@@ -11,12 +11,13 @@
   <table class="inlineTable" id="draw_queue_table">
     <th><strong>Draw Queue:</strong></th>
     %UI_DRAW_QUEUE_TABLE%
-    <tr>
-      <td><button class="btn" onclick="openForm()"><strong>Add Element</strong></button></td>
-    </tr>
+    <tf>
+      <td><button class="btn" onclick="openForm()">Add Element</button></td>
+    </tf>
   </table>
   <table class="inlineTable" id="data_table">
-    <th><strong>Data:</strong></th>
+    <th><strong>Test Data:</strong></th>
+    <!-- <tr id="0"><td>Speed</td><td><input type="number" onchange="updateData(this)"></td></tr> -->
     %UI_DATA_TABLE%
   </table>
 
@@ -71,6 +72,37 @@
     function closeForm() {
       document.getElementById("popupForm").style.display = "none";
       form_body.innerHTML = `<tbody id="form_body"></tbody>`;
+    }
+    function updateData(data_obj) {
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("POST", "update_data", true);
+      xhttp.setRequestHeader("id", data_obj.parentNode.parentNode.id);
+      xhttp.setRequestHeader("data", data_obj.value);
+      xhttp.send();
+    }
+    function moveElemUp(elem) {
+      var row = elem.parentNode.parentNode;
+      if (row.rowIndex > 1) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "update_elem_order", true);
+        xhttp.setRequestHeader("elem", row.rowIndex - 1);
+        xhttp.setRequestHeader("move", "-1");
+
+        row.parentNode.insertRow(row.rowIndex - 1).innerHTML = row.innerHTML;
+        row.remove();
+      }
+    }
+    function moveElemDown(elem) {
+      var row = elem.parentNode.parentNode;
+      if (row.rowIndex < (row.parentNode.rows.length - 2)) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "update_elem_order", true);
+        xhttp.setRequestHeader("elem", row.rowIndex - 1);
+        xhttp.setRequestHeader("move", "1");
+
+        row.parentNode.insertRow(row.rowIndex + 2).innerHTML = row.innerHTML;
+        row.remove();
+      }
     }
     function checkUiAlert(evt) {
       // Reset Form
@@ -181,9 +213,6 @@
 
     // Stores all ui element types and args
     var ui_elems = {
-      // "1": [["1", "Background Colour"]],
-      // "2": [["0", "Data to Display"], ["1", "Letter Colour"]],
-      // "3": [["2", "constant 1"], ["1", "colour 2"], ["1", "colour 3"], ["1", "colour 4"], ["1", "colour 5"]]
       %UI_ELEM_DATA%
     };
   </script>
