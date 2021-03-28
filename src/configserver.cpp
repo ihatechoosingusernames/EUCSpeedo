@@ -15,6 +15,11 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : serv
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
+  server.on("/general_settings", HTTP_GET, [this](AsyncWebServerRequest *request){
+    printf("/\n");
+    request->send(SPIFFS, "/general_settings.html", "text/html", false);
+  });
+
   server.on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/style.css", "text/css");
   });
