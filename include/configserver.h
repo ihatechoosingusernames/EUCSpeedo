@@ -18,7 +18,7 @@ namespace euc {
 
 class ConfigServer {
   public:
-    ConfigServer(UiHandler* arg_ui_handler, FileHandler* files);
+    ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHandler* rtc);
     ~ConfigServer();
 
     void Start();
@@ -41,6 +41,7 @@ class ConfigServer {
 
     UiHandler* ui_handler;
     FileHandler* file_handler;
+    RtcHandler* rtc_handler;
 
     std::vector<std::vector<uint8_t>> test_ui_data; // Stores the data that represents each UI element in draw order
     ProcessData test_process_data;

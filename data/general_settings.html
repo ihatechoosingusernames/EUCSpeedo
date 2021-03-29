@@ -12,19 +12,19 @@
     <table class="inlineTable" id="settingsTable">
       <tr>
         <td>Set Time</td>
-        <td><button onclick="setTime(false)">
+        <td><button type="button" onclick="setTime(false)">
             To System Time
           </button></td>
-        <td><button onclick="setTime(true)">
+        <td><button type="button" onclick="setTime(true)">
             To Custom Time
           </button></td>
       </tr>
       <tr>
         <td>Set Date</td>
-        <td><button onclick="setDate(false)">
+        <td><button type="button" onclick="setDate(false)">
             To System Date
           </button></td>
-        <td><button onclick="setDate(true)">
+        <td><button type="button" onclick="setDate(true)">
             To Custom Date
           </button></td>
       </tr>
@@ -33,16 +33,13 @@
   <script>
     function setTime(custom) {
       var date = new Date();
-      var hours;
-      var minutes;
-      var seconds;
 
       if (custom) {
         var custom_time;
         while (custom_time == null) {
           custom_time = prompt("Set to (24hr time)", "hh:mm:ss");
 
-          if (custom_time == null)
+          if (custom_time == null)  // Cancel the prompt if the user selects cancel
             return;
 
           custom_time = custom_time.match(/\b([0-1]?\d|2[0-3])\:[0-5]?\d\:[0-5]?\d\b/);
@@ -50,22 +47,17 @@
 
         custom_time = custom_time[0]
 
-        hours = custom_time.substring(0, custom_time.indexOf(":"));
-        minutes = custom_time.substring(custom_time.indexOf(":") + 1, custom_time.lastIndexOf(":"));
-        seconds = custom_time.substring(custom_time.lastIndexOf(":") + 1);
-        confirm("Set to " + hours + ":" + minutes + ":" + seconds);
-      } else if (confirm("Set to " + date.toTimeString().slice(0, 8)) == false) {
+        date.setHours(custom_time.substring(0, custom_time.indexOf(":")));
+        date.setMinutes(custom_time.substring(custom_time.indexOf(":") + 1, custom_time.lastIndexOf(":")));
+        date.setSeconds(custom_time.substring(custom_time.lastIndexOf(":") + 1));
+      }
+      if (confirm("Set to " + date.toTimeString().slice(0, 8)) == false) {
         return;
       }
 
       xhttp = new XMLHttpRequest();
       xhttp.open("POST", "/set_time", true);
-
-      if (custom) {
-        xhttp.send("hours=" + hours + "&minutes=" + minutes + "&seconds=" + seconds);
-      } else {
-        xhttp.send("hours=" + date.getHours() + "&minutes=" + date.getMinutes() + "&seconds=" + date.getSeconds());
-      }
+      xhttp.send("hours=" + date.getHours() + "&minutes=" + date.getMinutes() + "&seconds=" + date.getSeconds());
     }
     function setDate(custom) {
       var date = new Date();
@@ -86,14 +78,14 @@
         date.setFullYear("20" + custom_time.substring(0, custom_time.indexOf("/")),
           custom_time.substring(custom_time.indexOf("/") + 1, custom_time.lastIndexOf("/")),
           custom_time.substring(custom_time.lastIndexOf("/") + 1));
-        confirm("Set to " + date.getFullYear() + "/" + date.getMonth() + "/" + date.getDay());
-      } else if (confirm("Set to (yy/mm/dd) " + date.getFullYear() + "/" + date.getMonth() + "/" + date.getDay()) == false) {
+        confirm("Set to " + date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate());
+      } else if (!confirm("Set to (yy/mm/dd) " + date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate())) {
         return;
       }
 
       xhttp = new XMLHttpRequest();
-      xhttp.open("POST", "/set_time", true);
-      xhttp.send("year=" + date.getFullYear() + "&month=" + date.getMonth() + "&day=" + date.getDay());
+      xhttp.open("POST", "/set_date", true);
+      xhttp.send("year=" + date.getFullYear() + "&month=" + date.getMonth() + "&day=" + date.getDate() + "&weekday=" + date.getDay());
     }
   </script>
 </body>

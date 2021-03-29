@@ -90,7 +90,7 @@ void EucSpeedo::HandlePress(PressType press) {
         delete config_server;
         config_server_active = false;
       } else {
-        config_server = new ConfigServer(&ui_handler, &file_handler);
+        config_server = new ConfigServer(&ui_handler, &file_handler, &rtc_handler);
         config_server->Start();
         config_server_active = true;
       }

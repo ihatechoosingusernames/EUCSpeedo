@@ -39,8 +39,8 @@ class RtcHandler {
     void UpdateTime();
     void UpdateDate();
 
-    void SetTime(uint8_t hour, uint8_t minute, uint8_t second);
-    void SetDate(byte day, byte weekday, byte month, byte year);
+    void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+    void setDate(uint8_t day, uint8_t weekday, uint8_t month, uint8_t year);
 
     uint8_t getSecond();
     uint8_t getMinute();

@@ -9,14 +9,15 @@
 
 namespace euc {
 
-ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : server(kDefaultServerPort), ui_handler(arg_ui_handler), file_handler(files) {
+ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHandler* rtc) : server(kDefaultServerPort),
+    ui_handler(arg_ui_handler), file_handler(files), rtc_handler(rtc) {
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
     printf("/\n");
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   server.on("/general_settings", HTTP_GET, [this](AsyncWebServerRequest *request){
-    printf("/\n");
+    printf("/general_settings\n");
     request->send(SPIFFS, "/general_settings.html", "text/html", false);
   });
 
@@ -76,6 +77,33 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files) : serv
     
     ReorderElement(std::atoi(request->getParam("elem", true)->value().c_str()), std::atoi(request->getParam("move", true)->value().c_str()));
     ReloadTestData();
+  });
+
+  server.on("/set_date", HTTP_POST, [this](AsyncWebServerRequest * request){
+    printf("/set_date\n");
+    for (size_t param = 0; param < request->params(); param++)
+      printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+
+    if (!(request->hasParam("year", true) && request->hasParam("month", true) && request->hasParam("day", true) && request->hasParam("weekday", true)))
+      return;
+    
+    // rtc_handler->setDate(std::atoi(request->getParam("day", true)->value().c_str()),
+    //   std::atoi(request->getParam("weekday", true)->value().c_str()),
+    //   std::atoi(request->getParam("month", true)->value().c_str()),
+    //   std::atoi(request->getParam("year", true)->value().c_str()));
+  });
+
+  server.on("/set_time", HTTP_POST, [this](AsyncWebServerRequest * request){
+    printf("/set_time\n");
+    for (size_t param = 0; param < request->params(); param++)
+      printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+
+    if (!(request->hasParam("hours", true) && request->hasParam("minutes", true) && request->hasParam("seconds", true)))
+      return;
+    
+    // rtc_handler->setTime(std::atoi(request->getParam("hours", true)->value().c_str()),
+    //   std::atoi(request->getParam("minutes", true)->value().c_str()),
+    //   std::atoi(request->getParam("seconds", true)->value().c_str()));
   });
 
   // Create the element selection and data strings for the ui_settings.html template

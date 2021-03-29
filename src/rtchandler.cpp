@@ -38,7 +38,7 @@ void RtcHandler::UpdateDate() {
   year = BcdToDecimal(Wire.read());  
 }
 
-void RtcHandler::SetTime(uint8_t hour, uint8_t minute, uint8_t second) {
+void RtcHandler::setTime(uint8_t hour, uint8_t minute, uint8_t second) {
   Wire.beginTransmission(RTCC_ADDR);
   Wire.write(RTCC_SEC_ADDR);
 
@@ -48,7 +48,7 @@ void RtcHandler::SetTime(uint8_t hour, uint8_t minute, uint8_t second) {
   Wire.endTransmission();
 }
 
-void RtcHandler::SetDate(byte day, byte weekday, byte month, byte year) {
+void RtcHandler::setDate(byte day, byte weekday, byte month, byte year) {
   month = DecimalToBcd(month);
   month &= ~RTCC_CENTURY_MASK; // Century is always > 2000
 
