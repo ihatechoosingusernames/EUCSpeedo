@@ -87,10 +87,10 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
     if (!(request->hasParam("year", true) && request->hasParam("month", true) && request->hasParam("day", true) && request->hasParam("weekday", true)))
       return;
     
-    // rtc_handler->setDate(std::atoi(request->getParam("day", true)->value().c_str()),
-    //   std::atoi(request->getParam("weekday", true)->value().c_str()),
-    //   std::atoi(request->getParam("month", true)->value().c_str()),
-    //   std::atoi(request->getParam("year", true)->value().c_str()));
+    rtc_handler->setDate(std::atoi(request->getParam("day", true)->value().c_str()),
+      std::atoi(request->getParam("weekday", true)->value().c_str()),
+      std::atoi(request->getParam("month", true)->value().c_str()),
+      std::atoi(request->getParam("year", true)->value().c_str()));
   });
 
   server.on("/set_time", HTTP_POST, [this](AsyncWebServerRequest * request){
@@ -101,9 +101,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
     if (!(request->hasParam("hours", true) && request->hasParam("minutes", true) && request->hasParam("seconds", true)))
       return;
     
-    // rtc_handler->setTime(std::atoi(request->getParam("hours", true)->value().c_str()),
-    //   std::atoi(request->getParam("minutes", true)->value().c_str()),
-    //   std::atoi(request->getParam("seconds", true)->value().c_str()));
+    rtc_handler->setTime(std::atoi(request->getParam("hours", true)->value().c_str()),
+      std::atoi(request->getParam("minutes", true)->value().c_str()),
+      std::atoi(request->getParam("seconds", true)->value().c_str()));
   });
 
   // Create the element selection and data strings for the ui_settings.html template

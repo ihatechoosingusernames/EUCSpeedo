@@ -27,7 +27,7 @@ void UiHandler::Update(ProcessData* data) {
     element->Draw(data, &sprite);
   }
 
-  sprite.pushSprite(0, 0);  // Push the sprite to the screen TODO: Uncomment this when actually running a screen
+  sprite.pushSprite(0, 0);  // Push the sprite to the screen
 }
 
 void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
