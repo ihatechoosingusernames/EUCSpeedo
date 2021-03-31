@@ -29,7 +29,6 @@ class ButtonHandler {
     volatile PressType press_type = PressType::kNoPress;
 
     portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-    SemaphoreHandle_t queue_mutex;  // For handling timer
 };
 
 }

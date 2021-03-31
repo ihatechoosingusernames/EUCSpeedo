@@ -10,7 +10,7 @@
 #include "processdata.h"
 namespace euc {
 
-using ColourProvider = std::function<uint32_t(ProcessData*)>;
+using ColourProvider = std::function<uint16_t(ProcessData*)>;
 
 #define UI_SETUP(element, ...)                                          \
   public: static UiElement* Builder(uint8_t data[], size_t data_len) {  \

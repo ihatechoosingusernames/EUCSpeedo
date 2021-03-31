@@ -17,7 +17,7 @@ class Background : public UiElement {
     };
 
     void Draw(ProcessData* data, TFT_eSprite* sprite) override {
-      sprite->fillScreen(colour_provider(data));
+      sprite->fillSprite(colour_provider(data));
     };
 
   private:

@@ -55,7 +55,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
     if (!request->hasParam("data", true))
       return;
 
-    printf(("Updated data type " + request->getParam("id", true)->value() + " with data " + request->getParam("data", true)->value()).c_str());
+    printf(("Updating data type " + request->getParam("id", true)->value() + " with data " + request->getParam("data", true)->value() + "\n").c_str());
 
     // Get data type as a string, then convert to String -> const char* -> int -> DataType. Very efficient.
     DataType data = static_cast<DataType>(std::atoi(request->getParam("id", true)->value().c_str()));
@@ -87,10 +87,10 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
     if (!(request->hasParam("year", true) && request->hasParam("month", true) && request->hasParam("day", true) && request->hasParam("weekday", true)))
       return;
     
-    // rtc_handler->setDate(std::atoi(request->getParam("day", true)->value().c_str()),
-    //   std::atoi(request->getParam("weekday", true)->value().c_str()),
-    //   std::atoi(request->getParam("month", true)->value().c_str()),
-    //   std::atoi(request->getParam("year", true)->value().c_str()));
+    rtc_handler->setDate(std::atoi(request->getParam("day", true)->value().c_str()),
+      std::atoi(request->getParam("weekday", true)->value().c_str()),
+      std::atoi(request->getParam("month", true)->value().c_str()),
+      std::atoi(request->getParam("year", true)->value().c_str()));
   });
 
   server.on("/set_time", HTTP_POST, [this](AsyncWebServerRequest * request){
@@ -101,9 +101,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
     if (!(request->hasParam("hours", true) && request->hasParam("minutes", true) && request->hasParam("seconds", true)))
       return;
     
-    // rtc_handler->setTime(std::atoi(request->getParam("hours", true)->value().c_str()),
-    //   std::atoi(request->getParam("minutes", true)->value().c_str()),
-    //   std::atoi(request->getParam("seconds", true)->value().c_str()));
+    rtc_handler->setTime(std::atoi(request->getParam("hours", true)->value().c_str()),
+      std::atoi(request->getParam("minutes", true)->value().c_str()),
+      std::atoi(request->getParam("seconds", true)->value().c_str()));
   });
 
   // Create the element selection and data strings for the ui_settings.html template
@@ -361,10 +361,13 @@ std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
     return out;
   }
   
-  // Converts from string to unsigned long in base 16, and from there to unsigned byte
-  out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16)); // Red
-  out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16)); // Green
-  out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue
+  // Converts from string to unsigned long in base 16, and from there to unsigned byte.
+  // As the screen drivers use 16 bit colours, each colour is then right shifted the appropriate amount
+  out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16) >> 3); // Red
+  out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16) >> 2); // Green
+  out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16) >> 3); // Blue
+
+  printf("Interpreting colour %s as red %d, green %d, blue %d\n", colour.c_str(), out[0], out[1], out[2]);
 
   return out;
 }
@@ -389,7 +392,7 @@ void ConfigServer::ReorderElement(size_t index, int move) {
 
 void ConfigServer::ReloadTestData() {
   std::vector<uint8_t> new_data;
-  new_data.reserve(test_ui_data.size() * 2);  // Just a guess at the total size to minimise the reallocations needed
+  // new_data.reserve(test_ui_data.size() * 2);  // Just a guess at the total size to minimise the reallocations needed
 
   for (std::vector<uint8_t> byte_vec : test_ui_data)  // Combine all the vectors into one
     new_data.insert(new_data.end(), byte_vec.begin(), byte_vec.end());

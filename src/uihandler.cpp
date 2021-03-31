@@ -4,9 +4,10 @@
 
 namespace euc {
 
-UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : sprite(&screen), ui_screen(start_screen), file_handler(file_handler) {
+UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : ui_screen(start_screen), file_handler(file_handler) {
   LoadFromFile(file_handler);
   screen.init();
+  screen.setPivot(screen.width() / 2, screen.height() / 2);
 }
 
 UiHandler::~UiHandler() {
@@ -20,14 +21,16 @@ void UiHandler::ChangeScreen(UiScreen new_ui_screen) {
 }
 
 void UiHandler::Update(ProcessData* data) {
-  return; // TODO: REMOVE THIS WHEN SCREEN CONNECTED
-  sprite.createSprite(screen.width(), screen.height()); // Create a sprite the size of the screen
+  TFT_eSprite sprite = TFT_eSprite(&screen); // Sprite object acts as a screen buffer to allow fast screen changes
+  sprite.createSprite(TFT_HEIGHT, TFT_WIDTH); // Screen is in portrait, we want to draw in landscape
+  // sprite.loadFont(font_name);
 
   for (UiElement* element : draw_list) {
     element->Draw(data, &sprite);
   }
 
-  sprite.pushSprite(0, 0);  // Push the sprite to the screen TODO: Uncomment this when actually running a screen
+  sprite.setPivot(screen.height() / 2, screen.width() / 2);
+  sprite.pushRotated(270);  // Push the sprite to the screen, rotating so it's 'the right way up'
 }
 
 void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
@@ -37,10 +40,10 @@ void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
     // The UiElement factory makes the appropriate UI element for the given data
     UiElement* element = UiElement::Factory(data + data_used, data_len - data_used);
 
+    Serial.printf("Created element of code %X and size %d\n", data[data_used], element->DataSize());
+
     // The created element tells us how much data it has used
     data_used += element->DataSize();
-
-    Serial.printf("Created element of code %X and size %d\n", data[0], element->DataSize());
 
     // The elements are created in draw order; so the later in the list, the later they should be drawn
     draw_list.emplace_back(element);

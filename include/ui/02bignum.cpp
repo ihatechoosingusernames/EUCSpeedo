@@ -17,7 +17,12 @@ class BigNum : public UiElement {
 
     void Draw(ProcessData* data, TFT_eSprite* sprite) {
       printf("BigNum::Draw()\n");
-      double num = data->getDoubleData(type);  // Retrieve the data
+      String num = String(data->getDoubleData(type));  // Retrieve the data
+
+      // Set the background colour to whatever's in the center of the sprite
+      sprite->setTextColor(colour_provider(data), sprite->readPixel(sprite->getViewportWidth() / 2, sprite->getViewportHeight() / 2));
+      sprite->setTextDatum(MC_DATUM);
+      sprite->drawString(num, sprite->getViewportWidth() / 2, sprite->getViewportHeight() / 2, 7);
     };
 
   private:

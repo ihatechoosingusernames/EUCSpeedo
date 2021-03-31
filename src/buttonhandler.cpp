@@ -30,7 +30,7 @@ PressType ButtonHandler::getPress() {
 
 ButtonHandler::ButtonHandler() {
   pinMode(PIN_223B_VDD, OUTPUT);
-  pinMode(PIN_223B_Q, INPUT_PULLUP);  // By default input is pulled low, active high
+  pinMode(PIN_223B_Q, INPUT_PULLUP);  // By default input is pulled high, active low
 
   digitalWrite(PIN_223B_VDD, HIGH); // Powers on 223B touch button
 

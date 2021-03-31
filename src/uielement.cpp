@@ -43,7 +43,8 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
       if (data_len >= 4) {
         // The following 3 bytes should be the RGB values
         *bytes_used += 4;
-        uint32_t colour = (uint32_t)((data[1] << 16) | (data[2] << 8) | data[3]);
+        uint16_t colour = (uint16_t)((data[3] << 11) | (data[2] << 5) | data[1]); // Screen uses BGR format
+        printf("kConstant Colour provider providing %x\n", colour);
         return [=](ProcessData* data){ return colour; };
       }
       break;
@@ -68,11 +69,11 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
           // Limit the multiple to the predefined range and translate it to a decimal
           double multiple = std::min(std::max(data->getDoubleData(type), (double)min_val), (double)max_val) / (max_val - min_val);
           // Multiply each of R, G and B by that decimal, then add back the min value
-          uint32_t red = (uint32_t)((max_colour[0] - min_colour[0]) * multiple) + min_colour[0];
-          uint32_t green = (uint32_t)((max_colour[1] - min_colour[1]) * multiple) + min_colour[1];
-          uint32_t blue = (uint32_t)((max_colour[2] - min_colour[2]) * multiple) + min_colour[2];
+          uint16_t red = static_cast<uint16_t>(((max_colour[0] - min_colour[0]) * multiple) + min_colour[0]);
+          uint16_t green = static_cast<uint16_t>(((max_colour[1] - min_colour[1]) * multiple) + min_colour[1]);
+          uint16_t blue = static_cast<uint16_t>(((max_colour[2] - min_colour[2]) * multiple) + min_colour[2]);
 
-          return (red << 16) | (green << 8) | blue;
+          return (blue << 11) | (green << 5) | red; // Combine to form BGR format used by the tft screen
         };
       }
   }

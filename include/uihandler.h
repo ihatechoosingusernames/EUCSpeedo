@@ -28,10 +28,12 @@ class UiHandler {
 
     std::vector<UiElement*> draw_list;  // Stores the elements in their draw order
     TFT_eSPI screen;  // Actual Screen object
-    TFT_eSprite sprite; // Sprite object acts as a screen buffer to allow fast screen changes
 
     UiScreen ui_screen; // Which 'screen' of the UI is currently being displayed
     FileHandler* file_handler;
+
+    const char* font_name = "FiraCodeBold20";  // TODO: Maybe put in constants?
+    // const char* font_filename = "/FiraCodeBold20.vlw";
 };
 
 }

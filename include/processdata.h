@@ -25,6 +25,8 @@ class ProcessData {
     double data[(size_t)DataType::kLastValue] = {0.0};  // Of this size to fit all DataTypes
 
     SemaphoreHandle_t data_mutex; // Semaphore to protect the data array
+
+    volatile bool writing = false;
 };
 
 }
