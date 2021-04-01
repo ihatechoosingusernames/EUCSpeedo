@@ -26,6 +26,8 @@ void loop() {
 }
 
 // TODO: Create more UI objects
+// TODO: Implement config server functions to take text arguments
+// TODO: Fix file saves
 // TODO: Create settings object that loads stored global settings
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?

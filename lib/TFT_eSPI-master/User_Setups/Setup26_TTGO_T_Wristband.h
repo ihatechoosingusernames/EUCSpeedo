@@ -29,7 +29,7 @@
 // this will save ~20kbytes of FLASH
 #define SMOOTH_FONT
 
-#define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+// #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
 
-// #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
+#define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000

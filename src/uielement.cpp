@@ -26,6 +26,24 @@ std::vector<String> UiElement::ArgNames() {
   return {};
 }
 
+void UiElement::getArgsFromData(uint8_t data[], size_t data_len) {
+  for (ArgType arg : ArgList()) {
+    switch (arg) {
+      case ArgType::kDataType:
+        kDataType_args.push_back(getDataType(data, data_len, &data_size));
+        break;
+      case ArgType::kColour:
+        kColour_args.push_back(getColourProvider(data, data_len, &data_size));
+        break;
+      case ArgType::kConstant:
+        kConstant_args.push_back(getConstant(data, data_len, &data_size));
+        break;
+      case ArgType::kText:
+        kText_args.push_back(getText(data, data_len, &data_size));
+    }                            
+  }
+}
+
 ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, size_t* bytes_used) {
   if (!data_len || *bytes_used >= data_len) {  // No Data provided, default is to return #000000 (black)
     *bytes_used += 0;
@@ -81,6 +99,39 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
   // No valid Data provided, default is to return #000000 (black)
   *bytes_used += 1;
   return [](ProcessData* data){ return 0; };
+}
+
+DataType UiElement::getDataType(uint8_t data[], size_t data_len, size_t* bytes_used) {
+  if (data_len - (*bytes_used))
+    return static_cast<DataType>(data[(*bytes_used)++]);
+  
+  // Some defensive programming to deal with possibly faulty file inputs
+  printf("Data too small to supply DataType\n");
+  return DataType::kLastValue;
+}
+
+double UiElement::getConstant(uint8_t data[], size_t data_len, size_t* bytes_used) {
+  if (data_len - (*bytes_used))
+    return static_cast<double>(data[(*bytes_used)++]);
+
+  // Some defensive programming to deal with possibly faulty file inputs
+  printf("Data too small to supply Constant\n");
+  return 0;
+}
+
+String UiElement::getText(uint8_t data[], size_t data_len, size_t* bytes_used) {
+  String buf = "";
+  while (data_len < (*bytes_used)) {
+    if (data[*bytes_used]) {  // Looking for null termination of string
+      buf += static_cast<char>(data[(*bytes_used)++]);
+    } else {
+      (*bytes_used)++;  // Add byte used for null termination
+      return buf;
+    }
+  }
+
+  printf("Data too small to supply String termination\n");
+  return buf; // Defensive programming again, quietly return string so far even if not null terminated
 }
 
 }

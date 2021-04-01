@@ -314,7 +314,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
         }
         break; }
       case ArgType::kConstant: {
-        if (request->hasParam("constant_arg", true)) {
+        if (request->hasParam((String("constant_arg") + arg).c_str(), true)) {
           data.emplace_back(std::atoi(request->getParam((String("constant_arg") + arg).c_str(), true)->value().c_str()));
         } else {
           has_error = true;

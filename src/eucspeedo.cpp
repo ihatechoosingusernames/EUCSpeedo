@@ -6,7 +6,6 @@
 #include "eucs/includes.h"
 #include "constants.h"
 #include "buttonhandler.h"
-#include "hwconfig.h"
 
 namespace euc {
 
@@ -67,11 +66,7 @@ void EucSpeedo::HandlePress(PressType press) {
       Serial.println("Single press\n");
       if (static_cast<uint8_t>(ui_handler.getCurrentScreen()) >= static_cast<uint8_t>(UiScreen::kCustom)) {
         // ui_handler.ChangeScreen(UiScreen::kHome);
-        delay(500);
         ui_handler.Sleep();
-        // esp_sleep_enable_ext1_wakeup(0x300000000, ESP_EXT1_WAKEUP_ANY_HIGH);
-        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(PIN_223B_Q), HIGH);
-        esp_deep_sleep_start();
       } else {
         ui_handler.ChangeScreen(static_cast<UiScreen>(static_cast<uint8_t>(ui_handler.getCurrentScreen()) + 1));
       }

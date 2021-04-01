@@ -59,6 +59,9 @@ enum class UiScreen : uint8_t {
   kCustom
 };
 
+const static char* kBigNumberFont = "7";
+const static char* kSmallTextFont = "FiraCodeBold20";
+
 const static size_t kMaxUiElementCode = 255;
 
 enum class DataType : uint8_t {
@@ -90,10 +93,11 @@ enum class ColourType : uint8_t {
 enum class ArgType : uint8_t {
   kDataType = 0,
   kColour,
-  kConstant
+  kConstant,
+  kText
 };
 
-const static char* kArgTypeNames[] = {"Data Type", "Colour", "Constant"};
+const static char* kArgTypeNames[] = {"Data Type", "Colour", "Constant", "Text"};
 
 // These define the default connected UI screen, currently a blank green screen
 const static uint8_t kUiDefaultPreferences[] = {0x01, (uint8_t)ColourType::kConstant, 0x00, 0xFF, 0x00};
