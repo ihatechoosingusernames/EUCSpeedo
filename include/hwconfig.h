@@ -16,12 +16,12 @@ namespace euc {
 #define PIN_PCF8563_INT 34
 
 // Screen
-#define PIN_ST7735_SDA 19
-#define PIN_ST7735_SCL 18
-#define PIN_ST7735_RS 23
-#define PIN_ST7735_RES 26
-#define PIN_ST7735_CS 5
-#define PIN_ST7735_LEDK 27
+// #define PIN_ST7735_SDA 19 // These are all handled by the TFT_eSPI library
+// #define PIN_ST7735_SCL 18
+// #define PIN_ST7735_RS 23
+// #define PIN_ST7735_RES 26
+// #define PIN_ST7735_CS 5
+// #define PIN_ST7735_LEDK 27
 
 // Accelerometer/Gyroscope/Magnetometer
 #define PIN_LSM9DS1_SCL 22

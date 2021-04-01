@@ -29,10 +29,10 @@ PressType ButtonHandler::getPress() {
 }
 
 ButtonHandler::ButtonHandler() {
-  pinMode(PIN_223B_VDD, OUTPUT);
-  pinMode(PIN_223B_Q, INPUT_PULLUP);  // By default input is pulled high, active low
+  pinMode(PIN_223B_VDD, PULLUP);  // Pullup output mode allows the button to be used when MCU is in deep sleep mode
+  pinMode(PIN_223B_Q, INPUT);  // By default input is low, active high
 
-  digitalWrite(PIN_223B_VDD, HIGH); // Powers on 223B touch button
+  digitalWrite(PIN_223B_VDD, HIGH);
 
   timer = timerBegin(0, BASE_CLOCK_HZ / 1000, true); // Setting up timer with prescaler for milliseconds, and counting up
   timerAttachInterrupt(timer, ButtonHandler::onTimer, true);

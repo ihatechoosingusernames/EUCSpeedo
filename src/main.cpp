@@ -7,6 +7,7 @@
 #include <configserver.h>
 
 #include "eucspeedo.h"
+#include "hwconfig.h"
 
 using namespace euc;
 
@@ -24,6 +25,7 @@ void loop() {
   speedo_ptr->Process();
 }
 
+// TODO: Create more UI objects
 // TODO: Create settings object that loads stored global settings
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?

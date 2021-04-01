@@ -24,9 +24,9 @@ class ProcessData {
   private:
     double data[(size_t)DataType::kLastValue] = {0.0};  // Of this size to fit all DataTypes
 
-    SemaphoreHandle_t data_mutex; // Semaphore to protect the data array
+    // SemaphoreHandle_t data_mutex; // Semaphore to protect the data array
 
-    volatile bool writing = false;
+    volatile bool writing = false;  // Using this as semaphores were not working, I suspect I need to use explicit xTasks for them to work
 };
 
 }

@@ -18,6 +18,7 @@ class UiHandler {
     void ChangeScreen(UiScreen new_ui_screen);
     void Update(ProcessData* data);
     void LoadFromData(uint8_t data[], size_t data_len);
+    void Sleep();
 
     UiScreen getCurrentScreen();
     std::vector<UiElement*>* getDrawList();

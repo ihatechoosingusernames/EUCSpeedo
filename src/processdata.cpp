@@ -3,11 +3,6 @@
 namespace euc {
 
 ProcessData::ProcessData() {
-  data_mutex = xSemaphoreCreateBinary();
-  if (data_mutex == NULL)
-    printf("ProcessData data_mutex is NULL\n");
-
-  xSemaphoreGive(data_mutex);
 }
 
 void ProcessData::Update(Euc* euc) {

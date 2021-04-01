@@ -7,7 +7,8 @@ namespace euc {
 UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : ui_screen(start_screen), file_handler(file_handler) {
   LoadFromFile(file_handler);
   screen.init();
-  screen.setPivot(screen.width() / 2, screen.height() / 2);
+  // screen.setPivot(screen.width() / 2, screen.height() / 2);
+  screen.setRotation(1);
 }
 
 UiHandler::~UiHandler() {
@@ -22,15 +23,16 @@ void UiHandler::ChangeScreen(UiScreen new_ui_screen) {
 
 void UiHandler::Update(ProcessData* data) {
   TFT_eSprite sprite = TFT_eSprite(&screen); // Sprite object acts as a screen buffer to allow fast screen changes
-  sprite.createSprite(TFT_HEIGHT, TFT_WIDTH); // Screen is in portrait, we want to draw in landscape
+  sprite.createSprite(TFT_WIDTH, TFT_HEIGHT); // Screen is in portrait, we want to draw in landscape
   // sprite.loadFont(font_name);
 
   for (UiElement* element : draw_list) {
     element->Draw(data, &sprite);
   }
 
-  sprite.setPivot(screen.height() / 2, screen.width() / 2);
-  sprite.pushRotated(270);  // Push the sprite to the screen, rotating so it's 'the right way up'
+  // sprite.setPivot(screen.height() / 2, screen.width() / 2);
+  // sprite.pushRotated(270);  // Push the sprite to the screen, rotating so it's 'the right way up'
+  sprite.pushSprite(0, 0);
 }
 
 void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
@@ -48,6 +50,11 @@ void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
     // The elements are created in draw order; so the later in the list, the later they should be drawn
     draw_list.emplace_back(element);
   }
+}
+
+void UiHandler::Sleep() {
+  screen.writecommand(ST7735_SLPIN);
+  screen.writecommand(ST7735_DISPOFF);
 }
 
 UiScreen UiHandler::getCurrentScreen() { return ui_screen; }
