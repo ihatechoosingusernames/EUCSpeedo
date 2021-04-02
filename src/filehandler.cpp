@@ -5,7 +5,7 @@
 namespace euc {
 
 FileHandler::FileHandler() {
-  if (!SPIFFS.begin(true)) {
+  if (!SPIFFS.begin()) {
     Serial.println("An Error has occurred while mounting SPIFFS");
   }
 }
@@ -15,7 +15,7 @@ FileHandler::~FileHandler() {
 }
 
 void FileHandler::ReadFile(const char * path, char data[], size_t* size) {
-  File file = SPIFFS.open(path);
+  File file = SPIFFS.open(path, FILE_READ);
 
   if(!file || file.isDirectory()){
     Serial.println("failed to open file for reading");
@@ -42,7 +42,7 @@ std::vector<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
 
   ReadFile(file_name, data, &data_len);
 
-  out_buffer.reserve(data_len / 3);   // Just a guess at the appropriate vector size to avoid expensive reallocating
+  out_buffer.reserve(data_len / 3);   // A conservative guess at the appropriate vector size to avoid expensive reallocating
   
   for (size_t copy_len = 1; copy_len < data_len; copy_len++) {  // Start reading at [1] to avoid first garbage digit
     if (temp_buffer.length() && (data[copy_len] == ',' || data[copy_len] == ' ')) { // Commas and spaces act as delimiters
@@ -57,18 +57,22 @@ std::vector<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
   return out_buffer;
 }
 
-size_t FileHandler::FileSize(const char * filename) {
-  File file = SPIFFS.open(filename);
+size_t FileHandler::FileSize(const char* file_name) {
+  printf("Trying to open file name %s\n", file_name);
+  File file = SPIFFS.open(file_name, FILE_READ);
 
   if(!file || file.isDirectory()) {
     Serial.println("failed to open file for checking size");
     return 0;
   }
+  size_t out = file.size();
+  file.close();
 
-  return file.size();
+  return out;
 }
 
 void FileHandler::WriteFile(const char * file_name, const char * message) {
+    printf("Trying to open file name %s\n", file_name);
     File file = SPIFFS.open(file_name, FILE_WRITE);
     if(!file){
       Serial.println("failed to open file for writing");

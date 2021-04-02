@@ -19,13 +19,13 @@ class FileHandler {
     size_t FileSize(const char* file_name);
 
     // Overwrites file with message
-    void WriteFile(const char * file_name, const char * message);
+    void WriteFile(const char* file_name, const char* message);
 
-    void AppendFile(const char * file_name, const char * message);
-    void RenameFile(const char * file_name, const char * new_name);
-    void DeleteFile(const char * file_name);
+    void AppendFile(const char* file_name, const char* message);
+    void RenameFile(const char* file_name, const char* new_name);
+    void DeleteFile(const char* file_name);
 
-    void listDir(const char * dirname, uint8_t levels);
+    void listDir(const char* dirname, uint8_t levels);
 };
 
 }

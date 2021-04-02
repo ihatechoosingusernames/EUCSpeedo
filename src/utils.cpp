@@ -28,10 +28,12 @@ double Utils::FromArrayDescending(uint8_t array[], size_t num_elements) {
 }
 
 const char* Utils::getUiScreenFileName(UiScreen screen) {
+  printf("getUiScreenFileName(): %s\n", (kUiScreenFilePrefix + String(static_cast<uint8_t>(screen)) + "." + kUiScreenFileType).c_str());
   return (kUiScreenFilePrefix + String(static_cast<uint8_t>(screen)) + "." + kUiScreenFileType).c_str();
 }
 
 const char* Utils::getUiScreenFileName(uint8_t screen) {
+  printf("getUiScreenFileName(): %s\n", (kUiScreenFilePrefix + String(screen) + "." + kUiScreenFileType).c_str());
   return (kUiScreenFilePrefix + String(screen) + "." + kUiScreenFileType).c_str();
 }
 

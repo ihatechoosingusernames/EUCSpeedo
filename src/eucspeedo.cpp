@@ -61,14 +61,17 @@ void EucSpeedo::onProcessInput(uint8_t* data, size_t data_size) {
 }
 
 void EucSpeedo::HandlePress(PressType press) {
+  if (config_server_active && press != PressType::kLongPress) // This is hacky, should all be replaced with a state machine
+    return;
+
   switch (press) {
     case PressType::kSinglePress:
       Serial.println("Single press\n");
       if (static_cast<uint8_t>(ui_handler.getCurrentScreen()) >= static_cast<uint8_t>(UiScreen::kCustom)) {
-        // ui_handler.ChangeScreen(UiScreen::kHome);
         ui_handler.Sleep();
       } else {
         ui_handler.ChangeScreen(static_cast<UiScreen>(static_cast<uint8_t>(ui_handler.getCurrentScreen()) + 1));
+        ui_handler.Update(&process_data);
       }
       break;
     case PressType::kDoublePress:

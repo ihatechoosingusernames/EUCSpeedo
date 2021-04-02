@@ -50,7 +50,7 @@ class ConfigServer {
 
     String ui_elem_data, ui_elem_select, ui_data_type_select;
 
-    uint8_t ui_screen;
+    uint8_t ui_screen = static_cast<uint8_t>(UiScreen::kCustom);
 };
 
 }

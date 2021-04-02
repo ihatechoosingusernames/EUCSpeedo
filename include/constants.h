@@ -55,11 +55,10 @@ const static char* kUiScreenFileType = "csv";
 enum class UiScreen : uint8_t {
   kHome = 0,
   kConfig,
-  kConnected,
   kCustom
 };
 
-const static char* kBigNumberFont = "7";
+const static uint8_t kBigNumberFont = 7;
 const static char* kSmallTextFont = "FiraCodeBold20";
 
 const static size_t kMaxUiElementCode = 255;
@@ -99,8 +98,8 @@ enum class ArgType : uint8_t {
 
 const static char* kArgTypeNames[] = {"Data Type", "Colour", "Constant", "Text"};
 
-// These define the default connected UI screen, currently a blank green screen
-const static uint8_t kUiDefaultPreferences[] = {0x01, (uint8_t)ColourType::kConstant, 0x00, 0xFF, 0x00};
+// These define the default UI screen, currently a blank green screen
+const static uint8_t kUiDefaultPreferences[] = {0x01, static_cast<uint8_t>(ColourType::kConstant), 0x00, 0xFF, 0x00};
 const static size_t kUiDefaultPreferencesLength = 5;
 
 // Default port for config server

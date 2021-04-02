@@ -2,6 +2,7 @@
 
 #include "constants.h"
 #include "hwconfig.h"
+#include "utils.h"
 
 namespace euc {
 
@@ -65,14 +66,12 @@ std::vector<UiElement*>* UiHandler::getDrawList() { return &draw_list; }
 void UiHandler::LoadFromFile(FileHandler* file_handler) {
   printf("Loading screen %d\n", static_cast<uint8_t>(ui_screen));
 
-  // Building the screen's filename
-  String ui_screen_prefs = kUiScreenFilePrefix + String(static_cast<uint8_t>(ui_screen)) + "." + kUiScreenFileType;
-
   // If there are saved UI preferences, load them.
-  if (file_handler->FileSize(ui_screen_prefs.c_str())) {
-    std::vector<uint8_t> from_csv = file_handler->ReadCsvBytes(ui_screen_prefs.c_str());
+  if (file_handler->FileSize(Utils::getUiScreenFileName(ui_screen))) {
+    std::vector<uint8_t> from_csv = file_handler->ReadCsvBytes(Utils::getUiScreenFileName(ui_screen));
 
     LoadFromData(from_csv.data(), from_csv.size());
+    return;
   }
 
   printf("No data to load from file, loading factory config\n");

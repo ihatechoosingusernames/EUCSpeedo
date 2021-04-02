@@ -37,7 +37,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       ui_data_string += "\n";
     }
 
-    file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
+    printf("Saving: %s\n\tto file %s\n", ui_data_string.c_str(), Utils::getUiScreenFileName(ui_screen));
+
+    file_handler->AppendFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
   });
 
   server.on("/remove_element", HTTP_DELETE, [this](AsyncWebServerRequest *request){
@@ -146,11 +148,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   }
 
   // If there are saved UI preferences, load them.
-  String ui_screen_prefs = Utils::getUiScreenFileName(ui_screen);
-
   std::vector<uint8_t> csv_data;
-  if (file_handler->FileSize(ui_screen_prefs.c_str())) {
-    csv_data = file_handler->ReadCsvBytes(ui_screen_prefs.c_str());
+  if (file_handler->FileSize(Utils::getUiScreenFileName(ui_screen))) {
+    csv_data = file_handler->ReadCsvBytes(Utils::getUiScreenFileName(ui_screen));
   } else {  // If not, use the "factory" settings
     csv_data = std::vector<uint8_t>(kUiDefaultPreferences, kUiDefaultPreferences + kUiDefaultPreferencesLength);
   }
