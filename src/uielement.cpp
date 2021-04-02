@@ -45,7 +45,7 @@ void UiElement::getArgsFromData(uint8_t data[], size_t data_len) {
 }
 
 ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, size_t* bytes_used) {
-  if (!data_len || *bytes_used >= data_len) {  // No Data provided, default is to return #000000 (black)
+  if (*bytes_used >= data_len) {  // No Data provided, default is to return #0000 (black)
     *bytes_used += 0;
     return [](ProcessData* data){ return 0; };
   }
@@ -61,7 +61,7 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
       if (data_len >= 4) {
         // The following 3 bytes should be the RGB values
         *bytes_used += 4;
-        uint16_t colour = (uint16_t)((data[3] << 11) | (data[2] << 5) | data[1]); // Screen uses BGR format
+        uint16_t colour = (uint16_t)(((data[3] >> 3) << 11) | ((data[2] >> 2) << 5) | (data[1] >> 3)); // Screen uses BGR format
         printf("kConstant Colour provider providing %x\n", colour);
         return [=](ProcessData* data){ return colour; };
       }
@@ -71,15 +71,15 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
     case ColourType::kDynamicBetweenValues:
       if (data_len >= 10) {
         // The first byte should be a data type
-        DataType type = (DataType)data[1];
+        DataType type = static_cast<DataType>(data[1]);
         // Next byte is a low value for the data type
         int8_t min_val = static_cast<int8_t>(data[2]);
         // Next byte is an high value for the data type
         int8_t max_val = static_cast<int8_t>(data[3]);
-        // The next three bytes are the low colour
-        uint8_t min_colour[3] = {data[4], data[5], data[6]};
-        // The next three bytes are the high colour
-        uint8_t max_colour[3] = {data[7], data[8], data[9]};
+        // The next three bytes are the low colour, right shifted to their 16 bit representations
+        uint8_t min_colour[3] = {static_cast<uint8_t>(data[4] >> 3), static_cast<uint8_t>(data[5] >> 2), static_cast<uint8_t>(data[6] >> 3)};
+        // The next three bytes are the high colour, right shifted to their 16 bit representations
+        uint8_t max_colour[3] = {static_cast<uint8_t>(data[7] >> 3), static_cast<uint8_t>(data[8] >> 2), static_cast<uint8_t>(data[9] >> 3)};
 
         *bytes_used += 10;
 
@@ -96,7 +96,7 @@ ColourProvider UiElement::getColourProvider(uint8_t data[], size_t data_len, siz
       }
   }
 
-  // No valid Data provided, default is to return #000000 (black)
+  // No valid Data provided, default is to return #0000 (black)
   *bytes_used += 1;
   return [](ProcessData* data){ return 0; };
 }

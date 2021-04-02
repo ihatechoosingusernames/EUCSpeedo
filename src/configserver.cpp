@@ -362,12 +362,9 @@ std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
   }
   
   // Converts from string to unsigned long in base 16, and from there to unsigned byte.
-  // As the screen drivers use 16 bit colours, each colour is then right shifted the appropriate amount
-  out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16) >> 3); // Red
-  out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16) >> 2); // Green
-  out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16) >> 3); // Blue
-
-  printf("Interpreting colour %s as red %d, green %d, blue %d\n", colour.c_str(), out[0], out[1], out[2]);
+  out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16)); // Red
+  out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16)); // Green
+  out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue
 
   return out;
 }
@@ -392,7 +389,7 @@ void ConfigServer::ReorderElement(size_t index, int move) {
 
 void ConfigServer::ReloadTestData() {
   std::vector<uint8_t> new_data;
-  // new_data.reserve(test_ui_data.size() * 2);  // Just a guess at the total size to minimise the reallocations needed
+  new_data.reserve(test_ui_data.size() * 2);  // Just a guess at the total size to minimise the reallocations needed
 
   for (std::vector<uint8_t> byte_vec : test_ui_data)  // Combine all the vectors into one
     new_data.insert(new_data.end(), byte_vec.begin(), byte_vec.end());
