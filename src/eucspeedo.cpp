@@ -33,6 +33,9 @@ void EucSpeedo::Process() {
   process_data.Update(&rtc_handler);
   if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
     ui_handler.Update(&process_data);
+
+  if (ble_handler_active)
+    ble->Update();
 }
 
 // Creates the correct type of wheel object

@@ -16,6 +16,7 @@ class BleHandler {
     BleHandler(std::function<void(EucType)> connection, std::function<void(uint8_t* data, size_t data_size)> notify);
 
     void Scan();
+    void Update();
     bool isConnected();
 
   private:
@@ -46,6 +47,10 @@ class BleHandler {
     pthread_t scan_thread;
 
     bool connected = false, scanning = false;
+
+    volatile bool should_connect;
+    EucType brand;
+    NimBLEAdvertisedDevice* connect_device;
 };
 
 }

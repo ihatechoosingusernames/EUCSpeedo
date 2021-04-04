@@ -25,6 +25,12 @@ void BleHandler::Scan() {
   }
 }
 
+void BleHandler::Update() {
+  if (!connected && should_connect) {
+    Connect(connect_device, brand);
+  }
+}
+
 bool BleHandler::isConnected() {
   return connected;
 }
@@ -42,6 +48,7 @@ void* BleHandler::Scan(void* in) {
 
 bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
   printf("Forming a connection to %s %s\n", device->getName().c_str(), device->getAddress().toString().c_str());
+  connected = true;
   
   BLEClient*  pClient  = NimBLEDevice::createClient();
   printf("Created client\n");
@@ -59,11 +66,13 @@ bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
 
   auto services = pClient->getServices(true);
   printf("Client has %d services\n", services->size());
-  for (NimBLERemoteService* service : *services)
+  for (NimBLERemoteService* service : *services) {
     printf("\t%s\n", service->toString().c_str());
+    service->getCharacteristics(true);
+  }
 
   // Obtain a reference to the service we are after in the remote BLE server.
-  BLERemoteService* pRemoteService = pClient->getService(kServiceUuids[static_cast<size_t>(type)]);
+  BLERemoteService* pRemoteService = pClient->getService(NimBLEUUID(kServiceUuids[static_cast<size_t>(type)]));
   if (pRemoteService == nullptr) {
     printf("Failed to find the service UUID: %s\n", kServiceUuids[static_cast<size_t>(type)]);
     pClient->disconnect();
@@ -71,7 +80,7 @@ bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
   }
 
   // Obtain a reference to the characteristic in the service of the remote BLE server.
-  NimBLERemoteCharacteristic* pRemoteCharacteristic = pRemoteService->getCharacteristic(kReadCharacteristicUuids[static_cast<size_t>(type)]);
+  NimBLERemoteCharacteristic* pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(kReadCharacteristicUuids[static_cast<size_t>(type)]));
   if (pRemoteCharacteristic == nullptr) {
     printf("Failed to find our characteristic UUID: %s\n", kReadCharacteristicUuids[static_cast<size_t>(type)]);
     pClient->disconnect();
@@ -87,7 +96,6 @@ bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
   if(pRemoteCharacteristic->canNotify())
     pRemoteCharacteristic->subscribe(true, std::bind(&BleHandler::NotifyCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
-  connected = true;
   connection_callback(type);
 
   return true;
@@ -104,8 +112,6 @@ BleHandler::AdvertisedDeviceCallbacks::AdvertisedDeviceCallbacks(BleHandler* sup
 void BleHandler::AdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* device) {
   printf("BLE Advertised Device found: %s\n", device->toString().c_str());
 
-  EucType found_euc = EucType::kLastType;
-
   for (size_t type = 0; type < static_cast<size_t>(EucType::kLastType); type++) {
     if (device->isAdvertisingService(BLEUUID(kServiceUuids[type]))) {
       // This is the naming method of identification. Quick and dirty, but works for now.
@@ -117,15 +123,12 @@ void BleHandler::AdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* dev
       std::transform(advertised_name.begin(), advertised_name.end(), advertised_name.begin(), [](char c){return std::toupper(c); });
 
       if (advertised_name.find(kBrandName[type]) != std::string::npos) {
-        found_euc = static_cast<EucType>(type);
+        super_reference->brand = static_cast<EucType>(type);
+        super_reference->should_connect = true;
+        super_reference->connect_device = device;
+        return;
       }
     }
-  }
-
-  // Found an EUC, now stopping scan and connecting
-  if (found_euc != EucType::kLastType) {
-    NimBLEDevice::getScan()->stop();
-    super_reference->Connect(device, found_euc);
   }
 }
 
