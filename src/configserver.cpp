@@ -39,7 +39,8 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
     printf("Saving: %s\n\tto file %s\n", ui_data_string.c_str(), Utils::getUiScreenFileName(ui_screen));
 
-    file_handler->AppendFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
+    file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
+    request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   server.on("/remove_element", HTTP_DELETE, [this](AsyncWebServerRequest *request){

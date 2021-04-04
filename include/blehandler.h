@@ -21,22 +21,23 @@ class BleHandler {
   private:
     static void* Scan(void* in);
 
-    bool Connect(BLEAdvertisedDevice* device, EucType type);
-    void NotifyCallBack(BLERemoteCharacteristic* rc, uint8_t* data, size_t data_size, bool is_notify);
+    bool Connect(NimBLEAdvertisedDevice* device, EucType type);
+    void NotifyCallBack(NimBLERemoteCharacteristic* rc, uint8_t* data, size_t data_size, bool is_notify);
 
-    class AdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
+    class AdvertisedDeviceCallbacks : public NimBLEAdvertisedDeviceCallbacks {
       public:
         AdvertisedDeviceCallbacks(BleHandler* super_ref);
 
-        void onResult(BLEAdvertisedDevice* device) override;
+        void onResult(NimBLEAdvertisedDevice* device) override;
 
       private:
         BleHandler* super_reference;
     };
 
-    class ClientCallback : public BLEClientCallbacks {
+    class ClientCallback : public NimBLEClientCallbacks {
       void onConnect(BLEClient* client) override;
       void onDisconnect(BLEClient* client) override;
+      void onAuthenticationComplete(ble_gap_conn_desc* desc) override;
     };
 
     std::function<void(EucType)> connection_callback;

@@ -2,7 +2,6 @@
 #define FILEHANDLER_H_
 
 #include <Arduino.h>
-#include <list>
 
 namespace euc {
 

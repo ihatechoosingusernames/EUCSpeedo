@@ -8,6 +8,7 @@
 
 #include "eucspeedo.h"
 #include "hwconfig.h"
+#include "blehandler.h"
 
 using namespace euc;
 
@@ -17,15 +18,18 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Starting EUC Speedo app");
   
-  speedo_ptr = new EucSpeedo();
+  // speedo_ptr = new EucSpeedo();
+  BleHandler ble([](EucType){}, [](uint8_t* data, size_t data_size){});
+  ble.Scan();
 }
 
 void loop() {
   delay(100);
-  speedo_ptr->Process();
+  // speedo_ptr->Process();
 }
 
 // TODO: Create more UI objects
+// TODO: Fix bluetooth handler
 // TODO: Implement config server functions to take text arguments
 // TODO: Fix file saves
 // TODO: Implement OTA updates
