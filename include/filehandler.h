@@ -11,20 +11,20 @@ class FileHandler {
     ~FileHandler();
 
     // Reads <size> bytes to array at data. If available bytes < size, size is changed to the number that there are
-    void ReadFile(const char* file_name, char data[], size_t* size);
+    void ReadFile(String file_name, char data[], size_t* size);
     // Reads a full CSV file of bytes
-    std::vector<uint8_t> ReadCsvBytes(const char* file_name);
+    std::vector<uint8_t> ReadCsvBytes(String file_name);
     // Returns file size in bytes
-    size_t FileSize(const char* file_name);
+    size_t FileSize(String file_name);
 
     // Overwrites file with message
-    void WriteFile(const char* file_name, const char* message);
+    void WriteFile(String file_name, String message);
 
-    void AppendFile(const char* file_name, const char* message);
-    void RenameFile(const char* file_name, const char* new_name);
-    void DeleteFile(const char* file_name);
+    void AppendFile(String file_name, String message);
+    void RenameFile(String file_name, String new_name);
+    void DeleteFile(String file_name);
 
-    void listDir(const char* dirname, uint8_t levels);
+    void listDir(String dirname, uint8_t levels);
 };
 
 }

@@ -84,7 +84,7 @@ enum class ArgType : uint8_t {
   kConstant
 };
 
-const static char* kArgTypeNames[] = {"Data Type", "Colour", "Constant", "Text"};
+const static char* kArgTypeNames[] = {"Data Type", "Colour", "Constant"};
 
 // These define the default UI screen, currently a blank green screen
 const static uint8_t kUiDefaultPreferences[] = {0x01, static_cast<uint8_t>(ColourType::kConstant), 0x00, 0xFF, 0x00};

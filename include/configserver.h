@@ -9,13 +9,6 @@
 
 namespace euc {
 
-/*
-
-  This async server is handled internally as synchronous, as only one connection at a time is allowed.
-  It of course is not synchronous with respect to outside data.
-
-*/
-
 class ConfigServer {
   public:
     ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHandler* rtc);

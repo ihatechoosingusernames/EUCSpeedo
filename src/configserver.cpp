@@ -31,6 +31,8 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   server.on("/save_changes", HTTP_POST, [this](AsyncWebServerRequest *request){
     LOG_DEBUG("/save_changes");
     // Convert test data to a CSV string and store it in the ui data file
+    // save_data = true;
+
     String ui_data_string;
     for (std::vector<uint8_t> byte_vec : test_ui_data) {
       for (uint8_t byte : byte_vec)
@@ -38,9 +40,10 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       ui_data_string += "\n";
     }
 
-    LOG_DEBUG_ARGS("Saving: %s\n\tto file %s", ui_data_string.c_str(), Utils::getUiScreenFileName(ui_screen));
+    LOG_DEBUG_ARGS("Saving: %s\n\tto file %s", ui_data_string.c_str(), Utils::getUiScreenFileName(ui_screen).c_str());
 
-    file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
+    file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string);
+
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
