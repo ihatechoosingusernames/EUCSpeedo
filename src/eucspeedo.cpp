@@ -6,6 +6,7 @@
 #include "eucs/includes.h"
 #include "constants.h"
 #include "buttonhandler.h"
+#include "logging.h"
 
 namespace euc {
 
@@ -13,7 +14,7 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     file_handler(),
     ui_handler(&file_handler),
     process_data() {
-  file_handler.listDir("/", 1);
+  file_handler.listDir("/", 0);
 
   process_data.Update(&rtc_handler, true);  // Check the date on first start
 }
@@ -52,7 +53,7 @@ void EucSpeedo::onFoundWheel(EucType type) {
       wheel_connected = true;
       break;
     default:
-      Serial.println("Wheel not yet implemented, uh oh!");
+      LOG_DEBUG("Wheel not yet implemented, uh oh!");
   }
 }
 
@@ -69,7 +70,7 @@ void EucSpeedo::HandlePress(PressType press) {
 
   switch (press) {
     case PressType::kSinglePress:
-      Serial.println("Single press\n");
+      LOG_DEBUG("Single press");
       if (static_cast<uint8_t>(ui_handler.getCurrentScreen()) >= static_cast<uint8_t>(UiScreen::kCustom)) {
         ui_handler.Sleep();
       } else {
@@ -78,7 +79,7 @@ void EucSpeedo::HandlePress(PressType press) {
       }
       break;
     case PressType::kDoublePress:
-      Serial.println("Double press\n");
+      LOG_DEBUG("Double press");
       if (ble_handler_active) {
         delete ble;
         ble_handler_active = false;
@@ -90,7 +91,7 @@ void EucSpeedo::HandlePress(PressType press) {
       }
       break;
     case PressType::kLongPress:
-      Serial.println("Long press\n");
+      LOG_DEBUG("Long press");
       if (config_server_active) {
         config_server->Stop();
         delete config_server;

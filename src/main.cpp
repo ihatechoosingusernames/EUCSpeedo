@@ -4,11 +4,9 @@
  */
 
 #include <Arduino.h>
-#include <configserver.h>
 
 #include "eucspeedo.h"
-#include "hwconfig.h"
-#include "blehandler.h"
+#include "logging.h"
 
 using namespace euc;
 
@@ -16,7 +14,7 @@ EucSpeedo* speedo_ptr;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Starting EUC Speedo app");
+  LOG_DEBUG("Starting EUC Speedo app")
   
   speedo_ptr = new EucSpeedo();
 }
@@ -28,7 +26,6 @@ void loop() {
 
 // TODO: Create more UI objects
 // TODO: Update bluetooth handler to gracefully deal with reconnects without using a ton of memory
-// TODO: Implement config server functions to take text arguments
 // TODO: Fix file saves
 // TODO: Implement OTA updates
 // TODO: Create settings object that loads stored global settings

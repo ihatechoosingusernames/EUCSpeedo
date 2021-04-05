@@ -2,11 +2,13 @@
 
 #include "SPIFFS.h"
 
+#include "logging.h"
+
 namespace euc {
 
 FileHandler::FileHandler() {
   if (!SPIFFS.begin()) {
-    Serial.println("An Error has occurred while mounting SPIFFS");
+    LOG_DEBUG("An Error has occurred while mounting SPIFFS");
   }
 }
 
@@ -15,10 +17,11 @@ FileHandler::~FileHandler() {
 }
 
 void FileHandler::ReadFile(const char * path, char data[], size_t* size) {
+  LOG_DEBUG_ARGS("Opening file %s", path);
   File file = SPIFFS.open(path, FILE_READ);
 
   if(!file || file.isDirectory()){
-    Serial.println("failed to open file for reading");
+    LOG_DEBUG("failed to open file for reading");
     *size = 0;
     return;
   }
@@ -35,7 +38,7 @@ void FileHandler::ReadFile(const char * path, char data[], size_t* size) {
 
 // Interprets file as a CSV of bytes, returns the raw bytes
 std::vector<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
-  size_t temp_len = 0, data_len = FileSize(file_name);
+  size_t data_len = FileSize(file_name);
   char data[data_len];  // Char data
   std::vector<uint8_t> out_buffer;  // Output buffer
   String temp_buffer = ""; // Temporary buffer for char data being interpreted
@@ -46,7 +49,6 @@ std::vector<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
   
   for (size_t copy_len = 1; copy_len < data_len; copy_len++) {  // Start reading at [1] to avoid first garbage digit
     if (temp_buffer.length() && (data[copy_len] == ',' || data[copy_len] == ' ')) { // Commas and spaces act as delimiters
-      printf("Adding %s to list\n", temp_buffer.c_str());
       out_buffer.emplace_back(std::atoi(temp_buffer.c_str()));
       temp_buffer = "";
     } else {  // Assume everything else is numbers, which is lazy, but works for now
@@ -58,11 +60,11 @@ std::vector<uint8_t> FileHandler::ReadCsvBytes(const char* file_name) {
 }
 
 size_t FileHandler::FileSize(const char* file_name) {
-  printf("Trying to open file name %s\n", file_name);
-  File file = SPIFFS.open(file_name, FILE_READ);
+  LOG_DEBUG_ARGS("Trying to open file name %s starting with %c", file_name, file_name[0]);
+  File file = SPIFFS.open(file_name);
 
   if(!file || file.isDirectory()) {
-    Serial.println("failed to open file for checking size");
+    LOG_DEBUG_ARGS("failed to open file %s for checking size", file_name);
     return 0;
   }
   size_t out = file.size();
@@ -72,14 +74,14 @@ size_t FileHandler::FileSize(const char* file_name) {
 }
 
 void FileHandler::WriteFile(const char * file_name, const char * message) {
-    printf("Trying to open file name %s\n", file_name);
+    LOG_DEBUG_ARGS("Trying to open file name %s starting with %c", file_name, file_name[0]);
     File file = SPIFFS.open(file_name, FILE_WRITE);
     if(!file){
-      Serial.println("failed to open file for writing");
+      LOG_DEBUG("failed to open file for writing");
       return;
     }
     if(!file.print(message)){
-      Serial.println("write failed");
+      LOG_DEBUG("write failed");
     }
     file.close();
 }
@@ -87,57 +89,55 @@ void FileHandler::WriteFile(const char * file_name, const char * message) {
 void FileHandler::AppendFile(const char * file_name, const char * message) {
   File file = SPIFFS.open(file_name, FILE_APPEND);
   if(!file){
-    Serial.println("failed to open file for appending");
+    LOG_DEBUG("failed to open file for appending");
     return;
   }
   if(!file.print(message)){
-    Serial.println("append failed");
+    LOG_DEBUG("append failed");
   }
   file.close();
 }
 
 void FileHandler::RenameFile(const char * file_name1, const char * new_name) {
   if (!SPIFFS.rename(file_name1, new_name)) {
-    Serial.println("rename failed");
+    LOG_DEBUG("rename failed");
   }
 }
 
 void FileHandler::DeleteFile(const char * file_name) {
   if(!SPIFFS.remove(file_name)){
-    Serial.println("delete failed");
+    LOG_DEBUG("delete failed");
   }
 }
 
 void FileHandler::listDir(const char * dirname, uint8_t levels){
   fs::FS fs = SPIFFS;
-    Serial.printf("Listing directory: %s\r\n", dirname);
+  LOG_DEBUG_ARGS("Listing directory: %s", dirname);
 
-    File root = fs.open(dirname);
-    if(!root){
-        Serial.println("failed to open directory");
-        return;
-    }
-    if(!root.isDirectory()){
-        Serial.println(" not a directory");
-        return;
-    }
+  File root = fs.open(dirname);
+  if(!root){
+      LOG_DEBUG("failed to open directory");
+      return;
+  }
+  if(!root.isDirectory()){
+      LOG_DEBUG("not a directory");
+      return;
+  }
 
-    File file = root.openNextFile();
-    while(file){
-        if(file.isDirectory()){
-            Serial.print("  DIR : ");
-            Serial.println(file.name());
-            if(levels){
-                listDir(file.name(), levels -1);
-            }
-        } else {
-            Serial.print("  FILE: ");
-            Serial.print(file.name());
-            Serial.print("\tSIZE: ");
-            Serial.println(file.size());
-        }
-        file = root.openNextFile();
+  File file = root.openNextFile();
+  while(file){
+    if(file.isDirectory()){
+      LOG_DEBUG_ARGS("  DIR : %s", file.name());
+      if(levels){
+          listDir(file.name(), levels -1);
+      }
+    } else {
+      LOG_DEBUG_ARGS("  FILE: %s\tSIZE: %d", file.name(), file.size());
     }
+    file = root.openNextFile();
+  }
+
+  file.close();
 }
 
 }

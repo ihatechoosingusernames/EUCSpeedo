@@ -6,18 +6,19 @@
 #include "constants.h"
 #include "uielement.h"
 #include "utils.h"
+#include "logging.h"
 
 namespace euc {
 
 ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHandler* rtc) : server(kDefaultServerPort),
     ui_handler(arg_ui_handler), file_handler(files), rtc_handler(rtc) {
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
-    printf("/\n");
+    LOG_DEBUG("/");
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   server.on("/general_settings", HTTP_GET, [this](AsyncWebServerRequest *request){
-    printf("/general_settings\n");
+    LOG_DEBUG("/general_settings");
     request->send(SPIFFS, "/general_settings.html", "text/html", false);
   });
 
@@ -28,7 +29,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   server.on("/new_element", HTTP_POST, std::bind(&ConfigServer::ProcessNewElementRequest, this, std::placeholders::_1));
 
   server.on("/save_changes", HTTP_POST, [this](AsyncWebServerRequest *request){
-    printf("/save_changes\n");
+    LOG_DEBUG("/save_changes");
     // Convert test data to a CSV string and store it in the ui data file
     String ui_data_string;
     for (std::vector<uint8_t> byte_vec : test_ui_data) {
@@ -37,14 +38,14 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       ui_data_string += "\n";
     }
 
-    printf("Saving: %s\n\tto file %s\n", ui_data_string.c_str(), Utils::getUiScreenFileName(ui_screen));
+    LOG_DEBUG_ARGS("Saving: %s\n\tto file %s", ui_data_string.c_str(), Utils::getUiScreenFileName(ui_screen));
 
     file_handler->WriteFile(Utils::getUiScreenFileName(ui_screen), ui_data_string.c_str());
     request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   server.on("/remove_element", HTTP_DELETE, [this](AsyncWebServerRequest *request){
-    printf("/remove_element\n");
+    LOG_DEBUG("/remove_element");
     if(request->hasParam("id")) {
       RemoveElement(std::atoi(request->getParam("id")->value().c_str()));
       ReloadTestData();
@@ -52,13 +53,13 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   });
 
   server.on("/update_data", HTTP_POST, [this](AsyncWebServerRequest * request){
-    printf("/update_data\n");
+    LOG_DEBUG("/update_data");
     if (!request->hasParam("id", true))
       return;
     if (!request->hasParam("data", true))
       return;
 
-    printf(("Updating data type " + request->getParam("id", true)->value() + " with data " + request->getParam("data", true)->value() + "\n").c_str());
+    LOG_DEBUG(("Updating data type " + request->getParam("id", true)->value() + " with data " + request->getParam("data", true)->value() + "\n").c_str());
 
     // Get data type as a string, then convert to String -> const char* -> int -> DataType. Very efficient.
     DataType data = static_cast<DataType>(std::atoi(request->getParam("id", true)->value().c_str()));
@@ -69,9 +70,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   });
 
   server.on("/update_elem_order", HTTP_POST, [this](AsyncWebServerRequest * request){
-    printf("/update_elem_order\n");
+    LOG_DEBUG("/update_elem_order");
     for (size_t param = 0; param < request->params(); param++) {
-      printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
     }
     if (!request->hasParam("elem", true))
       return;
@@ -83,9 +84,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   });
 
   server.on("/set_date", HTTP_POST, [this](AsyncWebServerRequest * request){
-    printf("/set_date\n");
+    LOG_DEBUG("/set_date");
     for (size_t param = 0; param < request->params(); param++)
-      printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
 
     if (!(request->hasParam("year", true) && request->hasParam("month", true) && request->hasParam("day", true) && request->hasParam("weekday", true)))
       return;
@@ -97,9 +98,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   });
 
   server.on("/set_time", HTTP_POST, [this](AsyncWebServerRequest * request){
-    printf("/set_time\n");
+    LOG_DEBUG("/set_time");
     for (size_t param = 0; param < request->params(); param++)
-      printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
 
     if (!(request->hasParam("hours", true) && request->hasParam("minutes", true) && request->hasParam("seconds", true)))
       return;
@@ -120,9 +121,16 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       continue;
     }
 
-    ui_elem_select += "<option value=\"" + String(ui_code) + "\">" + elem->Name() + "</option>\n";
+    ui_elem_select += "<option value=\"";
+    ui_elem_select += ui_code;
+    ui_elem_select += "\">";
+    ui_elem_select += elem->Name();
+    ui_elem_select += "</option>\n";
 
-    ui_elem_data += String(ui_code > 1? "," : "") + "\"" + String(ui_code) + "\": [";
+    ui_elem_data += (ui_code > 1? "," : "");
+    ui_elem_data += "\"";
+    ui_elem_data += ui_code;
+    ui_elem_data += "\": [";
 
     std::vector<String> name_list = elem->ArgNames();
     std::vector<ArgType> arg_list = elem->ArgList();
@@ -176,7 +184,10 @@ ConfigServer::~ConfigServer() {
 void ConfigServer::Start() {
   started = true;
   WiFi.softAP(kDefaultServerSSID);
-  Serial.println(WiFi.softAPIP());
+  LOG_DEBUG(WiFi.softAPIP().toString().c_str());
+  ui_handler->ChangeScreen(UiScreen::kConfig);
+  ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 10);
+  ui_handler->Update(&test_process_data);
   server.begin();
 }
 
@@ -230,7 +241,7 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
 }
 
 void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
-  printf("/new_element\n");
+  LOG_DEBUG("/new_element");
 
   bool has_error = false;
   uint8_t elem_type;
@@ -241,7 +252,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
     has_error = true;
 
   for (size_t param = 0; param < request->params(); param++) {
-    printf((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+    LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
   }
 
   UiElement* elem = UiElement::Factory(&elem_type, 1);
@@ -258,12 +269,12 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
           test_data_types[std::atoi(request->getParam((String("data_arg") + arg).c_str(), true)->value().c_str())] = true;  // Mark this datatype as being used
         } else {
           has_error = true;
-          printf("Has Error: %d\n", __LINE__);
+          LOG_DEBUG("Has Error: %d");
         }
         break; }
       case ArgType::kColour: {
         const char* param_name = (String("colour_arg") + arg).c_str();
-        printf("Looking for arg: %s\n", param_name);
+        LOG_DEBUG_ARGS("Looking for arg: %s\n", param_name);
 
         if (request->hasParam(param_name, true)) {
           if (request->getParam(param_name, true)->value() == String((int)ColourType::kConstant)) {  // Solid Colour
@@ -275,13 +286,13 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
               std::vector<uint8_t> parsed_colour = ParseColour(request->getParam(colour_type, true)->value());
               if (parsed_colour.size() < 3) {
                 has_error = true;
-                printf("Has Error: %d\n", __LINE__);
+                LOG_DEBUG("Has Error");
               } else {
                 data.insert(data.end(), parsed_colour.begin(), parsed_colour.end());
               }
             } else {
               has_error = true;
-              printf("Has Error: %d\n", __LINE__);
+              LOG_DEBUG("Has Error");
             }
           } else if (request->getParam(param_name, true)->value() == String((int)ColourType::kDynamicBetweenValues)) { // Dynamic Colour
             data.emplace_back((uint8_t)ColourType::kDynamicBetweenValues);
@@ -302,7 +313,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 
               if (parsed_low_colour.size() < 3 || parsed_high_colour.size() < 3) {
                 has_error = true;
-                printf("Has Error: %d\n", __LINE__);
+                LOG_DEBUG("Has Error");
               }
 
               data.insert(data.end(), parsed_low_colour.begin(), parsed_low_colour.end());
@@ -311,7 +322,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
           }
         } else {
           has_error = true;
-          printf("Has Error: %d\n", __LINE__);
+          LOG_DEBUG("Has Error");
         }
         break; }
       case ArgType::kConstant: {
@@ -319,31 +330,28 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
           data.emplace_back(std::atoi(request->getParam((String("constant_arg") + arg).c_str(), true)->value().c_str()));
         } else {
           has_error = true;
-          printf("Has Error: %d\n", __LINE__);
+          LOG_DEBUG("Has Error");
         }
         break; }
     }
   }
 
   if (!has_error) {
-    printf("Inserting new element\n");
+    LOG_DEBUG("Inserting new element");
 
-    printf("Data: ");
+    LOG_DEBUG("Data: ");
     for (uint8_t byte : data)
-      printf("%d, ", (int)byte);
-
-    printf("\n");
+      LOG_DEBUG_ARGS("%d, ", byte);
 
     // Appending this new element to the test data.
     test_ui_data.emplace_back(data);
     ReloadTestData();
   } else {
-    printf("Element has error\n");
-    printf("Data: ");
+    LOG_DEBUG("Element has error");
+    LOG_DEBUG("Data: ");
     for (uint8_t byte : data)
-      printf("%d, ", (int)byte);
+      LOG_DEBUG_ARGS("%d, ", byte);
 
-    printf("\n");
     // TODO: Handle notifying user of errors here
   }
 

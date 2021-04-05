@@ -1,4 +1,5 @@
 #include "processdata.h"
+#include "logging.h"
 
 namespace euc {
 
@@ -20,7 +21,7 @@ void ProcessData::Update(Euc* euc) {
     writing = false;
 
   } else {
-    printf("ProcessData::getDoubleData Could not get access to the data_mutex\n");
+    LOG_DEBUG("ProcessData::getDoubleData Could not get access to the data_mutex");
   }
 }
 
@@ -44,7 +45,7 @@ void ProcessData::Update(RtcHandler* rtc_handler, bool update_date) {
     writing = false;
 
   } else {
-    printf("ProcessData::getDoubleData Could not get access to the data_mutex\n");
+    LOG_DEBUG("ProcessData::getDoubleData Could not get access to the data_mutex");
   }
 }
 
@@ -56,7 +57,7 @@ void ProcessData::Update(DataType type, double val) {
 
     writing = false;
   } else {
-    printf("ProcessData::Update Could not get access to the data_mutex\n");
+    LOG_DEBUG("ProcessData::Update Could not get access to the data_mutex");
   }
 }
 
@@ -66,7 +67,7 @@ double ProcessData::getDoubleData(DataType data_type) {
     return data[static_cast<size_t>(data_type)];
 
   } else {
-    printf("ProcessData::getDoubleData Could not get access to the data_mutex\n");
+    LOG_DEBUG("ProcessData::getDoubleData Could not get access to the data_mutex");
     return 0;
   }
 }

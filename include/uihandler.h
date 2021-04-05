@@ -19,6 +19,7 @@ class UiHandler {
     void Update(ProcessData* data);
     void LoadFromData(uint8_t data[], size_t data_len);
     void Sleep();
+    void ShowMessage(const char* message, double time); // Message to display, time to display it for in seconds
 
     UiScreen getCurrentScreen();
     std::vector<UiElement*>* getDrawList();
@@ -33,8 +34,8 @@ class UiHandler {
     UiScreen ui_screen; // Which 'screen' of the UI is currently being displayed
     FileHandler* file_handler;
 
-    const char* font_name = "FiraCodeBold20";  // TODO: Maybe put in constants?
-    // const char* font_filename = "/FiraCodeBold20.vlw";
+    String message;
+    unsigned long message_timeout = 0;
 };
 
 }

@@ -6,7 +6,7 @@
 namespace euc {
 
 class BarGraph : public UiElement {
-  UI_SETUP(BarGraph, 0x04, ArgType::kColour, ArgType::kDataType, ArgType::kConstant, ArgType::kConstant)
+  UI_SETUP(BarGraph, 0x03, ArgType::kColour, ArgType::kDataType, ArgType::kConstant, ArgType::kConstant)
   UI_ARGS("Graph Colour", "Graph Data", "Graph Data Minimum", "Graph Data Maximum")
 
   public:
@@ -20,7 +20,7 @@ class BarGraph : public UiElement {
     }
 };
 
-UI_REGISTER(BarGraph, 0x04)
+UI_REGISTER(BarGraph, 0x03)
 
 }
 

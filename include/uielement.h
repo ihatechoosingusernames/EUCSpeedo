@@ -70,7 +70,6 @@ class UiElement {
     static ColourProvider getColourProvider(uint8_t data[], size_t data_len, size_t* bytes_used);
     static DataType getDataType(uint8_t data[], size_t data_len, size_t* bytes_used);
     static double getConstant(uint8_t data[], size_t data_len, size_t* bytes_used);
-    static String getText(uint8_t data[], size_t data_len, size_t* bytes_used);
 
     // A function pointer array, points to an initialisation function for each registered UI element
     static UiElement* (*ui_element_lookup[kMaxUiElementCode])(uint8_t data[], size_t data_len);

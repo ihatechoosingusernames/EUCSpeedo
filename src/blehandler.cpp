@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include "utils.h"
+#include "logging.h"
 
 namespace euc {
 
@@ -47,34 +48,34 @@ void* BleHandler::Scan(void* in) {
 }
 
 bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
-  printf("Forming a connection to %s %s\n", device->getName().c_str(), device->getAddress().toString().c_str());
+  LOG_DEBUG_ARGS("Forming a connection to %s %s", device->getName().c_str(), device->getAddress().toString().c_str());
   connected = true;
   
   BLEClient*  pClient  = NimBLEDevice::createClient();
-  printf("Created client\n");
+  LOG_DEBUG("Created client");
 
   pClient->setClientCallbacks(new ClientCallback());
 
-  printf("Connecting to server\n");
+  LOG_DEBUG("Connecting to server");
 
   // Connect to the remote BLE Server.
   if (!pClient->connect(device)) {
-    printf("Failed to connect to server\n");
+    LOG_DEBUG("Failed to connect to server");
     return false;
   }
-  printf("Connected to server\n");
+  LOG_DEBUG("Connected to server");
 
   auto services = pClient->getServices(true);
-  printf("Client has %d services\n", services->size());
+  LOG_DEBUG_ARGS("Client has %d services", services->size());
   for (NimBLERemoteService* service : *services) {
-    printf("\t%s\n", service->toString().c_str());
+    LOG_DEBUG_ARGS("\t%s", service->toString().c_str());
     service->getCharacteristics(true);
   }
 
   // Obtain a reference to the service we are after in the remote BLE server.
   BLERemoteService* pRemoteService = pClient->getService(NimBLEUUID(kServiceUuids[static_cast<size_t>(type)]));
   if (pRemoteService == nullptr) {
-    printf("Failed to find the service UUID: %s\n", kServiceUuids[static_cast<size_t>(type)]);
+    LOG_DEBUG_ARGS("Failed to find the service UUID: %s", kServiceUuids[static_cast<size_t>(type)]);
     pClient->disconnect();
     return false;
   }
@@ -82,7 +83,7 @@ bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
   // Obtain a reference to the characteristic in the service of the remote BLE server.
   NimBLERemoteCharacteristic* pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(kReadCharacteristicUuids[static_cast<size_t>(type)]));
   if (pRemoteCharacteristic == nullptr) {
-    printf("Failed to find our characteristic UUID: %s\n", kReadCharacteristicUuids[static_cast<size_t>(type)]);
+    LOG_DEBUG_ARGS("Failed to find our characteristic UUID: %s", kReadCharacteristicUuids[static_cast<size_t>(type)]);
     pClient->disconnect();
     return false;
   }
@@ -90,7 +91,7 @@ bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
   // Read the value of the characteristic.
   if(pRemoteCharacteristic->canRead()) {
     std::string value = pRemoteCharacteristic->readValue();
-    printf("The characteristic value was: %s\n", value.c_str());
+    LOG_DEBUG_ARGS("The characteristic value was: %s", value.c_str());
   }
 
   if(pRemoteCharacteristic->canNotify())
@@ -110,7 +111,7 @@ void BleHandler::NotifyCallBack(NimBLERemoteCharacteristic* rc, uint8_t* data, s
 BleHandler::AdvertisedDeviceCallbacks::AdvertisedDeviceCallbacks(BleHandler* super_ref) : super_reference(super_ref) {}
 
 void BleHandler::AdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* device) {
-  printf("BLE Advertised Device found: %s\n", device->toString().c_str());
+  LOG_DEBUG_ARGS("BLE Advertised Device found: %s", device->toString().c_str());
 
   for (size_t type = 0; type < static_cast<size_t>(EucType::kLastType); type++) {
     if (device->isAdvertisingService(BLEUUID(kServiceUuids[type]))) {
@@ -133,17 +134,17 @@ void BleHandler::AdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* dev
 }
 
 void BleHandler::ClientCallback::onConnect(BLEClient* client) {
-  printf("Bluetooth Connected\n");
+  LOG_DEBUG("Bluetooth Connected");
 }
 
 void BleHandler::ClientCallback::onDisconnect(BLEClient* client) {
-  printf("Bluetooth Disconnected\n");
+  LOG_DEBUG("Bluetooth Disconnected");
 }
 
 void BleHandler::ClientCallback::onAuthenticationComplete(ble_gap_conn_desc* desc) {
-  printf("onAuthenticationComplete()\n");
+  LOG_DEBUG("onAuthenticationComplete()");
   if(!desc->sec_state.encrypted) {
-      printf("Encrypt connection failed - disconnecting\n");
+      LOG_DEBUG("Encrypt connection failed - disconnecting");
       /** Find the client with the connection handle provided in desc */
       NimBLEDevice::getClientByID(desc->conn_handle)->disconnect();
       return;
