@@ -22,6 +22,8 @@ class ConfigServer {
   private:
     String ProcessUiPage(const String& placeholder);
     void ProcessNewElementRequest(AsyncWebServerRequest *request);
+    void ProcessUpdateRequest(AsyncWebServerRequest *request);
+    void ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
 
     std::vector<uint8_t> ParseColour(String colour);
     void RemoveElement(size_t index);

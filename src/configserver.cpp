@@ -115,33 +115,8 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       std::atoi(request->getParam("seconds", true)->value().c_str()));
   });
 
-  server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request){
-    bool shouldReboot = !Update.hasError();
-    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot?"OK":"FAIL");
-    response->addHeader("Connection", "close");
-    request->send(response);
-  }, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-    if(!index){
-      Serial.printf("Update Start: %s\n", filename.c_str());
-      // Update.runAsync(true);
-      if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
-        Update.printError(Serial);
-      }
-    }
-    if(!Update.hasError()){
-      if(Update.write(data, len) != len){
-        Update.printError(Serial);
-      }
-    }
-    if(final){
-      if(Update.end(true)){
-        Serial.printf("Update Success: %uB\n", index+len);
-        ESP.restart();
-      } else {
-        Update.printError(Serial);
-      }
-    }
-  });
+  server.on("/update", HTTP_POST, std::bind(&ConfigServer::ProcessUpdateRequest, this, std::placeholders::_1),
+      std::bind(&ConfigServer::ProcessUpdateUpload, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 
   // Create the element selection and data strings for the ui_settings.html template
   for (size_t ui_code = 1; ui_code < kMaxUiElementCode; ui_code++) {
@@ -398,6 +373,35 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
   request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
 }
 
+void ConfigServer::ProcessUpdateRequest(AsyncWebServerRequest *request) {
+  bool shouldReboot = !Update.hasError();
+  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot?"OK":"FAIL");
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
+void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+  if(!index){
+    LOG_DEBUG_ARGS("Update Start: %s", filename.c_str());
+    if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
+      Update.printError(Serial);
+    }
+  }
+  if(!Update.hasError()){
+    if(Update.write(data, len) != len){
+      Update.printError(Serial);
+    }
+  }
+  if(final){
+    if(Update.end(true)){
+      LOG_DEBUG_ARGS("Update Success: %uB", index+len);
+      ESP.restart();
+    } else {
+      Update.printError(Serial);
+    }
+  }
+}
+
 std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
   std::vector<uint8_t> out;
   out.reserve(3); // Always 3 bytes
@@ -409,7 +413,7 @@ std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
     return out;
   }
   
-  // Converts from string to unsigned long in base 16, and from there to unsigned byte.
+  // Converts from string in base 16 to unsigned long, and from there to unsigned byte.
   out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16)); // Red
   out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16)); // Green
   out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue
