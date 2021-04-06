@@ -93,6 +93,7 @@ const static size_t kUiDefaultPreferencesLength = 5;
 // Default port for config server
 const static int kDefaultServerPort = 80;
 const static char* kDefaultServerSSID = "EUC-Speedo";
+const static char* kDefaultURL = "eucspeedo";
 
 }
 

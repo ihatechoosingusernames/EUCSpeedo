@@ -2,6 +2,8 @@
 
 #include <functional>
 #include "SPIFFS.h"
+#include <ESPmDNS.h>
+#include <Update.h>
 
 #include "constants.h"
 #include "uielement.h"
@@ -113,6 +115,34 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       std::atoi(request->getParam("seconds", true)->value().c_str()));
   });
 
+  server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request){
+    bool shouldReboot = !Update.hasError();
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot?"OK":"FAIL");
+    response->addHeader("Connection", "close");
+    request->send(response);
+  }, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+    if(!index){
+      Serial.printf("Update Start: %s\n", filename.c_str());
+      // Update.runAsync(true);
+      if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
+        Update.printError(Serial);
+      }
+    }
+    if(!Update.hasError()){
+      if(Update.write(data, len) != len){
+        Update.printError(Serial);
+      }
+    }
+    if(final){
+      if(Update.end(true)){
+        Serial.printf("Update Success: %uB\n", index+len);
+        ESP.restart();
+      } else {
+        Update.printError(Serial);
+      }
+    }
+  });
+
   // Create the element selection and data strings for the ui_settings.html template
   for (size_t ui_code = 1; ui_code < kMaxUiElementCode; ui_code++) {
     uint8_t data[] = {static_cast<uint8_t>(ui_code)};
@@ -189,7 +219,12 @@ void ConfigServer::Start() {
   WiFi.softAP(kDefaultServerSSID);
   LOG_DEBUG(WiFi.softAPIP().toString().c_str());
   ui_handler->ChangeScreen(UiScreen::kConfig);
-  ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 10);
+
+  if (MDNS.begin(kDefaultURL))
+    ui_handler->ShowMessage((String(kDefaultURL) + ".local").c_str(), 60);
+  else
+    ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 60);
+
   ui_handler->Update(&test_process_data);
   server.begin();
 }
@@ -198,6 +233,7 @@ void ConfigServer::Stop() {
   started = false;
   server.end();
   WiFi.disconnect();
+  MDNS.end();
 }
 
 bool ConfigServer::isStarted() {

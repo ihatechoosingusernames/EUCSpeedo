@@ -11,22 +11,27 @@
   <form>
     <table class="inlineTable" id="settingsTable">
       <tr>
-        <td>Set Time</td>
+        <td>Set Time Using</td>
         <td><button type="button" onclick="setTime(false)">
-            To System Time
+            System Time
           </button></td>
         <td><button type="button" onclick="setTime(true)">
-            To Custom Time
+            Custom Time
           </button></td>
       </tr>
       <tr>
-        <td>Set Date</td>
+        <td>Set Date Using</td>
         <td><button type="button" onclick="setDate(false)">
-            To System Date
+            System Date
           </button></td>
         <td><button type="button" onclick="setDate(true)">
-            To Custom Date
+            Custom Date
           </button></td>
+      </tr>
+      <tr>
+        <td>Update Firmware</td>
+        <td><input type="file" id="firmware" style="display:none;" onchange="uploadFirmware()"><button type="button"
+            onclick="document.getElementById('firmware').click();">Upload</button></td>
       </tr>
     </table>
   </form>
@@ -86,6 +91,16 @@
       xhttp = new XMLHttpRequest();
       xhttp.open("POST", "/set_date", true);
       xhttp.send("year=" + date.getFullYear() + "&month=" + date.getMonth() + "&day=" + date.getDate() + "&weekday=" + date.getDay());
+    }
+    function uploadFirmware() {
+      console.log("uploadFirmware");
+      firmware = document.getElementById("firmware").files[0];  // file from input
+      req = new XMLHttpRequest();
+      formData = new FormData();
+
+      formData.append("firmware", firmware);
+      req.open("POST", '/update');
+      req.send(formData);
     }
   </script>
 </body>
