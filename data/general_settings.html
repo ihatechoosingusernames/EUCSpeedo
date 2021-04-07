@@ -8,8 +8,11 @@
 </head>
 
 <body>
-  <form>
-    <table class="inlineTable" id="settingsTable">
+  <form action="/settings" method="post">
+    <table id="settingsTable" class="inlineTable">
+      <tr>
+        <th>General Settings</th>
+      </tr>
       <tr>
         <td>Set Time Using</td>
         <td><button type="button" onclick="setTime(false)">
@@ -33,8 +36,38 @@
         <td><input type="file" id="firmware" style="display:none;" onchange="uploadFirmware()"><button type="button"
             onclick="document.getElementById('firmware').click();">Upload</button></td>
       </tr>
+      <tr>
+        <td>Temperature Units</td>
+        <td><input type="radio" name="temperature" value="0"><label for="0">Celcius</label></td>
+        <td><input type="radio" name="temperature" value="1"><label for="1">Freedoms</label></td>
+      </tr>
+      <tr>
+        <td>Distance Units</td>
+        <td><input type="radio" name="distance" value="0"><label for="0">Kilometres</label></td>
+        <td><input type="radio" name="distance" value="1"><label for="1">Miles</label></td>
+      </tr>
+      <tr>
+        <td><button type="submit" class="btn">
+            Save
+          </button></td>
+      </tr>
     </table>
   </form>
+  <br>
+  <table class="inlineTable" id="ui_table">
+    <tr>
+      <th>UI Settings</th>
+    </tr>
+    %SETTINGS_SCREENS%
+    <!-- <tr>
+      <td>Screen 1</td>
+      <td><button type="button" onclick="deleteScreen(this)">Delete</button></td>
+      <td><button type="button" onclick="editScreen(this)">Edit</button></td>
+      <td><button onclick="moveScreenUp(this)">↑</button></td>
+      <td><button onclick="moveScreenDown(this)">↓</button></td>
+    </tr> -->
+  </table>
+
   <script>
     function setTime(custom) {
       var date = new Date();
@@ -61,7 +94,7 @@
       }
 
       xhttp = new XMLHttpRequest();
-      xhttp.open("POST", "/set_time", true);
+      xhttp.open("POST", "/set_time");
       xhttp.send("hours=" + date.getHours() + "&minutes=" + date.getMinutes() + "&seconds=" + date.getSeconds());
     }
     function setDate(custom) {
@@ -89,7 +122,7 @@
       }
 
       xhttp = new XMLHttpRequest();
-      xhttp.open("POST", "/set_date", true);
+      xhttp.open("POST", "/set_date");
       xhttp.send("year=" + date.getFullYear() + "&month=" + date.getMonth() + "&day=" + date.getDate() + "&weekday=" + date.getDay());
     }
     function uploadFirmware() {
@@ -101,6 +134,43 @@
       formData.append("firmware", firmware);
       req.open("POST", '/update');
       req.send(formData);
+    }
+    function moveScreenUp(elem) {
+      var row = elem.parentNode.parentNode;
+      if (row.rowIndex > 1) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "update_screen_order");
+        xhttp.send("screen=" + (row.rowIndex - 1) + "&move=-1");
+
+        row.parentNode.insertRow(row.rowIndex - 1).innerHTML = row.innerHTML;
+        row.remove();
+      }
+    }
+    function moveScreenDown(elem) {
+      var row = elem.parentNode.parentNode;
+      if (row.rowIndex < (row.parentNode.rows.length - 1)) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/update_screen_order");
+        xhttp.send("screen=" + (row.rowIndex - 1) + "&move=1");
+
+        row.parentNode.insertRow(row.rowIndex + 2).innerHTML = row.innerHTML;
+        row.remove();
+      }
+    }
+    function deleteScreen(ele) {
+      var index = ele.parentNode.parentNode.rowIndex;
+      document.getElementById("ui_table").deleteRow(index);
+
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("DELETE", "/remove_screen?id=" + (index - 1));
+      xhttp.send();
+    }
+    function editScreen(ele) {
+      var index = ele.parentNode.parentNode.rowIndex - 1;
+      var xhttp = new XMLHttpRequest();
+
+      xhttp.open("GET", "/edit_screen?screen=" + index);
+      xhttp.send();
     }
   </script>
 </body>

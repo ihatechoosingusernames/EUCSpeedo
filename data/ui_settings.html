@@ -64,7 +64,7 @@
       document.getElementById("draw_queue_table").deleteRow(index);
 
       var xhttp = new XMLHttpRequest();
-      xhttp.open("DELETE", "remove_element?id=" + (index - 1), false);
+      xhttp.open("DELETE", "remove_element?id=" + (index - 1));
       xhttp.send();
     }
     function openForm() {

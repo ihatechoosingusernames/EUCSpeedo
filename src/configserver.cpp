@@ -12,16 +12,28 @@
 
 namespace euc {
 
-ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHandler* rtc) : server(kDefaultServerPort),
-    ui_handler(arg_ui_handler), file_handler(files), rtc_handler(rtc) {
+ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHandler* rtc, Settings* settings) : server(kDefaultServerPort),
+    ui_handler(arg_ui_handler), file_handler(files), rtc_handler(rtc), settings_handler(settings) {
+
+  server.onNotFound([](AsyncWebServerRequest *request){ request->send(404); }); // Deal with all undefined requests
+
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
     LOG_DEBUG("/");
-    request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
+    request->send(SPIFFS, "/general_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessSettingsPage, this, std::placeholders::_1));
   });
 
-  server.on("/general_settings", HTTP_GET, [this](AsyncWebServerRequest *request){
-    LOG_DEBUG("/general_settings");
-    request->send(SPIFFS, "/general_settings.html", "text/html", false);
+  server.on("/edit_screen", HTTP_GET, [this](AsyncWebServerRequest *request){
+    LOG_DEBUG("/edit_screen");
+
+    if (!request->hasParam("screen")) {
+      request->send(400);
+      return;
+    }
+
+    uint8_t screen = std::atoi(request->getParam("screen")->value().c_str());
+    LOG_DEBUG_ARGS("Editing screen %d", screen);
+    LoadTestData(screen);
+    request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
   });
 
   server.on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -117,6 +129,22 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
   server.on("/update", HTTP_POST, std::bind(&ConfigServer::ProcessUpdateRequest, this, std::placeholders::_1),
       std::bind(&ConfigServer::ProcessUpdateUpload, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
+  
+  server.on("/settings", HTTP_POST, std::bind(&ConfigServer::ProcessUpdateSettings, this, std::placeholders::_1));
+
+  server.on("/update_screen_order", HTTP_POST, [this](AsyncWebServerRequest *request){
+      if (!(request->hasParam("screen", true) && request->hasParam("move")))
+        return request->send(400);
+
+      int screen = std::atoi(request->getParam("screen")->value().c_str());
+      int move = std::atoi(request->getParam("move")->value().c_str());
+      
+      file_handler->RenameFile(Utils::getUiScreenFileName(screen), "temp" + Utils::getUiScreenFileName(screen));
+      file_handler->RenameFile(Utils::getUiScreenFileName(screen + move), Utils::getUiScreenFileName(screen));
+      file_handler->RenameFile("temp" + Utils::getUiScreenFileName(screen), Utils::getUiScreenFileName(screen + move));
+      
+      request->send(200);
+    });
 
   // Create the element selection and data strings for the ui_settings.html template
   for (size_t ui_code = 1; ui_code < kMaxUiElementCode; ui_code++) {
@@ -162,25 +190,6 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   // Create the data type select string for the ui_settings.html template
   for (uint8_t data_type = 0; data_type < static_cast<uint8_t>(DataType::kLastValue); data_type++) {
     ui_data_type_select += "<option value=\"" + String(data_type) + "\">" + kDataTypeNames[data_type] + "</option>\n";
-  }
-
-  // If there are saved UI preferences, load them.
-  std::vector<uint8_t> csv_data;
-  if (file_handler->FileSize(Utils::getUiScreenFileName(ui_screen))) {
-    csv_data = file_handler->ReadCsvBytes(Utils::getUiScreenFileName(ui_screen));
-  } else {  // If not, use the "factory" settings
-    csv_data = std::vector<uint8_t>(kUiDefaultPreferences, kUiDefaultPreferences + kUiDefaultPreferencesLength);
-  }
-
-  // Now separate the bytes into their respective elements
-  for (size_t counter = 0; counter < csv_data.size();) {
-    UiElement *elem = UiElement::Factory(csv_data.data() + counter, csv_data.size() - counter);
-    // Construct an array of all the bytes representing this element, and place it into the larger array of elements
-    test_ui_data.emplace_back(csv_data.data() + counter, csv_data.data() + counter + elem->DataSize());
-
-    counter += elem->DataSize(); // Add the data size to the running total
-
-    delete elem;  // Clean up memory
   }
 }
 
@@ -254,6 +263,18 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
   return out;
 }
 
+String ConfigServer::ProcessSettingsPage(const String& placeholder) {
+  if (placeholder != "SETTINGS_SCREENS")
+    return "";
+
+  String out;
+
+  for (size_t counter = 0; counter < settings_handler->getNumScreens(); counter++)
+    out += String("<tr><td>Screen ") + counter + "</td><td><button type=\"button\" onclick=\"deleteScreen(this)\">Delete</button></td><td><button type=\"button\" onclick=\"editScreen(this)\">Edit</button></td><td><button onclick=\"moveScreenUp(this)\">↑</button></td><td><button onclick=\"moveScreenDown(this)\">↓</button></td></tr>";
+
+  return out;
+}
+
 void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
   LOG_DEBUG("/new_element");
 
@@ -278,9 +299,9 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
   for (size_t arg = 0; arg < args.size(); arg++) {
     switch (args.at(arg)) {
       case ArgType::kDataType: {
-        if (request->hasParam((String("data_arg") + arg).c_str(), true)) {
-          data.emplace_back(std::atoi(request->getParam((String("data_arg") + arg).c_str(), true)->value().c_str()));
-          test_data_types[std::atoi(request->getParam((String("data_arg") + arg).c_str(), true)->value().c_str())] = true;  // Mark this datatype as being used
+        if (request->hasParam((String("data_arg") + arg), true)) {
+          data.emplace_back(std::atoi(request->getParam((String("data_arg") + arg), true)->value().c_str()));
+          test_data_types[std::atoi(request->getParam((String("data_arg") + arg), true)->value().c_str())] = true;  // Mark this datatype as being used
         } else {
           has_error = true;
           LOG_DEBUG("Has Error: %d");
@@ -311,19 +332,19 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
           } else if (request->getParam(param_name, true)->value() == String((int)ColourType::kDynamicBetweenValues)) { // Dynamic Colour
             data.emplace_back((uint8_t)ColourType::kDynamicBetweenValues);
 
-            if (request->hasParam((String("colour_data_type") + arg).c_str(), true)
-                && request->hasParam((String("arg_low_data") + arg).c_str(), true)
-                && request->hasParam((String("arg_low_colour") + arg).c_str(), true)
-                && request->hasParam((String("arg_high_data") + arg).c_str(), true)
-                && request->hasParam((String("arg_high_colour") + arg).c_str(), true)) {
-              data.emplace_back(std::atoi(request->getParam((String("colour_data_type") + arg).c_str(), true)->value().c_str()));
-              test_data_types[std::atoi(request->getParam((String("colour_data_type") + arg).c_str(), true)->value().c_str())] = true;  // Mark this datatype as being used
+            if (request->hasParam((String("colour_data_type") + arg), true)
+                && request->hasParam((String("arg_low_data") + arg), true)
+                && request->hasParam((String("arg_low_colour") + arg), true)
+                && request->hasParam((String("arg_high_data") + arg), true)
+                && request->hasParam((String("arg_high_colour") + arg), true)) {
+              data.emplace_back(std::atoi(request->getParam((String("colour_data_type") + arg), true)->value().c_str()));
+              test_data_types[std::atoi(request->getParam((String("colour_data_type") + arg), true)->value().c_str())] = true;  // Mark this datatype as being used
 
-              data.emplace_back(std::atoi(request->getParam((String("arg_low_data") + arg).c_str(), true)->value().c_str()));
-              data.emplace_back(std::atoi(request->getParam((String("arg_high_data") + arg).c_str(), true)->value().c_str()));
+              data.emplace_back(std::atoi(request->getParam((String("arg_low_data") + arg), true)->value().c_str()));
+              data.emplace_back(std::atoi(request->getParam((String("arg_high_data") + arg), true)->value().c_str()));
 
-              std::vector<uint8_t> parsed_low_colour = ParseColour(request->getParam((String("arg_low_colour") + arg).c_str(), true)->value());
-              std::vector<uint8_t> parsed_high_colour = ParseColour(request->getParam((String("arg_high_colour") + arg).c_str(), true)->value());
+              std::vector<uint8_t> parsed_low_colour = ParseColour(request->getParam((String("arg_low_colour") + arg), true)->value());
+              std::vector<uint8_t> parsed_high_colour = ParseColour(request->getParam((String("arg_high_colour") + arg), true)->value());
 
               if (parsed_low_colour.size() < 3 || parsed_high_colour.size() < 3) {
                 has_error = true;
@@ -383,6 +404,7 @@ void ConfigServer::ProcessUpdateRequest(AsyncWebServerRequest *request) {
 void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if(!index){
     LOG_DEBUG_ARGS("Update Start: %s", filename.c_str());
+    ui_handler->ShowMessage("Update Started", 20);
     if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
       Update.printError(Serial);
     }
@@ -395,10 +417,57 @@ void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String fi
   if(final){
     if(Update.end(true)){
       LOG_DEBUG_ARGS("Update Success: %uB", index+len);
+      ui_handler->ShowMessage("Update Succeeded, Restarting", 5);
+      delay(5000);
       ESP.restart();
     } else {
       Update.printError(Serial);
     }
+  }
+}
+
+void ConfigServer::ProcessUpdateSettings(AsyncWebServerRequest *request) {
+  if (request->hasParam("temperature", true)) {
+    settings_handler->setSetting(GeneralSetting::kTemperatureUnits, std::atoi((request->getParam("temperature", true)->value().c_str())));
+  }
+
+  if (request->hasParam("distance", true)) {
+    settings_handler->setSetting(GeneralSetting::kDistanceUnits, std::atoi((request->getParam("distance", true)->value().c_str())));
+  }
+
+  settings_handler->SaveSettings();
+}
+
+void ConfigServer::LoadTestData(uint8_t screen) {
+  ui_screen = screen;
+
+  // Reset data args and test data
+  std::fill(test_data_types, test_data_types + static_cast<size_t>(DataType::kLastValue), false);
+  test_ui_data.clear();
+
+  // If there are saved UI preferences, load them.
+  std::vector<uint8_t> csv_data;
+  if (file_handler->FileSize(Utils::getUiScreenFileName(ui_screen))) {
+    LOG_DEBUG("Found data");
+    csv_data = file_handler->ReadCsvBytes(Utils::getUiScreenFileName(ui_screen));
+  } else {  // If not, use the "factory" settings
+    LOG_DEBUG("No data found");
+    csv_data = std::vector<uint8_t>(kUiDefaultPreferences, kUiDefaultPreferences + kUiDefaultPreferencesLength);
+  }
+
+  // Now separate the bytes into their respective elements
+  for (size_t counter = 0; counter < csv_data.size();) {
+    UiElement *elem = UiElement::Factory(csv_data.data() + counter, csv_data.size() - counter);
+    // Construct an array of all the bytes representing this element, and place it into the larger array of elements
+    test_ui_data.emplace_back(csv_data.data() + counter, csv_data.data() + counter + elem->DataSize());
+
+    counter += elem->DataSize(); // Add the data size to the running total
+
+    for (DataType arg : elem->DataTypeArgs()) { // Add all the existing data types used to display
+      test_data_types[static_cast<size_t>(arg)] = true;
+    }
+
+    delete elem;  // Clean up memory
   }
 }
 

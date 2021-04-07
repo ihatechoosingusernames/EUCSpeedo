@@ -32,6 +32,7 @@ class EucSpeedo {
     BleHandler* ble;
     ConfigServer* config_server;
     FileHandler file_handler;
+    Settings settings_handler;
     UiHandler ui_handler;
     ProcessData process_data;
     RtcHandler rtc_handler;

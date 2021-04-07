@@ -39,6 +39,7 @@ class UiElement {
 
     size_t DataSize();  // Returns the number of bytes the element has used from the arg list
     std::vector<String> ArgNames();   // Returns optional names of the args to help with config generation
+    std::vector<DataType> DataTypeArgs(); // Returns all data types used by the element to help with config generation
 
     virtual ~UiElement() {}; // Declaring virtual destructor to allow safe "delete" calls on base classes
     

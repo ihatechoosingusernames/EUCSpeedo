@@ -27,6 +27,10 @@ std::vector<String> UiElement::ArgNames() {
   return {};
 }
 
+std::vector<DataType> UiElement::DataTypeArgs() {
+  return kDataType_args;
+}
+
 void UiElement::getArgsFromData(uint8_t data[], size_t data_len) {
   for (ArgType arg : ArgList()) {
     switch (arg) {

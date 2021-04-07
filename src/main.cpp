@@ -29,7 +29,6 @@ void loop() {
 
 // TODO: Create more UI objects
 // TODO: Update bluetooth handler to gracefully deal with reconnects without using a ton of memory
-// TODO: Create settings object that loads stored global settings
 // TODO: Create customisable UI screen actions for the button
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?

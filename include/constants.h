@@ -36,7 +36,7 @@ enum class PressType : size_t {
 
 const static long kMinPressTime = 150;  // Minimum button press time in milliseconds.
 const static long kMaxPressTime = 3000; // Maximum button press time before it counts as a long press
-const static long kMaxReleaseTime = 300;  // Maximum button release time between double presses in milliseconds.
+const static long kMaxReleaseTime = 300;  // Maximum button release time between presses in a double press in milliseconds.
 
 const static char* kUiScreenFilePrefix = "/ui_config";
 const static char* kUiScreenFileType = "csv";
@@ -93,7 +93,35 @@ const static size_t kUiDefaultPreferencesLength = 5;
 // Default port for config server
 const static int kDefaultServerPort = 80;
 const static char* kDefaultServerSSID = "EUC-Speedo";
-const static char* kDefaultURL = "eucspeedo";
+const static char* kDefaultURL = "speedo";
+
+enum class GeneralSetting : uint8_t {
+  kTemperatureUnits = 0,
+  kDistanceUnits,
+  kLastValue  // IMPORTANT this value should stay as last value
+};
+
+const static char* kGeneralSettingsFile = "/general_settings.csv";
+
+enum class ScreenSetting : uint8_t {
+  kOnlyConnected = 0,
+  kOnShortPress,
+  kOnDoublePress,
+  kOnLongPress,
+  kSleepTimeout,
+  kLastValue  // IMPORTANT this value should stay as last value
+};
+
+enum class Action : uint8_t {
+  kSleep = 0,
+  kNextScreen,
+  kPreviousScreen,
+  kActivateConfig,
+  kActivateBle,
+  kLastValue  // IMPORTANT this value should stay as last value
+};
+
+const static char* kActionNames[] = {"Sleep", "Next Screen", "Previous Screen", "Activate Config Server", "Activate Bluetooth"};
 
 }
 

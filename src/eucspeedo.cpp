@@ -12,6 +12,7 @@ namespace euc {
 
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     file_handler(),
+    settings_handler(&file_handler),
     ui_handler(&file_handler),
     process_data() {
   file_handler.listDir("/", 0);
@@ -21,6 +22,7 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
 
 EucSpeedo::~EucSpeedo() {
   delete wheel; // Clean up wheel pointer
+  delete button_handler;  // Clean up button handler pointer
   if (config_server_active) {
     config_server->Stop();
     delete config_server;
@@ -41,7 +43,8 @@ void EucSpeedo::Process() {
 
 // Creates the correct type of wheel object
 void EucSpeedo::onFoundWheel(EucType type) {
-  Serial.printf("Found %s EUC\n", kBrandName[(size_t)type]);
+  LOG_DEBUG_ARGS("Found %s EUC\n", kBrandName[(size_t)type]);
+  ui_handler.ShowMessage(kBrandName[(size_t)type], 3);  // Show which brand is connected
 
   switch (type) {
     case EucType::kGotway:
@@ -97,7 +100,7 @@ void EucSpeedo::HandlePress(PressType press) {
         delete config_server;
         config_server_active = false;
       } else {
-        config_server = new ConfigServer(&ui_handler, &file_handler, &rtc_handler);
+        config_server = new ConfigServer(&ui_handler, &file_handler, &rtc_handler, &settings_handler);
         config_server->Start();
         config_server_active = true;
       }

@@ -63,7 +63,7 @@ std::vector<uint8_t> FileHandler::ReadCsvBytes(String file_name) {
 }
 
 size_t FileHandler::FileSize(String file_name) {
-  LOG_DEBUG_ARGS("Trying to open file name %s starting with %c", file_name.c_str(), file_name[0]);
+  LOG_DEBUG_ARGS("Trying to open file name %s", file_name.c_str());
   File file = SPIFFS.open(file_name.c_str());
 
   if(!file || file.isDirectory()) {
@@ -77,7 +77,7 @@ size_t FileHandler::FileSize(String file_name) {
 }
 
 void FileHandler::WriteFile(String file_name, String message) {
-    LOG_DEBUG_ARGS("Trying to open file name %s starting with %c", file_name.c_str(), file_name[0]);
+    LOG_DEBUG_ARGS("Trying to open file name %s", file_name.c_str());
     File file = SPIFFS.open(file_name.c_str(), FILE_WRITE);
     if(!file){
       LOG_DEBUG("failed to open file for writing");
