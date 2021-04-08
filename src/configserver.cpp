@@ -90,10 +90,8 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
     for (size_t param = 0; param < request->params(); param++) {
       LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
     }
-    if (!request->hasParam("elem", true))
-      return;
-    if (!request->hasParam("move", true))
-      return;
+    if (!(request->hasParam("elem", true) && request->hasParam("move", true)))
+      return request->send(400);
     
     ReorderElement(std::atoi(request->getParam("elem", true)->value().c_str()), std::atoi(request->getParam("move", true)->value().c_str()));
     DisplayTestData();
@@ -102,10 +100,10 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   server.on("/set_date", HTTP_POST, [this](AsyncWebServerRequest * request){
     LOG_DEBUG("/set_date");
     for (size_t param = 0; param < request->params(); param++)
-      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value()).c_str());
 
     if (!(request->hasParam("year", true) && request->hasParam("month", true) && request->hasParam("day", true) && request->hasParam("weekday", true)))
-      return;
+      return request->send(400);
     
     rtc_handler->setDate(std::atoi(request->getParam("day", true)->value().c_str()),
       std::atoi(request->getParam("weekday", true)->value().c_str()),
@@ -116,10 +114,10 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   server.on("/set_time", HTTP_POST, [this](AsyncWebServerRequest * request){
     LOG_DEBUG("/set_time");
     for (size_t param = 0; param < request->params(); param++)
-      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
+      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value()).c_str());
 
     if (!(request->hasParam("hours", true) && request->hasParam("minutes", true) && request->hasParam("seconds", true)))
-      return;
+      return request->send(400);
     
     rtc_handler->setTime(std::atoi(request->getParam("hours", true)->value().c_str()),
       std::atoi(request->getParam("minutes", true)->value().c_str()),
@@ -133,15 +131,28 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
   server.on("/update_screen_order", HTTP_POST, [this](AsyncWebServerRequest *request){
       LOG_DEBUG("/update_screen_order");
-      if (!(request->hasParam("screen", true) && request->hasParam("move")))
+
+      for (size_t params = 0; params < request->params(); params++)
+        LOG_DEBUG_ARGS("Param %s with value %s", request->getParam(params)->name().c_str(), request->getParam(params)->value().c_str());
+
+      if (!(request->hasParam("screen", true) && request->hasParam("move", true)))
         return request->send(400);
 
-      int screen = std::atoi(request->getParam("screen")->value().c_str());
-      int move = std::atoi(request->getParam("move")->value().c_str());
+      int screen = std::atoi(request->getParam("screen", true)->value().c_str());
+      int move = std::atoi(request->getParam("move", true)->value().c_str());
+
+      // Protect from invalid moves
+      if (((screen == 0) && (move < 0)) || (screen >= settings_handler->getNumScreens()) || ((screen == settings_handler->getNumScreens() - 1) && (move > 0))) {
+        LOG_DEBUG_ARGS("Malformed request: screen %d, move %d", screen, move);
+        request->send(400);
+        return;
+      }
       
-      file_handler->RenameFile(Utils::getUiScreenFileName(screen), "temp" + Utils::getUiScreenFileName(screen));
+      file_handler->RenameFile(Utils::getUiScreenFileName(screen), Utils::getUiScreenFileName(255));
       file_handler->RenameFile(Utils::getUiScreenFileName(screen + move), Utils::getUiScreenFileName(screen));
-      file_handler->RenameFile("temp" + Utils::getUiScreenFileName(screen), Utils::getUiScreenFileName(screen + move));
+      file_handler->RenameFile(Utils::getUiScreenFileName(255), Utils::getUiScreenFileName(screen + move));
+
+      settings_handler->SwitchScreens(screen, screen + move);
       
       request->send(200);
     });
@@ -155,9 +166,13 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       }
 
       uint8_t screen = std::atoi(request->getParam("id")->value().c_str());
+      file_handler->DeleteFile(Utils::getUiScreenFileName(screen));
+
+      for (uint8_t higher_screens = screen + 1; higher_screens < settings_handler->getNumScreens(); higher_screens++)
+        file_handler->RenameFile(Utils::getUiScreenFileName(higher_screens), Utils::getUiScreenFileName(higher_screens - 1));
 
       settings_handler->RemoveScreen(screen);
-      file_handler->DeleteFile(Utils::getUiScreenFileName(screen));
+      settings_handler->SaveSettings();
 
       request->send(200);
     });

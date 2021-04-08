@@ -19,6 +19,7 @@ class Settings {
     
     void AddScreen();
     void RemoveScreen(uint8_t screen);
+    void SwitchScreens(uint8_t screen, uint8_t other_screen);
 
     void SaveSettings();
 

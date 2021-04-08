@@ -47,13 +47,23 @@ uint8_t Settings::getNumScreens() {
 }
 
 void Settings::AddScreen() {
-  std::array<uint8_t, static_cast<size_t>(ScreenSetting::kLastValue)> new_screen = {{0}};
+  std::array<uint8_t, static_cast<size_t>(ScreenSetting::kLastValue)> new_screen;
+  std::fill(new_screen.begin(), new_screen.end(), 0);
   screen_settings.emplace_back(new_screen);
 }
 
 void Settings::RemoveScreen(uint8_t screen) {
   if (screen < screen_settings.size())
     screen_settings.erase(screen_settings.begin() + screen);
+}
+
+void Settings::SwitchScreens(uint8_t screen, uint8_t other_screen) {
+  if (std::max(screen, other_screen) >= screen_settings.size())
+    return;
+  
+  std::array<uint8_t, static_cast<size_t>(ScreenSetting::kLastValue)> moving_screen = screen_settings[screen];
+  screen_settings[screen] = screen_settings[other_screen];
+  screen_settings[other_screen] = moving_screen;
 }
 
 void Settings::SaveSettings() {

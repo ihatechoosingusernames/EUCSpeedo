@@ -102,6 +102,7 @@ void FileHandler::AppendFile(String file_name, String message) {
 }
 
 void FileHandler::RenameFile(String file_name1, String new_name) {
+  LOG_DEBUG_ARGS("Changing file name %s to %s", file_name1.c_str() , new_name.c_str());
   if (!SPIFFS.rename(file_name1.c_str(), new_name.c_str())) {
     LOG_DEBUG("rename failed");
   }
