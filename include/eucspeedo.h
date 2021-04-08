@@ -26,6 +26,7 @@ class EucSpeedo {
     void onFoundWheel(EucType type);
     void onProcessInput(uint8_t* data, size_t data_size);
     void HandlePress(PressType press);
+    void HandleAction(Action action);
 
     Euc* wheel;
     ButtonHandler* button_handler;

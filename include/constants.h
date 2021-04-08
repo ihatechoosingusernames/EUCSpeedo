@@ -41,12 +41,6 @@ const static long kMaxReleaseTime = 300;  // Maximum button release time between
 const static char* kUiScreenFilePrefix = "/ui_config";
 const static char* kUiScreenFileType = "csv";
 
-enum class UiScreen : uint8_t { // These map to the config screen files: ui_config0.csv, ui_config1.csv etc.
-  kHome = 0,
-  kConfig,
-  kCustom
-};
-
 const static uint8_t kBigNumberFont = 7;
 const static char* kSmallTextFont = "FiraCodeBold20";
 
@@ -105,7 +99,7 @@ const static char* kGeneralSettingsFile = "/general_settings.csv";
 
 enum class ScreenSetting : uint8_t {
   kOnlyConnected = 0,
-  kOnShortPress,
+  kOnSinglePress,
   kOnDoublePress,
   kOnLongPress,
   kSleepTimeout,

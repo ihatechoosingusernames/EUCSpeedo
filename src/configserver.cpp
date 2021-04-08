@@ -242,10 +242,8 @@ void ConfigServer::Start() {
   started = true;
   WiFi.softAP(kDefaultServerSSID);
   LOG_DEBUG(WiFi.softAPIP().toString().c_str());
-  ui_handler->ChangeScreen(UiScreen::kConfig);
 
   ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 60);
-
   ui_handler->Update(&test_process_data);
   server.begin();
 }

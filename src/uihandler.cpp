@@ -7,8 +7,8 @@
 
 namespace euc {
 
-UiHandler::UiHandler(FileHandler* file_handler, UiScreen start_screen) : ui_screen(start_screen), file_handler(file_handler) {
-  LoadFromFile(file_handler);
+UiHandler::UiHandler(FileHandler* file_handler, uint8_t start_screen) : ui_screen(start_screen), file_handler(file_handler) {
+  LoadFromFile();
   screen.init();
   screen.setPivot(screen.width() / 2, screen.height() / 2);
 }
@@ -18,9 +18,9 @@ UiHandler::~UiHandler() {
   ClearDrawList();
 }
 
-void UiHandler::ChangeScreen(UiScreen new_ui_screen) {
+void UiHandler::ChangeScreen(uint8_t new_ui_screen) {
   ui_screen = new_ui_screen;
-  LoadFromFile(file_handler);
+  LoadFromFile();
 }
 
 void UiHandler::Update(ProcessData* data) {
@@ -75,11 +75,11 @@ void UiHandler::ShowMessage(const char* in_message, double time) {
   message_timeout = millis() + (time * 1000);
 }
 
-UiScreen UiHandler::getCurrentScreen() { return ui_screen; }
+uint8_t UiHandler::getCurrentScreen() { return ui_screen; }
 
 std::vector<UiElement*>* UiHandler::getDrawList() { return &draw_list; }
 
-void UiHandler::LoadFromFile(FileHandler* file_handler) {
+void UiHandler::LoadFromFile() {
   LOG_DEBUG_ARGS("Loading screen %d", static_cast<uint8_t>(ui_screen));
 
   // If there are saved UI preferences, load them.

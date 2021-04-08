@@ -12,27 +12,27 @@ namespace euc {
 
 class UiHandler {
   public:
-    UiHandler(FileHandler* file_handler, UiScreen start_screen = UiScreen::kHome);
+    UiHandler(FileHandler* file_handler, uint8_t start_screen = 0);
     ~UiHandler();
 
-    void ChangeScreen(UiScreen new_ui_screen);
+    void ChangeScreen(uint8_t new_ui_screen);
     void Update(ProcessData* data);
     void LoadFromData(uint8_t data[], size_t data_len);
     void Sleep();
     void ShowMessage(const char* message, double time); // Message to display, time to display it for in seconds
     void HandleInput(PressType type);
 
-    UiScreen getCurrentScreen();
+    uint8_t getCurrentScreen();
     std::vector<UiElement*>* getDrawList();
 
   private:
-    void LoadFromFile(FileHandler* file_handler);
+    void LoadFromFile();
     void ClearDrawList();
 
     std::vector<UiElement*> draw_list;  // Stores the elements in their draw order
     TFT_eSPI screen;  // Actual Screen object
 
-    UiScreen ui_screen; // Which 'screen' of the UI is currently being displayed
+    uint8_t ui_screen; // Which 'screen' of the UI is currently being displayed
     FileHandler* file_handler;
 
     String message;
