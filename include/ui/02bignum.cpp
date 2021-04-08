@@ -13,7 +13,7 @@ class BigNum : public UiElement {
       // Set the background colour to whatever's in the center of the sprite
       sprite->setTextColor(kColour_args[0](data), sprite->readPixel(sprite->getViewportWidth() / 2, sprite->getViewportHeight() / 2));
       sprite->setTextDatum(MC_DATUM);
-      sprite->drawFloat(data->getDoubleData(kDataType_args[0]), 0, sprite->getViewportWidth() / 2, sprite->getViewportHeight() / 2, kBigNumberFont);
+      sprite->drawNumber(data->getDoubleData(kDataType_args[0]), sprite->getViewportWidth() / 2, sprite->getViewportHeight() / 2, kBigNumberFont);
     };
 };
 

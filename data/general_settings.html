@@ -66,6 +66,9 @@
       <td><button onclick="moveScreenUp(this)">↑</button></td>
       <td><button onclick="moveScreenDown(this)">↓</button></td>
     </tr> -->
+    <tr>
+      <form action="/new_screen" method="POST"><td><button type="submit" class="btn">New</button></td></form>
+    </tr>
   </table>
 
   <script>
@@ -148,7 +151,7 @@
     }
     function moveScreenDown(elem) {
       var row = elem.parentNode.parentNode;
-      if (row.rowIndex < (row.parentNode.rows.length - 1)) {
+      if (row.rowIndex < (row.parentNode.rows.length - 2)) {
         var xhttp = new XMLHttpRequest();
         xhttp.open("POST", "/update_screen_order");
         xhttp.send("screen=" + (row.rowIndex - 1) + "&move=1");
@@ -157,20 +160,17 @@
         row.remove();
       }
     }
-    function deleteScreen(ele) {
-      var index = ele.parentNode.parentNode.rowIndex;
+    function deleteScreen(elem) {
+      var index = elem.parentNode.parentNode.rowIndex;
       document.getElementById("ui_table").deleteRow(index);
 
       var xhttp = new XMLHttpRequest();
       xhttp.open("DELETE", "/remove_screen?id=" + (index - 1));
       xhttp.send();
     }
-    function editScreen(ele) {
-      var index = ele.parentNode.parentNode.rowIndex - 1;
-      var xhttp = new XMLHttpRequest();
-
-      xhttp.open("GET", "/edit_screen?screen=" + index);
-      xhttp.send();
+    function editScreen(elem) {
+      var index = elem.parentNode.parentNode.rowIndex;
+      window.location.href = window.location.href + "edit_screen?screen=" + index;
     }
   </script>
 </body>

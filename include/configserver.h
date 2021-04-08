@@ -29,11 +29,12 @@ class ConfigServer {
     void ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
     void ProcessUpdateSettings(AsyncWebServerRequest *request);
 
-    void LoadTestData(uint8_t screen);
     std::vector<uint8_t> ParseColour(String colour);
+
+    void LoadTestData(uint8_t screen);
     void RemoveElement(size_t index);
     void ReorderElement(size_t index, int move);
-    void ReloadTestData();
+    void DisplayTestData();
     
     bool started = false;
 

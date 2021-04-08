@@ -16,6 +16,9 @@ class Settings {
     uint8_t getScreenSetting(uint8_t screen, ScreenSetting setting);
     void setScreenSetting(uint8_t screen, ScreenSetting setting, uint8_t value);
     uint8_t getNumScreens();
+    
+    void AddScreen();
+    void RemoveScreen(uint8_t screen);
 
     void SaveSettings();
 

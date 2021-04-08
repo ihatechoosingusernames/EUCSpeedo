@@ -46,6 +46,16 @@ uint8_t Settings::getNumScreens() {
   return screen_settings.size();
 }
 
+void Settings::AddScreen() {
+  std::array<uint8_t, static_cast<size_t>(ScreenSetting::kLastValue)> new_screen = {{0}};
+  screen_settings.emplace_back(new_screen);
+}
+
+void Settings::RemoveScreen(uint8_t screen) {
+  if (screen < screen_settings.size())
+    screen_settings.erase(screen_settings.begin() + screen);
+}
+
 void Settings::SaveSettings() {
   String csv = "";
 

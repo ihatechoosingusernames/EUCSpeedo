@@ -27,6 +27,7 @@ void loop() {
   speedo_ptr->Process();
 }
 
+// TODO: Actually make use of settings
 // TODO: Create more UI objects
 // TODO: Update bluetooth handler to gracefully deal with reconnects without using a ton of memory
 // TODO: Create customisable UI screen actions for the button

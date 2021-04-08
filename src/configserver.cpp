@@ -2,7 +2,6 @@
 
 #include <functional>
 #include "SPIFFS.h"
-#include <ESPmDNS.h>
 #include <Update.h>
 
 #include "constants.h"
@@ -65,7 +64,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
     LOG_DEBUG("/remove_element");
     if(request->hasParam("id")) {
       RemoveElement(std::atoi(request->getParam("id")->value().c_str()));
-      ReloadTestData();
+      DisplayTestData();
     }
   });
 
@@ -97,7 +96,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       return;
     
     ReorderElement(std::atoi(request->getParam("elem", true)->value().c_str()), std::atoi(request->getParam("move", true)->value().c_str()));
-    ReloadTestData();
+    DisplayTestData();
   });
 
   server.on("/set_date", HTTP_POST, [this](AsyncWebServerRequest * request){
@@ -133,6 +132,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
   server.on("/settings", HTTP_POST, std::bind(&ConfigServer::ProcessUpdateSettings, this, std::placeholders::_1));
 
   server.on("/update_screen_order", HTTP_POST, [this](AsyncWebServerRequest *request){
+      LOG_DEBUG("/update_screen_order");
       if (!(request->hasParam("screen", true) && request->hasParam("move")))
         return request->send(400);
 
@@ -144,6 +144,31 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       file_handler->RenameFile("temp" + Utils::getUiScreenFileName(screen), Utils::getUiScreenFileName(screen + move));
       
       request->send(200);
+    });
+
+  server.on("/remove_screen", HTTP_DELETE, [this](AsyncWebServerRequest *request){
+      LOG_DEBUG("/remove_screen");
+
+      if (!request->hasParam("id")) {
+        request->send(400);
+        return;
+      }
+
+      uint8_t screen = std::atoi(request->getParam("id")->value().c_str());
+
+      settings_handler->RemoveScreen(screen);
+      file_handler->DeleteFile(Utils::getUiScreenFileName(screen));
+
+      request->send(200);
+    });
+
+  server.on("/new_screen", HTTP_POST, [this](AsyncWebServerRequest *request){
+      LOG_DEBUG("/new_screen");
+      file_handler->WriteFile(Utils::getUiScreenFileName(settings_handler->getNumScreens()), "");
+      settings_handler->AddScreen();
+      settings_handler->SaveSettings();
+
+      request->send(SPIFFS, "/general_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessSettingsPage, this, std::placeholders::_1));
     });
 
   // Create the element selection and data strings for the ui_settings.html template
@@ -204,10 +229,7 @@ void ConfigServer::Start() {
   LOG_DEBUG(WiFi.softAPIP().toString().c_str());
   ui_handler->ChangeScreen(UiScreen::kConfig);
 
-  if (MDNS.begin(kDefaultURL))
-    ui_handler->ShowMessage((String(kDefaultURL) + ".local").c_str(), 60);
-  else
-    ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 60);
+  ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 60);
 
   ui_handler->Update(&test_process_data);
   server.begin();
@@ -217,7 +239,6 @@ void ConfigServer::Stop() {
   started = false;
   server.end();
   WiFi.disconnect();
-  MDNS.end();
 }
 
 bool ConfigServer::isStarted() {
@@ -270,7 +291,7 @@ String ConfigServer::ProcessSettingsPage(const String& placeholder) {
   String out;
 
   for (size_t counter = 0; counter < settings_handler->getNumScreens(); counter++)
-    out += String("<tr><td>Screen ") + counter + "</td><td><button type=\"button\" onclick=\"deleteScreen(this)\">Delete</button></td><td><button type=\"button\" onclick=\"editScreen(this)\">Edit</button></td><td><button onclick=\"moveScreenUp(this)\">↑</button></td><td><button onclick=\"moveScreenDown(this)\">↓</button></td></tr>";
+    out += String("<tr><td>Screen ") + counter + "</td><td><button type=\"button\" onclick=\"deleteScreen(this)\">Delete</button></td><td><button type=\"button\" onclick=\"editScreen(this)\">Edit</button></td><td><button onclick=\"moveScreenUp(this)\">↑</button></td><td><button onclick=\"moveScreenDown(this)\">↓</button></td></tr>\n";
 
   return out;
 }
@@ -380,7 +401,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 
     // Appending this new element to the test data.
     test_ui_data.emplace_back(data);
-    ReloadTestData();
+    DisplayTestData();
   } else {
     LOG_DEBUG("Element has error");
     LOG_DEBUG("Data: ");
@@ -438,6 +459,25 @@ void ConfigServer::ProcessUpdateSettings(AsyncWebServerRequest *request) {
   settings_handler->SaveSettings();
 }
 
+std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
+  std::vector<uint8_t> out;
+  out.reserve(3); // Always 3 bytes
+
+  // Colour is represented by a string like "#ff00bb" where each pair of digits is a number representing
+  // red (0xff), green (0x00), and blue (0xbb) in hexadecimal
+
+  if (colour.length() < 7) {
+    return out;
+  }
+  
+  // Converts from string in base 16 to unsigned long, and from there to unsigned byte.
+  out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16)); // Red
+  out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16)); // Green
+  out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue
+
+  return out;
+}
+
 void ConfigServer::LoadTestData(uint8_t screen) {
   ui_screen = screen;
 
@@ -469,25 +509,8 @@ void ConfigServer::LoadTestData(uint8_t screen) {
 
     delete elem;  // Clean up memory
   }
-}
 
-std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
-  std::vector<uint8_t> out;
-  out.reserve(3); // Always 3 bytes
-
-  // Colour is represented by a string like "#ff00bb" where each pair of digits is a number representing
-  // red (0xff), green (0x00), and blue (0xbb) in hexadecimal
-
-  if (colour.length() < 7) {
-    return out;
-  }
-  
-  // Converts from string in base 16 to unsigned long, and from there to unsigned byte.
-  out.emplace_back(std::strtoul(colour.substring(1, 3).c_str(), NULL, 16)); // Red
-  out.emplace_back(std::strtoul(colour.substring(3, 5).c_str(), NULL, 16)); // Green
-  out.emplace_back(std::strtoul(colour.substring(5).c_str(), NULL, 16)); // Blue
-
-  return out;
+  DisplayTestData();
 }
 
 void ConfigServer::RemoveElement(size_t index) {
@@ -508,7 +531,9 @@ void ConfigServer::ReorderElement(size_t index, int move) {
   test_ui_data.erase(test_ui_data.begin() + (index + (move < 0? 1 : 0)));
 }
 
-void ConfigServer::ReloadTestData() {
+void ConfigServer::DisplayTestData() {
+  ui_handler->ShowMessage("", 0); // Clear any messages on screen
+
   std::vector<uint8_t> new_data;
   new_data.reserve(test_ui_data.size() * 2);  // Just a guess at the total size to minimise the reallocations needed
 
