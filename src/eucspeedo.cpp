@@ -17,6 +17,7 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     process_data() {
   file_handler.listDir("/", 0);
 
+  process_data.ApplySettings(&settings_handler);
   process_data.Update(&rtc_handler, true);  // Check the date on first start
 }
 
@@ -86,7 +87,9 @@ void EucSpeedo::HandlePress(PressType press) {
 }
 
 void EucSpeedo::HandleAction(Action action) {
-  if (config_server_active && action != Action::kActivateBle) // No actions to be done while config server active except to shut down the server
+  LOG_DEBUG_ARGS("Action: %s", kActionNames[static_cast<uint8_t>(action)]);
+  
+  if (config_server_active && action != Action::kActivateConfig) // No actions to be done while config server active except to shut down the server
     return;
 
   switch (action) {
@@ -95,7 +98,7 @@ void EucSpeedo::HandleAction(Action action) {
       break;
     case Action::kNextScreen: {
       uint8_t new_screen = ui_handler.getCurrentScreen() + 1;
-      for (;(new_screen != ui_handler.getCurrentScreen()) && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active); ++new_screen %= settings_handler.getNumScreens()) {}
+      for (;(new_screen != ui_handler.getCurrentScreen()) && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active); new_screen = (new_screen + 1) % settings_handler.getNumScreens()) {}
       ui_handler.ChangeScreen(new_screen);
       break;
     }

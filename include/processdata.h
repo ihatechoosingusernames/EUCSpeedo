@@ -4,6 +4,7 @@
 #include "euc.h"
 #include "constants.h"
 #include "rtchandler.h"
+#include "settings.h"
 
 namespace euc {
 
@@ -14,6 +15,8 @@ namespace euc {
 class ProcessData {
   public:
     ProcessData();
+
+    void ApplySettings(Settings* settings_handler);
 
     void Update(Euc* euc);
     void Update(RtcHandler* rtc, bool update_date = false);
@@ -27,6 +30,9 @@ class ProcessData {
     // SemaphoreHandle_t data_mutex; // Semaphore to protect the data array
 
     volatile bool writing = false;  // Using this as semaphores were not working, I suspect I need to use explicit xTasks for them to work
+
+    double speed_factor;
+    bool temp_in_freedoms;
 };
 
 }

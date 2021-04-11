@@ -1,4 +1,5 @@
 #include "settings.h"
+#include "logging.h"
 
 namespace euc {
 
@@ -14,6 +15,7 @@ Settings::Settings(FileHandler* file_handler) : file_handler(file_handler) {
       screen_settings.emplace_back(); // Create a new array of screen settings
     } else if ((counter - screen_value_at - 1) < static_cast<size_t>(ScreenSetting::kLastValue)) {  // Add the screen settings
       screen_settings.at(screen_settings.size() - 1)[(counter - screen_value_at - 1)] = byte;
+      LOG_DEBUG_ARGS("Screen setting %d is %d", (counter - screen_value_at - 1), byte);
     }
 
     counter++;
@@ -70,14 +72,16 @@ void Settings::SaveSettings() {
   String csv = "";
 
   for (size_t counter = 0; counter < static_cast<size_t>(GeneralSetting::kLastValue); counter++)
-    csv += general_settings[counter] + ", ";
+    csv += String(general_settings[counter]) + ", ";
   
   for (std::array<uint8_t, static_cast<size_t>(ScreenSetting::kLastValue)> settings : screen_settings)
     for (size_t counter = 0; counter < static_cast<size_t>(ScreenSetting::kLastValue); counter++)
       if (counter)
-        csv += settings[counter] + ", ";
+        csv += String(settings[counter]) + ", ";
       else
         csv += String("0, ") + settings[counter] + ", ";  // Adding a delimiter between screens
+
+  LOG_DEBUG_ARGS("Saving settings as %s", csv.c_str());
 
   file_handler->WriteFile(kGeneralSettingsFile, csv);
 }

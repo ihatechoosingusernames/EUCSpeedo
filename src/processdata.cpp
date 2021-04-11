@@ -3,7 +3,11 @@
 
 namespace euc {
 
-ProcessData::ProcessData() {
+ProcessData::ProcessData() {}
+
+void ProcessData::ApplySettings(Settings* settings_handler) {
+  speed_factor = (settings_handler->getSetting(GeneralSetting::kDistanceUnits)? 1 : kMphConversionFactor);
+  temp_in_freedoms = settings_handler->getSetting(GeneralSetting::kTemperatureUnits);
 }
 
 void ProcessData::Update(Euc* euc) {
@@ -63,6 +67,11 @@ void ProcessData::Update(DataType type, double val) {
 
 double ProcessData::getDoubleData(DataType data_type) {
   if(!writing) {  // Protecting the data array
+
+    if (data_type == DataType::kSpeed)  // Apply unit conversions here
+      return data[static_cast<size_t>(data_type)] * speed_factor;
+    if (temp_in_freedoms && data_type == DataType::kTemp)
+      return (data[static_cast<size_t>(data_type)] * kFreedomsConversionFactor) + kFreedomsConversionOffset;
 
     return data[static_cast<size_t>(data_type)];
 

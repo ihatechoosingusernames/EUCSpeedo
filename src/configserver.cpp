@@ -99,8 +99,6 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
   server.on("/set_date", HTTP_POST, [this](AsyncWebServerRequest * request){
     LOG_DEBUG("/set_date");
-    for (size_t param = 0; param < request->params(); param++)
-      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value()).c_str());
 
     if (!(request->hasParam("year", true) && request->hasParam("month", true) && request->hasParam("day", true) && request->hasParam("weekday", true)))
       return request->send(400);
@@ -113,8 +111,6 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
   server.on("/set_time", HTTP_POST, [this](AsyncWebServerRequest * request){
     LOG_DEBUG("/set_time");
-    for (size_t param = 0; param < request->params(); param++)
-      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value()).c_str());
 
     if (!(request->hasParam("hours", true) && request->hasParam("minutes", true) && request->hasParam("seconds", true)))
       return request->send(400);
@@ -184,6 +180,26 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       settings_handler->SaveSettings();
 
       request->send(SPIFFS, "/general_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessSettingsPage, this, std::placeholders::_1));
+    });
+  
+  server.on("/screen_settings", HTTP_POST, [this](AsyncWebServerRequest *request){
+      LOG_DEBUG("/screen_settings");
+
+      for (size_t param = 0; param < request->params(); param++)
+        LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value()).c_str());
+
+      if (request->hasParam("single_press_action", true))
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOnSinglePress, std::atoi(request->getParam("single_press_action", true)->value().c_str()));
+      
+      if (request->hasParam("double_press_action", true))
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOnDoublePress, std::atoi(request->getParam("double_press_action", true)->value().c_str()));
+
+      if (request->hasParam("long_press_action", true))
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOnLongPress, std::atoi(request->getParam("long_press_action", true)->value().c_str()));
+
+      settings_handler->SaveSettings();
+
+      request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
     });
 
   // Create the element selection and data strings for the ui_settings.html template
@@ -290,6 +306,27 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
       if (test_data_types[data_type])
         out += "<tr id=\"" + String(data_type) + "\"><td>" + String(kDataTypeNames[static_cast<size_t>(data_type)])
           + "</td><td><input type=\"number\" onchange=\"updateData(this)\"></td></tr>\n";
+  } else if (placeholder == "UI_SETTINGS_ACTIONS_SINGLE") {
+    // Replace with options representing each type of action possible, with the active single press action selected
+    // format: <option value="1">Sleep</option>
+    for (uint8_t action = 0; action < static_cast<uint8_t>(Action::kLastValue); action++)
+      out += "<option value=\"" + String(action) + "\""
+        + (static_cast<uint8_t>(settings_handler->getScreenSetting(ui_screen, ScreenSetting::kOnSinglePress)) == action? " selected " : "")
+        + ">" + kActionNames[action] + "</option>\n";
+  } else if (placeholder == "UI_SETTINGS_ACTIONS_DOUBLE") {
+    // Replace with options representing each type of action possible, with the active single press action selected
+    // format: <option value="1">Sleep</option>
+    for (uint8_t action = 0; action < static_cast<uint8_t>(Action::kLastValue); action++)
+      out += "<option value=\"" + String(action) + "\""
+        + (static_cast<uint8_t>(settings_handler->getScreenSetting(ui_screen, ScreenSetting::kOnDoublePress)) == action? " selected " : "")
+        + ">" + kActionNames[action] + "</option>\n";
+  } else if (placeholder == "UI_SETTINGS_ACTIONS_LONG") {
+    // Replace with options representing each type of action possible, with the active single press action selected
+    // format: <option value="1">Sleep</option>
+    for (uint8_t action = 0; action < static_cast<uint8_t>(Action::kLastValue); action++)
+      out += "<option value=\"" + String(action) + "\""
+        + (static_cast<uint8_t>(settings_handler->getScreenSetting(ui_screen, ScreenSetting::kOnLongPress)) == action? " selected " : "")
+        + ">" + kActionNames[action] + "</option>\n";
   }
 
   Serial.println(out);

@@ -27,9 +27,9 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Actually make use of settings
+// TODO: Add OTA file system image update
+// TODO: Fix bluetooth crash when no EUC found
 // TODO: Create more UI objects
 // TODO: Update bluetooth handler to gracefully deal with reconnects without using a ton of memory
-// TODO: Create customisable UI screen actions for the button
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?

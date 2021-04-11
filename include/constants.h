@@ -117,6 +117,10 @@ enum class Action : uint8_t {
 
 const static char* kActionNames[] = {"Sleep", "Next Screen", "Previous Screen", "Activate Config Server", "Activate Bluetooth"};
 
+const static double kMphConversionFactor = 0.6213712;
+const static double kFreedomsConversionFactor = 1.8;
+const static double kFreedomsConversionOffset = 32;
+
 }
 
 #endif
