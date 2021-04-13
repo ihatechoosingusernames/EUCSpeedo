@@ -28,6 +28,7 @@ void loop() {
 }
 
 // TODO: Add OTA file system image update
+// TODO: Implement LED for indicating state
 // TODO: Create more UI objects
 // TODO: Update bluetooth handler to gracefully deal with reconnects without using a ton of memory
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ

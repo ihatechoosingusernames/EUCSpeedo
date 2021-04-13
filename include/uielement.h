@@ -19,7 +19,7 @@ using ColourProvider = std::function<uint16_t(ProcessData*)>;
       return (UiElement*) new element(data, data_len);                  \
     };                                                                  \
     ~element() {};                                                      \
-    std::vector<ArgType> ArgList() { return {__VA_ARGS__}; }            \
+    std::vector<ArgType> ArgList() override { return {__VA_ARGS__}; }            \
     String Name() { return #element; }                                  \
     element(uint8_t data[], size_t data_len) {                          \
       assert(data[0] == code);                                          \
@@ -28,7 +28,7 @@ using ColourProvider = std::function<uint16_t(ProcessData*)>;
   private: static bool registered;
 
 #define UI_ARGS(arg, ...)                                               \
-  public: static std::vector<String> ArgNames() { return {arg, __VA_ARGS__}; }
+  public: std::vector<String> ArgNames() override { return {arg, __VA_ARGS__}; }
 
 #define UI_REGISTER(element, code)                                      \
   bool element::registered = euc::UiElement::RegisterElement<element, code>();
@@ -38,13 +38,13 @@ class UiElement {
     static UiElement* Factory(uint8_t data[], size_t data_len);
 
     size_t DataSize();  // Returns the number of bytes the element has used from the arg list
-    std::vector<String> ArgNames();   // Returns optional names of the args to help with config generation
     std::vector<DataType> DataTypeArgs(); // Returns all data types used by the element to help with config generation
 
     virtual ~UiElement() {}; // Declaring virtual destructor to allow safe "delete" calls on base classes
     
     virtual void Draw(ProcessData* data, TFT_eSprite* sprite) = 0;   // Draws the element
     
+    virtual std::vector<String> ArgNames();   // Returns optional names of the args to help with config generation
     virtual std::vector<ArgType> ArgList() = 0; // Returns the number and type of args to help with config generation
     virtual String Name() = 0; // Returns the element name to help with config generation
   

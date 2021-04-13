@@ -234,6 +234,9 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
     std::vector<String> name_list = elem->ArgNames();
     std::vector<ArgType> arg_list = elem->ArgList();
+
+    LOG_DEBUG_ARGS("Elem %s Name list size: %d, Arg list size %d", elem->Name().c_str(), name_list.size(), arg_list.size());
+
     for (size_t arg = 0; arg < arg_list.size(); arg++) {
       ui_elem_data += String(arg > 0? "," : "") + "[\"" + String(static_cast<uint8_t>(arg_list.at(arg))) + "\",\"";
 
