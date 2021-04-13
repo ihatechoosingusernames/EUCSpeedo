@@ -97,14 +97,19 @@ void EucSpeedo::HandleAction(Action action) {
       ui_handler.Sleep();
       break;
     case Action::kNextScreen: {
-      uint8_t new_screen = ui_handler.getCurrentScreen() + 1;
-      for (;(new_screen != ui_handler.getCurrentScreen()) && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active); new_screen = (new_screen + 1) % settings_handler.getNumScreens()) {}
+      uint8_t new_screen = (ui_handler.getCurrentScreen() + 1) % settings_handler.getNumScreens();
+      
+      for (;(new_screen != ui_handler.getCurrentScreen())
+          && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active);
+          new_screen = (new_screen + 1) % settings_handler.getNumScreens()) {}
       ui_handler.ChangeScreen(new_screen);
       break;
     }
     case Action::kPreviousScreen: {
       uint8_t new_screen = (ui_handler.getCurrentScreen()? ui_handler.getCurrentScreen() - 1 : settings_handler.getNumScreens());
-      for (;(new_screen != ui_handler.getCurrentScreen()) && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active); new_screen = (new_screen? new_screen - 1 : settings_handler.getNumScreens())) {}
+      for (;(new_screen != ui_handler.getCurrentScreen())
+          && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active);
+          new_screen = (new_screen? new_screen - 1 : settings_handler.getNumScreens())) {}
       ui_handler.ChangeScreen(new_screen);
       break;
     }

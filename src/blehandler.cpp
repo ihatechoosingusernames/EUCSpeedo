@@ -1,7 +1,6 @@
 #include "blehandler.h"
 
 #include <functional>
-#include <pthread.h>
 #include <algorithm>
 #include <cstring>
 
@@ -21,8 +20,9 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
 void BleHandler::Scan() {
   if (!scanning) {
     scanning = true;
-    // pthread_create(&scan_thread, NULL, BleHandler::Scan, (void*)this);
-    BleHandler::Scan((void*)this);
+    // Stack size of 1500 arrived at by trial and error, possible cause of stack overflow in future
+    xTaskCreate(BleHandler::Scan, "scan_task", 1500, (void*)this, 20, scan_task);
+    // BleHandler::Scan((void*)this);
   }
 }
 
@@ -36,7 +36,7 @@ bool BleHandler::isConnected() {
   return connected;
 }
 
-void* BleHandler::Scan(void* in) {
+void BleHandler::Scan(void* in) {
   BLEScan* pBLEScan = NimBLEDevice::getScan();
   
   pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedDeviceCallbacks((BleHandler*)in));
@@ -45,6 +45,7 @@ void* BleHandler::Scan(void* in) {
   pBLEScan->setActiveScan(true);
   pBLEScan->start(10, true);
   ((BleHandler*)in)->scanning = false;
+  vTaskDelete(NULL);
 }
 
 bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {

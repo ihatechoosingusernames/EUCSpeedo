@@ -24,8 +24,11 @@ class Settings {
     void SaveSettings();
 
   private:
+    static const uint8_t screen_settings_size = static_cast<uint8_t>(ScreenSetting::kLastValue);
+    static const uint8_t general_settings_size = static_cast<uint8_t>(GeneralSetting::kLastValue);
+
     uint8_t general_settings[static_cast<size_t>(GeneralSetting::kLastValue)];
-    std::vector<std::array<uint8_t, static_cast<size_t>(ScreenSetting::kLastValue)>> screen_settings;
+    std::vector<std::array<uint8_t, screen_settings_size>> screen_settings;
 
     FileHandler* file_handler;
 };

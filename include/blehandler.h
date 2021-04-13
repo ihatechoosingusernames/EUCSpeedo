@@ -20,7 +20,7 @@ class BleHandler {
     bool isConnected();
 
   private:
-    static void* Scan(void* in);
+    static void Scan(void* in);
 
     bool Connect(NimBLEAdvertisedDevice* device, EucType type);
     void NotifyCallBack(NimBLERemoteCharacteristic* rc, uint8_t* data, size_t data_size, bool is_notify);
@@ -44,9 +44,8 @@ class BleHandler {
     std::function<void(EucType)> connection_callback;
     std::function<void(uint8_t* data, size_t data_size)> notify_callback;
 
-    pthread_t scan_thread;
-
     bool connected = false, scanning = false;
+    TaskHandle_t *scan_task;
 
     volatile bool should_connect;
     EucType brand;
