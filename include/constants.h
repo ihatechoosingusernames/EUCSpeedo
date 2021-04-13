@@ -121,6 +121,8 @@ const static double kMphConversionFactor = 0.6213712;
 const static double kFreedomsConversionFactor = 1.8;
 const static double kFreedomsConversionOffset = 32;
 
+const static double kVoltageRef = 1100;
+
 }
 
 #endif

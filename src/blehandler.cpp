@@ -17,9 +17,10 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
   NimBLEDevice::setSecurityIOCap(BLE_HS_IO_NO_INPUT_OUTPUT);
 }
 
-void BleHandler::Scan() {
+void BleHandler::Scan(std::function<void(void)> scan_done_callback) {
   if (!scanning) {
     scanning = true;
+    scan_finished_callback = scan_done_callback;
     // Stack size of 1500 arrived at by trial and error, possible cause of stack overflow in future
     xTaskCreate(BleHandler::Scan, "scan_task", 1500, (void*)this, 20, scan_task);
     // BleHandler::Scan((void*)this);
@@ -45,6 +46,7 @@ void BleHandler::Scan(void* in) {
   pBLEScan->setActiveScan(true);
   pBLEScan->start(10, true);
   ((BleHandler*)in)->scanning = false;
+  ((BleHandler*)in)->scan_finished_callback();
   vTaskDelete(NULL);
 }
 

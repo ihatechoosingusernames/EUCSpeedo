@@ -13,8 +13,7 @@ namespace euc {
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     file_handler(),
     settings_handler(&file_handler),
-    ui_handler(&file_handler),
-    process_data() {
+    ui_handler(&file_handler) {
   file_handler.listDir("/", 0);
 
   process_data.ApplySettings(&settings_handler);
@@ -24,9 +23,9 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
   uint8_t timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kSleepTimeout);
   if (timeout) {
     sleep_timeout = millis() + (timeout * 1000);
-  } else {
-    sleep_timeout = 0;  // Resets if the new screen has no timeout
   }
+
+  LOG_DEBUG_ARGS("battery voltage %f", device_handler.getBatteryVoltage());
 }
 
 EucSpeedo::~EucSpeedo() {
@@ -43,6 +42,7 @@ EucSpeedo::~EucSpeedo() {
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
   process_data.Update(&rtc_handler);
+  process_data.Update(&device_handler);
   if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
     ui_handler.Update(&process_data);
 
@@ -51,12 +51,15 @@ void EucSpeedo::Process() {
 
   if (sleep_timeout && sleep_timeout < millis())
     HandleAction(Action::kSleep);
+
+  device_handler.Update();
 }
 
 // Creates the correct type of wheel object
 void EucSpeedo::onFoundWheel(EucType type) {
   LOG_DEBUG_ARGS("Found %s EUC\n", kBrandName[(size_t)type]);
   ui_handler.ShowMessage(kBrandName[(size_t)type], 3);  // Show which brand is connected
+  device_handler.LedOff();  // Stop LED flashing
 
   switch (type) {
     case EucType::kGotway:
@@ -130,10 +133,12 @@ void EucSpeedo::HandleAction(Action action) {
         config_server->Stop();
         delete config_server;
         config_server_active = false;
-      } else {
+        device_handler.LedOff();
+      } else if (!ble_handler_active) { // Only one of BLE or Wifi may be active at a time due to memory constraints
         config_server = new ConfigServer(&ui_handler, &file_handler, &rtc_handler, &settings_handler);
         config_server->Start();
         config_server_active = true;
+        device_handler.FlashLed(4); // 4 Hz
       }
       break;
     }
@@ -141,11 +146,12 @@ void EucSpeedo::HandleAction(Action action) {
       if (ble_handler_active) {
         delete ble;
         ble_handler_active = false;
-      } else {
+      } else if (!config_server_active) { // Only one of BLE or Wifi may be active at a time due to memory constraints
         ble = new BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
           std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2));
         ble_handler_active = true;
-        ble->Scan();
+        ble->Scan([this](){ device_handler.LedOff(); });  // Turn the LED off when the scan is finished
+        device_handler.FlashLed(6); // 6 Hz
       }
       break;
     }

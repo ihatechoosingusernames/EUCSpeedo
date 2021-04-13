@@ -15,7 +15,7 @@ class BleHandler {
   public:
     BleHandler(std::function<void(EucType)> connection, std::function<void(uint8_t* data, size_t data_size)> notify);
 
-    void Scan();
+    void Scan(std::function<void(void)> scan_done_callback = [](){});
     void Update();
     bool isConnected();
 
@@ -43,6 +43,7 @@ class BleHandler {
 
     std::function<void(EucType)> connection_callback;
     std::function<void(uint8_t* data, size_t data_size)> notify_callback;
+    std::function<void(void)> scan_finished_callback;
 
     bool connected = false, scanning = false;
     TaskHandle_t *scan_task;

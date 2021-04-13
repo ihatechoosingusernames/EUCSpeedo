@@ -65,6 +65,16 @@ void ProcessData::Update(DataType type, double val) {
   }
 }
 
+void ProcessData::Update(DeviceHandler* device) {
+  if (!writing) {
+    writing = true;
+    data[static_cast<size_t>(DataType::kWatchBattery)] = device->getBatteryPercentage();
+    writing = false;
+  } else {
+    LOG_DEBUG("ProcessData::Update Could not get access to the data_mutex");
+  }
+}
+
 double ProcessData::getDoubleData(DataType data_type) {
   if(!writing) {  // Protecting the data array
 

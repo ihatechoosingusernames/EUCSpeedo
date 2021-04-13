@@ -12,6 +12,7 @@
 #include "filehandler.h"
 #include "configserver.h"
 #include "rtchandler.h"
+#include "devicehandler.h"
 
 namespace euc {
 
@@ -37,6 +38,7 @@ class EucSpeedo {
     UiHandler ui_handler;
     ProcessData process_data;
     RtcHandler rtc_handler;
+    DeviceHandler device_handler;
 
     bool wheel_connected = false, config_server_active = false, ble_handler_active = false;
     long unsigned int sleep_timeout = 0;

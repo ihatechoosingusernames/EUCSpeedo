@@ -8,7 +8,8 @@ namespace euc {
 #define PIN_223B_Q 33
 
 // Battery
-#define PIN_BATT 32
+#define PIN_BATT 35
+#define PIN_CHARGE 32
 
 // RTC
 #define PIN_PCF8563_SCL 22
