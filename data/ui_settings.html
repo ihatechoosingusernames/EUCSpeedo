@@ -16,6 +16,14 @@
     <table class="inlineTable">
       <th>Screen Settings</th>
       <tr>
+        <td>
+          <label for="only_connected">Only If Connected</label><br>
+        </td>
+        <td>
+          <input type="checkbox" id="only_connected" name="only_connected" value="1" %UI_ONLY_CONNECTED%>
+        </td>
+      </tr>
+      <tr>
         <td>On Single Press</td>
         <td><select name="single_press_action">
             %UI_SETTINGS_ACTIONS_SINGLE%
@@ -32,6 +40,10 @@
         <td><select name="long_press_action">
             %UI_SETTINGS_ACTIONS_LONG%
           </select></td>
+      </tr>
+      <tr>
+        <td><label for="timeout">Sleep Timeout (sec)</label></td>
+        <td><input type="number" size="3" id="timeout" name="timeout" min="0" max="255" value=%UI_TIMEOUT%></td>
       </tr>
       <tr>
         <td><button type="submit" , class="btn">

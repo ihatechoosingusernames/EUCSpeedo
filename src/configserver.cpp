@@ -197,6 +197,14 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       if (request->hasParam("long_press_action", true))
         settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOnLongPress, std::atoi(request->getParam("long_press_action", true)->value().c_str()));
 
+      if (request->hasParam("only_connected", true))
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOnlyConnected, std::atoi(request->getParam("only_connected", true)->value().c_str()));
+      else
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOnlyConnected, 0);  // This is a checkbox, so we will get nothing if not ticked
+      
+      if (request->hasParam("timeout", true))
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kSleepTimeout, std::atoi(request->getParam("timeout", true)->value().c_str()));
+
       settings_handler->SaveSettings();
 
       request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
@@ -302,7 +310,7 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
   } else if (placeholder == "UI_DATA_TABLE") {
     // Replace with table rows representing each type of data that is being displayed by the UI
     // format: <tr><td>Speed</td></tr>
-    for (size_t data_type = 0; data_type < (size_t)DataType::kLastValue; data_type++)
+    for (size_t data_type = 0; data_type < static_cast<size_t>(DataType::kLastValue); data_type++)
       if (test_data_types[data_type])
         out += "<tr id=\"" + String(data_type) + "\"><td>" + String(kDataTypeNames[static_cast<size_t>(data_type)])
           + "</td><td><input type=\"number\" onchange=\"updateData(this)\"></td></tr>\n";
@@ -327,6 +335,13 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
       out += "<option value=\"" + String(action) + "\""
         + (static_cast<uint8_t>(settings_handler->getScreenSetting(ui_screen, ScreenSetting::kOnLongPress)) == action? " selected " : "")
         + ">" + kActionNames[action] + "</option>\n";
+  } else if (placeholder == "UI_ONLY_CONNECTED") {
+    // Replace with "checked" if value is set to 1
+    if (settings_handler->getScreenSetting(ui_screen, ScreenSetting::kOnlyConnected))
+      out += "checked";
+  } else if (placeholder == "UI_TIMEOUT") {
+    // Replace with the screen's timeout length
+    out += String(static_cast<uint8_t>(settings_handler->getScreenSetting(ui_screen, ScreenSetting::kSleepTimeout)));
   }
 
   Serial.println(out);
@@ -335,13 +350,24 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
 }
 
 String ConfigServer::ProcessSettingsPage(const String& placeholder) {
-  if (placeholder != "SETTINGS_SCREENS")
-    return "";
-
   String out;
 
-  for (size_t counter = 0; counter < settings_handler->getNumScreens(); counter++)
-    out += String("<tr><td>Screen ") + counter + "</td><td><button type=\"button\" onclick=\"deleteScreen(this)\">Delete</button></td><td><button type=\"button\" onclick=\"editScreen(this)\">Edit</button></td><td><button onclick=\"moveScreenUp(this)\">↑</button></td><td><button onclick=\"moveScreenDown(this)\">↓</button></td></tr>\n";
+  if (placeholder == "SETTINGS_SCREENS") {
+    for (size_t counter = 0; counter < settings_handler->getNumScreens(); counter++)
+      out += String("<tr><td>Screen ") + counter + "</td><td><button type=\"button\" onclick=\"deleteScreen(this)\">Delete</button></td><td><button type=\"button\" onclick=\"editScreen(this)\">Edit</button></td><td><button onclick=\"moveScreenUp(this)\">↑</button></td><td><button onclick=\"moveScreenDown(this)\">↓</button></td></tr>\n";
+  } else if (placeholder == "SETTINGS_CELCIUS_CHECKED") {
+    if (!settings_handler->getSetting(GeneralSetting::kTemperatureUnits))
+      out += "checked";
+  } else if (placeholder == "SETTINGS_FREEDOMS_CHECKED") {
+    if (settings_handler->getSetting(GeneralSetting::kTemperatureUnits))
+      out += "checked";
+  } else if (placeholder == "SETTINGS_KILOMETRES_CHECKED") {
+    if (!settings_handler->getSetting(GeneralSetting::kDistanceUnits))
+      out += "checked";
+  } else if (placeholder == "SETTINGS_MILES_CHECKED") {
+    if (settings_handler->getSetting(GeneralSetting::kDistanceUnits))
+      out += "checked";
+  }
 
   return out;
 }
@@ -501,12 +527,11 @@ void ConfigServer::ProcessUpdateSettings(AsyncWebServerRequest *request) {
   if (request->hasParam("temperature", true)) {
     settings_handler->setSetting(GeneralSetting::kTemperatureUnits, std::atoi((request->getParam("temperature", true)->value().c_str())));
   }
-
   if (request->hasParam("distance", true)) {
     settings_handler->setSetting(GeneralSetting::kDistanceUnits, std::atoi((request->getParam("distance", true)->value().c_str())));
   }
-
   settings_handler->SaveSettings();
+  request->send(SPIFFS, "/general_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessSettingsPage, this, std::placeholders::_1));
 }
 
 std::vector<uint8_t> ConfigServer::ParseColour(String colour) {

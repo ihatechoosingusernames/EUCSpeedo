@@ -19,6 +19,14 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
 
   process_data.ApplySettings(&settings_handler);
   process_data.Update(&rtc_handler, true);  // Check the date on first start
+
+  // Set sleep timer if applicable
+  uint8_t timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kSleepTimeout);
+  if (timeout) {
+    sleep_timeout = millis() + (timeout * 1000);
+  } else {
+    sleep_timeout = 0;  // Resets if the new screen has no timeout
+  }
 }
 
 EucSpeedo::~EucSpeedo() {
@@ -40,6 +48,9 @@ void EucSpeedo::Process() {
 
   if (ble_handler_active)
     ble->Update();
+
+  if (sleep_timeout && sleep_timeout < millis())
+    HandleAction(Action::kSleep);
 }
 
 // Creates the correct type of wheel object
@@ -98,7 +109,7 @@ void EucSpeedo::HandleAction(Action action) {
       break;
     case Action::kNextScreen: {
       uint8_t new_screen = (ui_handler.getCurrentScreen() + 1) % settings_handler.getNumScreens();
-      
+
       for (;(new_screen != ui_handler.getCurrentScreen())
           && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active);
           new_screen = (new_screen + 1) % settings_handler.getNumScreens()) {}
@@ -107,6 +118,7 @@ void EucSpeedo::HandleAction(Action action) {
     }
     case Action::kPreviousScreen: {
       uint8_t new_screen = (ui_handler.getCurrentScreen()? ui_handler.getCurrentScreen() - 1 : settings_handler.getNumScreens());
+
       for (;(new_screen != ui_handler.getCurrentScreen())
           && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active);
           new_screen = (new_screen? new_screen - 1 : settings_handler.getNumScreens())) {}
@@ -139,6 +151,15 @@ void EucSpeedo::HandleAction(Action action) {
     }
     default:
       break;
+  }
+
+  if (action == Action::kNextScreen || action == Action::kPreviousScreen) {
+    uint8_t timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kSleepTimeout);
+    if (timeout) {
+      sleep_timeout = millis() + (timeout * 1000);
+    } else {
+      sleep_timeout = 0;  // Resets if the new screen has no timeout
+    }
   }
 }
 
