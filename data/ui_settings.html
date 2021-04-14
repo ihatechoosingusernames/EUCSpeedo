@@ -120,8 +120,13 @@
     }
     function updateData(data_obj) {
       var xhttp = new XMLHttpRequest();
+      formData = new FormData();
+
+      formData.append("id", data_obj.parentNode.parentNode.id);
+      formData.append("data", data_obj.value);
+      
       xhttp.open("POST", "update_data", true);
-      xhttp.send("id=" + data_obj.parentNode.parentNode.id + "&data=" + data_obj.value);
+      xhttp.send(formData);
     }
     function moveElemUp(elem) {
       var row = elem.parentNode.parentNode;

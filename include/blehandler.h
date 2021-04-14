@@ -18,9 +18,10 @@ class BleHandler {
     void Scan(std::function<void(void)> scan_done_callback = [](){});
     void Update();
     bool isConnected();
+    bool isConnecting();
 
   private:
-    static void Scan(void* in);
+    static void* StartScan(void* in);
 
     bool Connect(NimBLEAdvertisedDevice* device, EucType type);
     void NotifyCallBack(NimBLERemoteCharacteristic* rc, uint8_t* data, size_t data_size, bool is_notify);
@@ -46,9 +47,10 @@ class BleHandler {
     std::function<void(void)> scan_finished_callback;
 
     bool connected = false, scanning = false;
-    TaskHandle_t *scan_task;
+    // TaskHandle_t *scan_task;
+    pthread_t scan_task;
 
-    volatile bool should_connect;
+    volatile bool should_connect = false;
     EucType brand;
     NimBLEAdvertisedDevice* connect_device;
 };

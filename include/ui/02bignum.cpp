@@ -11,6 +11,9 @@ class BigNum : public UiElement {
   public:
     void Draw(ProcessData* data, TFT_eSprite* sprite) {
       // Set the background colour to whatever's in the center of the sprite
+      if (sprite->fontsLoaded())
+        sprite->unloadFont();
+        
       sprite->setTextColor(kColour_args[0](data), sprite->readPixel(sprite->getViewportWidth() / 2, sprite->getViewportHeight() / 2));
       sprite->setTextDatum(MC_DATUM);
       sprite->drawNumber(data->getDoubleData(kDataType_args[0]), sprite->getViewportWidth() / 2, sprite->getViewportHeight() / 2, kBigNumberFont);

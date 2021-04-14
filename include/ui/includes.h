@@ -4,6 +4,7 @@
 #include "00empty.cpp"
 #include "01background.cpp"
 #include "02bignum.cpp"
-#include "03bargraph.cpp"
+#include "03littlenum.cpp"
+#include "04bargraph.cpp"
 
 #endif

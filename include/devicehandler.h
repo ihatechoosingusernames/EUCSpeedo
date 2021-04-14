@@ -19,6 +19,8 @@ class DeviceHandler {
     double getBatteryPercentage();
 
   private:
+    static void IRAM_ATTR onCharge();
+
     volatile uint32_t delay;  // 32 bits for max bus size
     long unsigned int timeout;
 };

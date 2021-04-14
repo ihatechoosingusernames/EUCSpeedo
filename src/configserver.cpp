@@ -70,6 +70,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
   server.on("/update_data", HTTP_POST, [this](AsyncWebServerRequest * request){
     LOG_DEBUG("/update_data");
+
     if (!request->hasParam("id", true))
       return;
     if (!request->hasParam("data", true))
@@ -77,7 +78,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
     LOG_DEBUG(("Updating data type " + request->getParam("id", true)->value() + " with data " + request->getParam("data", true)->value() + "\n").c_str());
 
-    // Get data type as a string, then convert to String -> const char* -> int -> DataType. Very efficient.
+    // Get data type as a string, then convert String -> const char* -> int -> DataType. Very efficient.
     DataType data = static_cast<DataType>(std::atoi(request->getParam("id", true)->value().c_str()));
     double val = std::atof(request->getParam("data", true)->value().c_str());
 
@@ -87,9 +88,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
   server.on("/update_elem_order", HTTP_POST, [this](AsyncWebServerRequest * request){
     LOG_DEBUG("/update_elem_order");
-    for (size_t param = 0; param < request->params(); param++) {
-      LOG_DEBUG((request->getParam(param)->name() + " : " + request->getParam(param)->value() + "\n").c_str());
-    }
+
     if (!(request->hasParam("elem", true) && request->hasParam("move", true)))
       return request->send(400);
     
@@ -315,7 +314,7 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
     // format: <tr><td>Speed</td></tr>
     for (size_t data_type = 0; data_type < static_cast<size_t>(DataType::kLastValue); data_type++)
       if (test_data_types[data_type])
-        out += "<tr id=\"" + String(data_type) + "\"><td>" + String(kDataTypeNames[static_cast<size_t>(data_type)])
+        out += String("<tr id=\"") + data_type + "\"><td>" + String(kDataTypeNames[static_cast<size_t>(data_type)])
           + "</td><td><input type=\"number\" onchange=\"updateData(this)\"></td></tr>\n";
   } else if (placeholder == "UI_SETTINGS_ACTIONS_SINGLE") {
     // Replace with options representing each type of action possible, with the active single press action selected
@@ -404,7 +403,7 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
           test_data_types[std::atoi(request->getParam((String("data_arg") + arg), true)->value().c_str())] = true;  // Mark this datatype as being used
         } else {
           has_error = true;
-          LOG_DEBUG("Has Error: %d");
+          LOG_DEBUG("Has Error");
         }
         break; }
       case ArgType::kColour: {

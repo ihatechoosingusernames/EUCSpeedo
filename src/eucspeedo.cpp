@@ -36,7 +36,7 @@ EucSpeedo::~EucSpeedo() {
     delete config_server;
   }
   if (ble_handler_active)
-    delete ble;
+    delete ble_handler;
 }
 
 void EucSpeedo::Process() {
@@ -47,7 +47,7 @@ void EucSpeedo::Process() {
     ui_handler.Update(&process_data);
 
   if (ble_handler_active)
-    ble->Update();
+    ble_handler->Update();
 
   if (sleep_timeout && sleep_timeout < millis())
     HandleAction(Action::kSleep);
@@ -144,13 +144,17 @@ void EucSpeedo::HandleAction(Action action) {
     }
     case Action::kActivateBle: {
       if (ble_handler_active) {
-        delete ble;
+        delete ble_handler;
         ble_handler_active = false;
       } else if (!config_server_active) { // Only one of BLE or Wifi may be active at a time due to memory constraints
-        ble = new BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
+        ble_handler = new BleHandler(std::bind(&EucSpeedo::onFoundWheel, this, std::placeholders::_1),
           std::bind(&EucSpeedo::onProcessInput, this, std::placeholders::_1, std::placeholders::_2));
         ble_handler_active = true;
-        ble->Scan([this](){ device_handler.LedOff(); });  // Turn the LED off when the scan is finished
+        ble_handler->Scan([this](){
+            device_handler.LedOff(); // Turn the LED off when the scan is finished
+            if (!(ble_handler->isConnected() || ble_handler->isConnecting()))
+              HandleAction(Action::kActivateBle); // Turn off ble handler if nothing to do
+          });
         device_handler.FlashLed(6); // 6 Hz
       }
       break;

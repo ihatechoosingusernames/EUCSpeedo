@@ -18,12 +18,13 @@ using ColourProvider = std::function<uint16_t(ProcessData*)>;
     static UiElement* Builder(uint8_t data[], size_t data_len) {        \
       return (UiElement*) new element(data, data_len);                  \
     };                                                                  \
-    ~element() {};                                                      \
-    std::vector<ArgType> ArgList() override { return {__VA_ARGS__}; }            \
+    ~element() { onDestroy(); };                                        \
+    std::vector<ArgType> ArgList() override { return {__VA_ARGS__}; }   \
     String Name() { return #element; }                                  \
     element(uint8_t data[], size_t data_len) {                          \
       assert(data[0] == code);                                          \
       getArgsFromData(data, data_len);                                  \
+      onCreate();                                                       \
     };                                                                  \
   private: static bool registered;
 
@@ -41,6 +42,9 @@ class UiElement {
     std::vector<DataType> DataTypeArgs(); // Returns all data types used by the element to help with config generation
 
     virtual ~UiElement() {}; // Declaring virtual destructor to allow safe "delete" calls on base classes
+
+    virtual void onCreate() {};  // To allow setup and cleanup of UI elements
+    virtual void onDestroy() {};
     
     virtual void Draw(ProcessData* data, TFT_eSprite* sprite) = 0;   // Draws the element
     

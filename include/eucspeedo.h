@@ -31,7 +31,7 @@ class EucSpeedo {
 
     Euc* wheel;
     ButtonHandler* button_handler;
-    BleHandler* ble;
+    BleHandler* ble_handler;
     ConfigServer* config_server;
     FileHandler file_handler;
     Settings settings_handler;

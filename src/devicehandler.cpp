@@ -9,6 +9,8 @@ namespace euc {
 DeviceHandler::DeviceHandler() {
   pinMode(PIN_BATT, INPUT);
   pinMode(PIN_CHARGE, INPUT);
+
+  attachInterrupt(PIN_CHARGE, onCharge, CHANGE);
 }
 
 void DeviceHandler::Update() {
@@ -26,16 +28,15 @@ void DeviceHandler::FlashLed(uint32_t freq) {
 }
 
 void DeviceHandler::LedOn() {
-  pinMode(PIN_LED, PULLUP); // Ensures it stays on even in sleep
+  digitalWrite(PIN_LED, HIGH);
 }
 
 void DeviceHandler::LedOff() {
   if (delay) {
     delay = 0;
-    digitalWrite(PIN_LED, LOW);
   }
 
-  pinMode(PIN_LED, OUTPUT_OPEN_DRAIN);  // AKA off
+  digitalWrite(PIN_LED, LOW);
 }
 
 double DeviceHandler::getBatteryVoltage() {
@@ -51,6 +52,13 @@ double DeviceHandler::getBatteryPercentage() {
     return (v / 3.3) * 100;
   else
     return 0;
+}
+
+void DeviceHandler::onCharge() {
+  if (digitalRead(PIN_CHARGE) == LOW)
+    pinMode(PIN_LED, PULLUP); // Ensures it stays on even in sleep
+  else
+    pinMode(PIN_LED, OUTPUT_OPEN_DRAIN);  // AKA off
 }
 
 }

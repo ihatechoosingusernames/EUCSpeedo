@@ -13,11 +13,11 @@ void ProcessData::ApplySettings(Settings* settings_handler) {
 void ProcessData::Update(Euc* euc) {
   if(!writing) {  // Protecting the data array
     writing = true;
-
-    data[static_cast<size_t>(DataType::kSpeed)] = euc->getSpeed();
+    
+    data[static_cast<size_t>(DataType::kSpeed)] = euc->getSpeed() * speed_factor;
     data[static_cast<size_t>(DataType::kVoltage)] = euc->getVoltage();
     data[static_cast<size_t>(DataType::kCurrent)] = euc->getCurrent();
-    data[static_cast<size_t>(DataType::kTemp)] = euc->getTemperature();
+    data[static_cast<size_t>(DataType::kTemp)] = (temp_in_freedoms? (euc->getTemperature() * kFreedomsConversionFactor) + kFreedomsConversionOffset : euc->getTemperature());
     data[static_cast<size_t>(DataType::kBattery)] = euc->getBatteryPercent();
     data[static_cast<size_t>(DataType::kTripDistance)] = euc->getDistance();
     data[static_cast<size_t>(DataType::kTotalDistance)] = euc->getTotalDistance();
@@ -77,14 +77,7 @@ void ProcessData::Update(DeviceHandler* device) {
 
 double ProcessData::getDoubleData(DataType data_type) {
   if(!writing) {  // Protecting the data array
-
-    if (data_type == DataType::kSpeed)  // Apply unit conversions here
-      return data[static_cast<size_t>(data_type)] * speed_factor;
-    if (temp_in_freedoms && data_type == DataType::kTemp)
-      return (data[static_cast<size_t>(data_type)] * kFreedomsConversionFactor) + kFreedomsConversionOffset;
-
     return data[static_cast<size_t>(data_type)];
-
   } else {
     LOG_DEBUG("ProcessData::getDoubleData Could not get access to the data_mutex");
     return 0;

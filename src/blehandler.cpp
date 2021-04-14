@@ -19,16 +19,15 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
 
 void BleHandler::Scan(std::function<void(void)> scan_done_callback) {
   if (!scanning) {
-    scanning = true;
     scan_finished_callback = scan_done_callback;
+    pthread_create(&scan_task, NULL, BleHandler::StartScan, (void*)this);
     // Stack size of 1500 arrived at by trial and error, possible cause of stack overflow in future
-    xTaskCreate(BleHandler::Scan, "scan_task", 1500, (void*)this, 20, scan_task);
-    // BleHandler::Scan((void*)this);
+    // xTaskCreate(BleHandler::Scan, "scan_task", 2000, (void*)this, 20, scan_task);
   }
 }
 
 void BleHandler::Update() {
-  if (!connected && should_connect) {
+  if (!scanning && !connected && should_connect && connect_device) {
     Connect(connect_device, brand);
   }
 }
@@ -37,17 +36,23 @@ bool BleHandler::isConnected() {
   return connected;
 }
 
-void BleHandler::Scan(void* in) {
+bool BleHandler::isConnecting() {
+  return should_connect;
+}
+
+void* BleHandler::StartScan(void* in) {
   BLEScan* pBLEScan = NimBLEDevice::getScan();
   
   pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedDeviceCallbacks((BleHandler*)in));
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
+  ((BleHandler*)in)->scanning = true;
   pBLEScan->start(10, true);
   ((BleHandler*)in)->scanning = false;
   ((BleHandler*)in)->scan_finished_callback();
-  vTaskDelete(NULL);
+  // vTaskDelete(NULL);
+  return NULL;
 }
 
 bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
@@ -116,20 +121,20 @@ BleHandler::AdvertisedDeviceCallbacks::AdvertisedDeviceCallbacks(BleHandler* sup
 void BleHandler::AdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* device) {
   LOG_DEBUG_ARGS("BLE Advertised Device found: %s", device->toString().c_str());
 
+  // This is the naming method of identification. Quick and dirty, but works for now.
+  if (!device->haveName())
+    return;
+
+  std::string advertised_name = device->getName();
+  // Change name to upper case for matching
+  std::transform(advertised_name.begin(), advertised_name.end(), advertised_name.begin(), [](char c){return std::toupper(c); });
+
   for (size_t type = 0; type < static_cast<size_t>(EucType::kLastType); type++) {
     if (device->isAdvertisingService(BLEUUID(kServiceUuids[type]))) {
-      // This is the naming method of identification. Quick and dirty, but works for now.
-      if (!device->haveName())
-        continue;
-
-      std::string advertised_name = device->getName();
-      // Change name to upper case for matching
-      std::transform(advertised_name.begin(), advertised_name.end(), advertised_name.begin(), [](char c){return std::toupper(c); });
-
       if (advertised_name.find(kBrandName[type]) != std::string::npos) {
         super_reference->brand = static_cast<EucType>(type);
-        super_reference->should_connect = true;
         super_reference->connect_device = device;
+        super_reference->should_connect = true;
         return;
       }
     }
