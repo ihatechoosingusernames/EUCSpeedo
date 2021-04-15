@@ -123,6 +123,9 @@ const static double kFreedomsConversionOffset = 32;
 
 const static double kVoltageRef = 1100;
 
+const static char* kFirmwareFilename = "firmware.bin";
+const static char* kSpiffsFilename = "spiffs.bin";
+
 }
 
 #endif

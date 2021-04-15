@@ -36,7 +36,7 @@ class ConfigServer {
     void ReorderElement(size_t index, int move);
     void DisplayTestData();
     
-    bool started = false;
+    bool started = false, firmware_uploaded = false;
 
     AsyncWebServer server;
 

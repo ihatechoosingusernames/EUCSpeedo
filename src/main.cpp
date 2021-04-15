@@ -27,7 +27,6 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Add OTA file system image update
 // TODO: Test all Gotway data types return correctly
 // TODO: Add portrait/landscape screen option
 // TODO: Update bluetooth handler to gracefully deal with reconnects without using a ton of memory

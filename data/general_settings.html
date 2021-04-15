@@ -18,6 +18,9 @@
         <td><button type="button" onclick="setTime(false)">
             System Time
           </button></td>
+      </tr>
+      <tr>
+        <td></td>
         <td><button type="button" onclick="setTime(true)">
             Custom Time
           </button></td>
@@ -27,24 +30,37 @@
         <td><button type="button" onclick="setDate(false)">
             System Date
           </button></td>
+      </tr>
+      <tr>
+        <td></td>
         <td><button type="button" onclick="setDate(true)">
             Custom Date
           </button></td>
       </tr>
       <tr>
         <td>Update Firmware</td>
-        <td><input type="file" id="firmware" style="display:none;" onchange="uploadFirmware()"><button type="button"
-            onclick="document.getElementById('firmware').click();">Upload</button></td>
+        <td><input type="file" id="firmware" style="display:none;" onchange="uploadFirmware()" multiple><button
+            type="button" onclick="document.getElementById('firmware').click();">Upload</button></td>
       </tr>
       <tr>
         <td>Temperature Units</td>
-        <td><input type="radio" name="temperature" value="0" %SETTINGS_CELCIUS_CHECKED%><label for="0">Celcius</label></td>
-        <td><input type="radio" name="temperature" value="1" %SETTINGS_FREEDOMS_CHECKED%><label for="1">Freedoms</label></td>
+        <td><input type="radio" name="temperature" value="0" %SETTINGS_CELCIUS_CHECKED%><label for="0">Celcius</label>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type="radio" name="temperature" value="1" %SETTINGS_FREEDOMS_CHECKED%><label for="1">Freedoms</label>
+        </td>
       </tr>
       <tr>
         <td>Distance Units</td>
-        <td><input type="radio" name="distance" value="0" %SETTINGS_KILOMETRES_CHECKED%><label for="0">Kilometres</label></td>
-        <td><input type="radio" name="distance" value="1" %SETTINGS_MILES_CHECKED%><label for="1">Miles</label></td>
+        <td><input type="radio" name="distance" value="0" %SETTINGS_KILOMETRES_CHECKED%><label
+            for="0">Kilometres</label></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type="radio" name="distance" value="1" %SETTINGS_MILES_CHECKED%><label for="1">Miles</label>
+        </td>
       </tr>
       <tr>
         <td><button type="submit" class="btn">
@@ -67,7 +83,9 @@
       <td><button onclick="moveScreenDown(this)">↓</button></td>
     </tr> -->
     <tr>
-      <form action="/new_screen" method="POST"><td><button type="submit" class="btn">New</button></td></form>
+      <form action="/new_screen" method="POST">
+        <td><button type="submit" class="btn">New</button></td>
+      </form>
     </tr>
   </table>
 
@@ -92,7 +110,7 @@
         date.setMinutes(custom_time.substring(custom_time.indexOf(":") + 1, custom_time.lastIndexOf(":")));
         date.setSeconds(custom_time.substring(custom_time.lastIndexOf(":") + 1));
       }
-      if (confirm("Set to " + date.toTimeString().slice(0, 8)) == false) {
+      if (!confirm("Set to " + date.toTimeString().slice(0, 8))) {
         return;
       }
 
@@ -135,12 +153,30 @@
       xhttp.send("year=" + date.getFullYear() + "&month=" + date.getMonth() + "&day=" + date.getDate() + "&weekday=" + date.getDay());
     }
     function uploadFirmware() {
-      console.log("uploadFirmware");
-      firmware = document.getElementById("firmware").files[0];  // file from input
+      files = document.getElementById("firmware").files;  // files from input
+
+      if (files.length < 2) {
+        alert("Both firmware.bin and spiffs.bin must be selected");
+        return;
+      }
+      if (files.length > 2) {
+        alert("Only firmware.bin and spiffs.bin must be selected");
+        return;
+      }
+
+      has_spiffs = files[0].name == "spiffs.bin" || files[1].name == "spiffs.bin";
+      has_firmware = files[0].name == "firmware.bin" || files[1].name == "firmware.bin";
+
+      if (!(has_spiffs && has_firmware)) {
+        alert("Chosen files do not include spiffs.bin and firmware.bin");
+        return;
+      }
+
       req = new XMLHttpRequest();
       formData = new FormData();
 
-      formData.append("firmware", firmware);
+      formData.append(files[0].name, files[0]);
+      formData.append(files[1].name, files[1]);
       req.open("POST", "update");
       req.send(formData);
     }

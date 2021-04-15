@@ -494,6 +494,11 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 }
 
 void ConfigServer::ProcessUpdateRequest(AsyncWebServerRequest *request) {
+  if (!request->hasParam(kFirmwareFilename, true) && !request->hasParam(kSpiffsFilename, true)) {
+    request->send(400);
+    LOG_DEBUG("Upload rejected");
+  }
+
   bool shouldReboot = !Update.hasError();
   AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot?"OK":"FAIL");
   response->addHeader("Connection", "close");
@@ -501,14 +506,19 @@ void ConfigServer::ProcessUpdateRequest(AsyncWebServerRequest *request) {
 }
 
 void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-  if(!index){
+  if(!index && filename.equals(kFirmwareFilename)) {
     LOG_DEBUG_ARGS("Update Start: %s", filename.c_str());
     ui_handler->ShowMessage("Update Started", 20);
     if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
       Update.printError(Serial);
     }
+  } else if (!index && filename.equals(kSpiffsFilename)) {
+    LOG_DEBUG_ARGS("Update Start: %s", filename.c_str());
+    if(!Update.begin(UPDATE_SIZE_UNKNOWN, U_SPIFFS)) {
+      Update.printError(Serial);
+    }
   }
-  if(!Update.hasError()){
+  if (!Update.hasError()) {
     if(Update.write(data, len) != len){
       Update.printError(Serial);
     }
@@ -516,9 +526,13 @@ void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String fi
   if(final){
     if(Update.end(true)){
       LOG_DEBUG_ARGS("Update Success: %uB", index+len);
-      ui_handler->ShowMessage("Update Succeeded, Restarting", 5);
-      delay(5000);
-      ESP.restart();
+      if (firmware_uploaded) {
+        ui_handler->ShowMessage("Update Succeeded, Restarting", 3);
+        delay(3000);
+        ESP.restart();
+      } else {
+        firmware_uploaded = true;
+      }
     } else {
       Update.printError(Serial);
     }
