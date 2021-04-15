@@ -46,10 +46,10 @@ double DeviceHandler::getBatteryVoltage() {
 
 double DeviceHandler::getBatteryPercentage() {
   double v = getBatteryVoltage();
-  if (v >= 3.6)
+  if (v >= 3.7)
     return 100;
   else if (v > 3.3)
-    return (v / 3.3) * 100;
+    return ((v - 3.3) / 0.4) * 100;
   else
     return 0;
 }

@@ -6,5 +6,6 @@
 #include "02bignum.cpp"
 #include "03littlenum.cpp"
 #include "04bargraph.cpp"
+#include "05linegraph.cpp"
 
 #endif
