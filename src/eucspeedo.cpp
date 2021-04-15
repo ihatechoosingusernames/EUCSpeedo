@@ -26,8 +26,6 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
   }
 
   LOG_DEBUG_ARGS("battery voltage %f", device_handler.getBatteryVoltage());
-
-  // pthread_create(&update_thread, NULL, Process, (void*)this);
 }
 
 EucSpeedo::~EucSpeedo() {
@@ -52,14 +50,14 @@ void EucSpeedo::Process() {
   if (ble_handler_active)
     ble_handler->Update();
 
-  if (sleep_timeout && sleep_timeout < millis() && !config_server_active && !ble_handler_active)
+  if (sleep_timeout && (sleep_timeout < millis()) && (!config_server_active) && (!ble_handler_active))
     HandleAction(Action::kSleep);
 }
 
 // Creates the correct type of wheel object
 void EucSpeedo::onFoundWheel(EucType type) {
   LOG_DEBUG_ARGS("Found %s EUC\n", kBrandName[(size_t)type]);
-  ui_handler.ShowMessage(kBrandName[(size_t)type], 3);  // Show which brand is connected
+  ui_handler.ShowMessage(kBrandName[(size_t)type], 5);  // Show which brand is connected
   device_handler.LedOff();  // Stop LED flashing
 
   switch (type) {
@@ -164,7 +162,7 @@ void EucSpeedo::HandleAction(Action action) {
       break;
   }
 
-  if (action == Action::kNextScreen || action == Action::kPreviousScreen) {
+  if (!config_server_active && !ble_handler_active) {
     uint8_t timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kSleepTimeout);
     if (timeout) {
       sleep_timeout = millis() + (timeout * 1000);
