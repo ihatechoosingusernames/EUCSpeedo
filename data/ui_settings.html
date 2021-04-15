@@ -12,46 +12,40 @@
 
   <p><a href="/">< Settings</a></p>
 
-  <form action="/screen_settings" , method="POST">
-    <table class="inlineTable">
-      <th>Screen Settings</th>
-      <tr>
-        <td>
-          <label for="only_connected">Only If Connected</label><br>
-        </td>
-        <td>
-          <input type="checkbox" id="only_connected" name="only_connected" value="1" %UI_ONLY_CONNECTED%>
-        </td>
-      </tr>
-      <tr>
-        <td>On Single Press</td>
-        <td><select name="single_press_action">
-            %UI_SETTINGS_ACTIONS_SINGLE%
-          </select></td>
-      </tr>
-      <tr>
-        <td>On Double Press</td>
-        <td><select name="double_press_action">
-            %UI_SETTINGS_ACTIONS_DOUBLE%
-          </select></td>
-      </tr>
-      <tr>
-        <td>On Long Press</td>
-        <td><select name="long_press_action">
-            %UI_SETTINGS_ACTIONS_LONG%
-          </select></td>
-      </tr>
-      <tr>
-        <td><label for="timeout">Sleep Timeout (sec)</label></td>
-        <td><input type="number" size="3" id="timeout" name="timeout" min="0" max="255" value=%UI_TIMEOUT%></td>
-      </tr>
-      <tr>
-        <td><button type="submit" , class="btn">
-            Save Settings
-          </button></td>
-      </tr>
-    </table>
-  </form>
+  
+  <table class="inlineTable">
+    <th>Screen Settings</th>
+    <tr>
+      <td>
+        <label for="only_connected">Only If Connected</label><br>
+      </td>
+      <td>
+        <input type="checkbox" id="only_connected" name="only_connected" value="1" onchange="updateSetting(this)" %UI_ONLY_CONNECTED%>
+      </td>
+    </tr>
+    <tr>
+      <td>On Single Press</td>
+      <td><select name="single_press_action" onchange="updateSetting(this)">
+          %UI_SETTINGS_ACTIONS_SINGLE%
+        </select></td>
+    </tr>
+    <tr>
+      <td>On Double Press</td>
+      <td><select name="double_press_action" onchange="updateSetting(this)">
+          %UI_SETTINGS_ACTIONS_DOUBLE%
+        </select></td>
+    </tr>
+    <tr>
+      <td>On Long Press</td>
+      <td><select name="long_press_action" onchange="updateSetting(this)">
+          %UI_SETTINGS_ACTIONS_LONG%
+        </select></td>
+    </tr>
+    <tr>
+      <td><label for="timeout">Sleep Timeout (sec)</label></td>
+      <td><input type="number" size="3" id="timeout" name="timeout" min="0" max="255" onchange="updateSetting(this)" value=%UI_TIMEOUT%></td>
+    </tr>
+  </table>
 
   <table class="inlineTable" id="draw_queue_table">
     <th>Draw Queue:</th>
@@ -117,6 +111,14 @@
     function closeForm() {
       document.getElementById("popupForm").style.display = "none";
       form_body.innerHTML = `<tbody id="form_body"></tbody>`;
+    }
+    function updateSetting(elem) {  // Allows settings updates without reloading the page
+      var xhttp = new XMLHttpRequest();
+      formData = new FormData();
+
+      formData.append(elem.name, elem.value);
+      xhttp.open("POST", "screen_settings", true);
+      xhttp.send(formData);
     }
     function updateData(data_obj) {
       var xhttp = new XMLHttpRequest();

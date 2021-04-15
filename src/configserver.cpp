@@ -206,7 +206,7 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
 
       settings_handler->SaveSettings();
 
-      request->send(SPIFFS, "/ui_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessUiPage, this, std::placeholders::_1));
+      request->send(200);
     });
 
   // Create the element selection and data strings for the ui_settings.html template
