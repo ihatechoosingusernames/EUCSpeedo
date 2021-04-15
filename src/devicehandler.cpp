@@ -9,22 +9,35 @@ namespace euc {
 DeviceHandler::DeviceHandler() {
   pinMode(PIN_BATT, INPUT);
   pinMode(PIN_CHARGE, INPUT);
+  pinMode(PIN_LED, OUTPUT);
 
   attachInterrupt(PIN_CHARGE, onCharge, CHANGE);
+
+  pthread_create(&update_thread, NULL, Update, (void*)this);
 }
 
-void DeviceHandler::Update() {
-  if (delay && timeout < millis()) {
-    digitalWrite(PIN_LED, (digitalRead(PIN_LED)? LOW : HIGH));
-    timeout += delay;
+void* DeviceHandler::Update(void* in) {
+  DeviceHandler* device = (DeviceHandler*)in;
+
+  while(1) {
+    device->flash_mutex.lock(); // Protects delay_time and timeout
+    if (device->delay_time && device->timeout < millis()) {
+      digitalWrite(PIN_LED, (digitalRead(PIN_LED)? LOW : HIGH));
+      device->timeout += device->delay_time;
+    }
+    device->flash_mutex.unlock();
+
+    delay(100);
   }
 }
 
 void DeviceHandler::FlashLed(uint32_t freq) {
-  delay = 0; // Ensure LED does not flash while changing this data
-  pinMode(PIN_LED, OUTPUT); // Make sure pin is not pulled high
-  delay = 1000 / freq;
-  timeout = millis() + delay;
+  flash_mutex.lock(); // Protects delay_time and timeout
+
+  delay_time = 1000 / freq;
+  timeout = millis() + delay_time;
+
+  flash_mutex.unlock();
 }
 
 void DeviceHandler::LedOn() {
@@ -32,9 +45,11 @@ void DeviceHandler::LedOn() {
 }
 
 void DeviceHandler::LedOff() {
-  if (delay) {
-    delay = 0;
+  flash_mutex.lock(); // Protects delay_time and timeout
+  if (delay_time) {
+    delay_time = 0;
   }
+  flash_mutex.unlock();
 
   digitalWrite(PIN_LED, LOW);
 }

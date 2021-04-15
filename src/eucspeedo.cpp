@@ -43,7 +43,6 @@ EucSpeedo::~EucSpeedo() {
 
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
-  device_handler.Update();
   process_data.Update(&rtc_handler);
   process_data.Update(&device_handler);
 
@@ -53,7 +52,7 @@ void EucSpeedo::Process() {
   if (ble_handler_active)
     ble_handler->Update();
 
-  if (sleep_timeout && sleep_timeout < millis())
+  if (sleep_timeout && sleep_timeout < millis() && !config_server_active && !ble_handler_active)
     HandleAction(Action::kSleep);
 }
 

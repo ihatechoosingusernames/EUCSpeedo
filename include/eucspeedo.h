@@ -40,8 +40,6 @@ class EucSpeedo {
 
     bool wheel_connected = false, config_server_active = false, ble_handler_active = false;
     long unsigned int sleep_timeout = 0;
-
-    pthread_t update_thread;
 };
 
 }
