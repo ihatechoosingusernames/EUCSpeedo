@@ -21,8 +21,6 @@ void BleHandler::Scan(std::function<void(void)> scan_done_callback) {
   if (!scanning) {
     scan_finished_callback = scan_done_callback;
     pthread_create(&scan_task, NULL, BleHandler::StartScan, (void*)this);
-    // Stack size of 1500 arrived at by trial and error, possible cause of stack overflow in future
-    // xTaskCreate(BleHandler::Scan, "scan_task", 2000, (void*)this, 20, scan_task);
   }
 }
 

@@ -42,7 +42,8 @@
         "cinttypes": "cpp",
         "utility": "cpp",
         "typeinfo": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "mutex": "cpp"
     },
     "editor.tabSize": 2
 }

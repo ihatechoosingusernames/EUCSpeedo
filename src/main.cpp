@@ -27,8 +27,8 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Fix processdata having no mutexes
 // TODO: Add OTA file system image update
+// TODO: Test all Gotway data types return correctly
 // TODO: Add portrait/landscape screen option
 // TODO: Update bluetooth handler to gracefully deal with reconnects without using a ton of memory
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ

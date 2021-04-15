@@ -26,6 +26,8 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
   }
 
   LOG_DEBUG_ARGS("battery voltage %f", device_handler.getBatteryVoltage());
+
+  // pthread_create(&update_thread, NULL, Process, (void*)this);
 }
 
 EucSpeedo::~EucSpeedo() {
@@ -41,8 +43,10 @@ EucSpeedo::~EucSpeedo() {
 
 void EucSpeedo::Process() {
   HandlePress(button_handler->getPress());
+  device_handler.Update();
   process_data.Update(&rtc_handler);
   process_data.Update(&device_handler);
+
   if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
     ui_handler.Update(&process_data);
 
@@ -51,8 +55,6 @@ void EucSpeedo::Process() {
 
   if (sleep_timeout && sleep_timeout < millis())
     HandleAction(Action::kSleep);
-
-  device_handler.Update();
 }
 
 // Creates the correct type of wheel object

@@ -47,7 +47,6 @@ class BleHandler {
     std::function<void(void)> scan_finished_callback;
 
     bool connected = false, scanning = false;
-    // TaskHandle_t *scan_task;
     pthread_t scan_task;
 
     volatile bool should_connect = false;

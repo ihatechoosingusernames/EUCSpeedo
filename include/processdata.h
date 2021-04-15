@@ -6,6 +6,7 @@
 #include "rtchandler.h"
 #include "settings.h"
 #include "devicehandler.h"
+#include <mutex>
 
 namespace euc {
 
@@ -28,10 +29,8 @@ class ProcessData {
 
   private:
     double data[static_cast<size_t>(DataType::kLastValue)] = {{0.0}};  // Of this size to fit all DataTypes
-
-    // SemaphoreHandle_t data_mutex; // Semaphore to protect the data array
-
-    volatile bool writing = false;  // Using this as semaphores were not working, I suspect I need to use explicit xTasks for them to work
+    
+    std::recursive_mutex data_mutex;
 
     double speed_factor = 1.0;
     bool temp_in_freedoms = false;
