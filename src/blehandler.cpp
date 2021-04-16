@@ -17,16 +17,23 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
   NimBLEDevice::setSecurityIOCap(BLE_HS_IO_NO_INPUT_OUTPUT);
 }
 
+BleHandler::~BleHandler() {
+  shutting_down = true;
+  NimBLEDevice::deinit(true);
+}
+
 void BleHandler::Scan(std::function<void(void)> scan_done_callback) {
   if (!scanning) {
+    should_connect = false;
     scan_finished_callback = scan_done_callback;
     pthread_create(&scan_task, NULL, BleHandler::StartScan, (void*)this);
   }
 }
 
 void BleHandler::Update() {
-  if (!scanning && !connected && should_connect && connect_device) {
-    Connect(connect_device, brand);
+  if (!connected && should_connect && connect_device) {
+    if (!Connect(connect_device, brand))
+      should_connect = false; // Don't try to reconnect forever if it doesn't work
   }
 }
 
@@ -49,30 +56,46 @@ void* BleHandler::StartScan(void* in) {
   pBLEScan->start(10, true);
   ((BleHandler*)in)->scanning = false;
   ((BleHandler*)in)->scan_finished_callback();
-  // vTaskDelete(NULL);
+  vTaskDelete(NULL);
   return NULL;
 }
 
 bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
   LOG_DEBUG_ARGS("Forming a connection to %s %s", device->getName().c_str(), device->getAddress().toString().c_str());
   connected = true;
-  
-  BLEClient*  pClient  = NimBLEDevice::createClient();
-  LOG_DEBUG("Created client");
+  BLEClient* pClient = nullptr;
 
-  pClient->setClientCallbacks(new ClientCallback());
+  if(NimBLEDevice::getClientListSize()) {
+    pClient = NimBLEDevice::getClientByPeerAddress(device->getAddress());
 
-  LOG_DEBUG("Connecting to server");
-
-  // Connect to the remote BLE Server.
-  if (!pClient->connect(device)) {
-    LOG_DEBUG("Failed to connect to server");
-    return false;
+    if (pClient) {
+      if (!pClient->connect(device)) {
+        LOG_DEBUG("Failed to connect to server");
+        return false;
+      }
+      LOG_DEBUG("Reconnected to server");
+    }
   }
-  LOG_DEBUG("Connected to server");
+
+  if (!pClient) {
+    pClient = NimBLEDevice::createClient();
+    LOG_DEBUG("Created client");
+
+    pClient->setClientCallbacks(new ClientCallback(this));
+
+    LOG_DEBUG("Connecting to server");
+
+    // Connect to the remote BLE Server.
+    if (!pClient->connect(device)) {
+      LOG_DEBUG("Failed to connect to server");
+      NimBLEDevice::deleteClient(pClient);
+      return false;
+    }
+    LOG_DEBUG("Connected to server");
+  }
 
   auto services = pClient->getServices(true);
-  LOG_DEBUG_ARGS("Client has %d services", services->size());
+  LOG_DEBUG_ARGS("Client has %d services:", services->size());
   for (NimBLERemoteService* service : *services) {
     LOG_DEBUG_ARGS("\t%s", service->toString().c_str());
     service->getCharacteristics(true);
@@ -92,12 +115,6 @@ bool BleHandler::Connect(NimBLEAdvertisedDevice* device, EucType type) {
     LOG_DEBUG_ARGS("Failed to find our characteristic UUID: %s", kReadCharacteristicUuids[static_cast<size_t>(type)]);
     pClient->disconnect();
     return false;
-  }
-
-  // Read the value of the characteristic.
-  if(pRemoteCharacteristic->canRead()) {
-    std::string value = pRemoteCharacteristic->readValue();
-    LOG_DEBUG_ARGS("The characteristic value was: %s", value.c_str());
   }
 
   if(pRemoteCharacteristic->canNotify())
@@ -139,12 +156,19 @@ void BleHandler::AdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* dev
   }
 }
 
+BleHandler::ClientCallback::ClientCallback(BleHandler* super_pointer) : super_reference(super_pointer) {}
+
 void BleHandler::ClientCallback::onConnect(BLEClient* client) {
   LOG_DEBUG("Bluetooth Connected");
 }
 
 void BleHandler::ClientCallback::onDisconnect(BLEClient* client) {
   LOG_DEBUG("Bluetooth Disconnected");
+  super_reference->connected = false;
+
+  if (!super_reference->shutting_down) { // If signal is lost, scan to find it again
+    super_reference->Scan();
+  }
 }
 
 void BleHandler::ClientCallback::onAuthenticationComplete(ble_gap_conn_desc* desc) {

@@ -56,7 +56,7 @@ void EucSpeedo::Process() {
 
 // Creates the correct type of wheel object
 void EucSpeedo::onFoundWheel(EucType type) {
-  LOG_DEBUG_ARGS("Found %s EUC\n", kBrandName[(size_t)type]);
+  LOG_DEBUG_ARGS("Found %s EUC", kBrandName[(size_t)type]);
   ui_handler.ShowMessage(kBrandName[(size_t)type], 5);  // Show which brand is connected
   device_handler.LedOff();  // Stop LED flashing
 
@@ -78,6 +78,8 @@ void EucSpeedo::onProcessInput(uint8_t* data, size_t data_size) {
   if (wheel_connected) {
     wheel->ProcessInput(data, data_size);  // Let the specific wheel process the data
     process_data.Update(wheel); // Update the wheel data supplied to the UI
+    // LOG_DEBUG_ARGS("Updated values\n\tspeed: %f\n\tvoltage: %f\n\tcurrent: %f\n\ttemperature: %f\n\tbattery_percent: %f\n\tdistance: %f\n\ttotal_distance: %f",
+    //   wheel->getSpeed(), wheel->getVoltage(), wheel->getCurrent(), wheel->getTemperature(), wheel->getBatteryPercent(), wheel->getDistance(), wheel->getTotalDistance());
   }
 }
 

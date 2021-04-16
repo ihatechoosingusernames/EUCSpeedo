@@ -11,6 +11,8 @@ void ProcessData::ApplySettings(Settings* settings_handler) {
 }
 
 void ProcessData::Update(Euc* euc) {
+  vTaskPrioritySet(NULL, 1);  // Set the updating task to a high priority to avoid deadlocks
+
   data_mutex.lock();  // Protecting the data array
     
   data[static_cast<size_t>(DataType::kSpeed)] = euc->getSpeed() * speed_factor;
@@ -58,9 +60,7 @@ void ProcessData::Update(DeviceHandler* device) {
 }
 
 double ProcessData::getDoubleData(DataType data_type) {
-  data_mutex.lock();  // Protecting the data array
   return data[static_cast<size_t>(data_type)];
-  data_mutex.unlock();
 }
 
 }

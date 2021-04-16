@@ -16,7 +16,8 @@ class Gotway : public Euc {
   private:
     bool is_veteran;
     
-    const double ratio = 0.875; // Gotway Magic number
+    const double ratio = 0.875; // Gotway Magic numbers
+    const double voltage_scaler = 1;
 };
 
 }

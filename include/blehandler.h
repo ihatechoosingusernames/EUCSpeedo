@@ -14,6 +14,7 @@ namespace euc {
 class BleHandler {
   public:
     BleHandler(std::function<void(EucType)> connection, std::function<void(uint8_t* data, size_t data_size)> notify);
+    ~BleHandler();
 
     void Scan(std::function<void(void)> scan_done_callback = [](){});
     void Update();
@@ -37,16 +38,22 @@ class BleHandler {
     };
 
     class ClientCallback : public NimBLEClientCallbacks {
-      void onConnect(BLEClient* client) override;
-      void onDisconnect(BLEClient* client) override;
-      void onAuthenticationComplete(ble_gap_conn_desc* desc) override;
+      public:
+        ClientCallback(BleHandler* super_pointer);
+
+        void onConnect(BLEClient* client) override;
+        void onDisconnect(BLEClient* client) override;
+        void onAuthenticationComplete(ble_gap_conn_desc* desc) override;
+
+      private:
+        BleHandler* super_reference;
     };
 
     std::function<void(EucType)> connection_callback;
     std::function<void(uint8_t* data, size_t data_size)> notify_callback;
     std::function<void(void)> scan_finished_callback;
 
-    bool connected = false, scanning = false;
+    bool connected = false, scanning = false, shutting_down = false;
     pthread_t scan_task;
 
     volatile bool should_connect = false;
