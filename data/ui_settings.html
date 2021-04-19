@@ -8,11 +8,8 @@
 </head>
 
 <body>
-  <h2>UI Creator</h2><br>
-
+  <div style="text-align:center">
   <p><a href="/">< Settings</a></p>
-
-  
   <table class="inlineTable">
     <th>Screen Settings</th>
     <tr>
@@ -20,30 +17,30 @@
         <label for="only_connected">Only If Connected</label><br>
       </td>
       <td>
-        <input type="checkbox" id="only_connected" name="only_connected" value="1" onchange="updateSetting(this)" %UI_ONLY_CONNECTED%>
+        <input type="checkbox" id="only_connected" name="only_connected" value="1" onchange="updateSetting(this)" style="float: left" %UI_ONLY_CONNECTED%>
       </td>
     </tr>
     <tr>
       <td>On Single Press</td>
-      <td><select name="single_press_action" onchange="updateSetting(this)">
+      <td><select name="single_press_action" onchange="updateSetting(this)" style="float: left">
           %UI_SETTINGS_ACTIONS_SINGLE%
         </select></td>
     </tr>
     <tr>
       <td>On Double Press</td>
-      <td><select name="double_press_action" onchange="updateSetting(this)">
+      <td><select name="double_press_action" onchange="updateSetting(this)" style="float: left">
           %UI_SETTINGS_ACTIONS_DOUBLE%
         </select></td>
     </tr>
     <tr>
       <td>On Long Press</td>
-      <td><select name="long_press_action" onchange="updateSetting(this)">
+      <td><select name="long_press_action" onchange="updateSetting(this)" style="float: left">
           %UI_SETTINGS_ACTIONS_LONG%
         </select></td>
     </tr>
     <tr>
       <td><label for="timeout">Sleep Timeout (sec)</label></td>
-      <td><input type="number" size="3" id="timeout" name="timeout" min="0" max="255" onchange="updateSetting(this)" value=%UI_TIMEOUT%></td>
+      <td><input type="number" size="3" id="timeout" name="timeout" min="0" max="255" onchange="updateSetting(this)" style="float: left" value=%UI_TIMEOUT%></td>
     </tr>
   </table>
 
@@ -65,8 +62,6 @@
   <form action="/save_changes" , method="POST">
     <button type="submit" class="btn">Save Changes</button>
   </form>
-
-  <hr>
 
   <div class="loginPopup">
     <div class="formPopup" id="popupForm">
@@ -95,6 +90,7 @@
         </table>
       </form>
     </div>
+  </div>
   </div>
   <script>
     function deleteElement(ele) {
@@ -192,7 +188,7 @@
             constant_arg.id = "arg" + arg_num;
             constant_arg.innerHTML = `<tr>
             	<td><label class="lab">` + arg[1] + `</label></td>
-              <td><input name="constant_arg` + arg_num + `" type="number" required></input></td>
+              <td><input name="constant_arg` + arg_num + `" type="number" min="0" max="255" required></input></td>
             </tr>`
             form_body.append(constant_arg);
             break;

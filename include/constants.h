@@ -17,7 +17,6 @@ enum class EucType : size_t { // The order here is important, as it is from leas
 const static char* kServiceUuids[] = {"0000ffe0-0000-1000-8000-00805f9b34fb", "0000ffe0-0000-1000-8000-00805f9b34fb", "0000ffe0-0000-1000-8000-00805f9b34fb", "6e400001-b5a3-f393-e0a9-e50e24dcca9e", "0000ffe0-0000-1000-8000-00805f9b34fb"};
 const static char* kReadCharacteristicUuids[] = {"0000ffe1-0000-1000-8000-00805f9b34fb", "0000ffe1-0000-1000-8000-00805f9b34fb", "0000ffe4-0000-1000-8000-00805f9b34fb", "6e400003-b5a3-f393-e0a9-e50e24dcca9e", "0000ffe1-0000-1000-8000-00805f9b34fb"};
 const static char* kBrandName[] = {"GOTWAY", "KINGSONG", "INMOTION", "NINEBOTZ", "NINEBOT"};
-const static std::vector<uint8_t> kManufacturer[] = {{0x4, 0x8, 0x4, 0xd, 0x8, 0x8, 0x2, 0x5, 0x8, 0x3, 0xf, 0x0, 0xf, 0xf, 0xc, 0x4}, {}, {}, {}, {}};
 
 // const static std::vector<const char*> kGotwayServices = {"00001800_0000_1000_8000_00805f9b34fb", "00001801_0000_1000_8000_00805f9b34fb", "0000180a_0000_1000_8000_00805f9b34fb", "0000ffe0_0000_1000_8000_00805f9b34fb"};
 // const static std::vector<const char*> kKingSongServices = {"00001800_0000_1000_8000_00805f9b34fb", "00001801_0000_1000_8000_00805f9b34fb", "0000180a_0000_1000_8000_00805f9b34fb", "0000fff0_0000_1000_8000_00805f9b34fb", "0000ffe0_0000_1000_8000_00805f9b34fb"};

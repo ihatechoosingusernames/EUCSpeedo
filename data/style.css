@@ -1,103 +1,123 @@
-* {
-        box-sizing: border-box;
-      }
-      h2,p {
-        margin: 0 0 20px;
-        font-weight: 400;
-        color: #999;
-      }      span {
-        color: #666;
-        display: block;
-        padding: 0 0 5px;
-      }
-      .openBtn {
-        display: flex;
-        justify-content: left;
-      }
-      .openButton {
-        border: none;
-        border-radius: 5px;
-        background-color: #1c87c9;
-        color: white;
-        padding: 14px 20px;
-        cursor: pointer;
-        position: fixed;
-      }
-      .loginPopup {
-        position: relative;
-        text-align: center;
-        width: 100%;
-      }
-      .formPopup {
-        display: none;
-        position: fixed;
-        left: 45%;
-        top: 5%;
-        transform: translate(-50%, 5%);
-        border: 3px solid #999999;
-        z-index: 9;
-      }
-      .formContainer {
-        /* max-width: 300px; */
-        padding: 20px;
-        background-color: #fff;
-      }
-      .formContainer input[type=text],
-      .formContainer input[type=password] {
-        width: 100%;
-        padding: 15px;
-        margin: 5px 0 20px 0;
-        border: none;
-        background: #eee;
-      }
-      .formContainer input[type=text]:focus,
-      .formContainer input[type=password]:focus {
-        background-color: #ddd;
-        outline: none;
-      }
-      .formContainer input[type=color] {
-        
-      }
-      .btn {
-        padding: 5px 5px;
-        border: none;
-        background-color: #8ebf42;
-        color: #fff;
-        cursor: pointer;
-        width: 100px;
-        margin-bottom: 5px;
-        opacity: 0.8;
-      }
-      .formContainer .cancel {
-        background-color: #cc0000;
-      }
-      .btn:hover,
-      .openButton:hover {
-        opacity: 1;
-      }
-     .formContainer .select {
-        padding: 5px 15px;
-        border: none;
-        background-color: #fff;
-        margin-bottom: 15px;
-        display: table-cell;
-        text-align: left;
-     }
-     .formContainer .lab {
-       display: table-cell;
-       text-align: right;
-     }
-     .inlineTable {
-        display: inline-block;
-        padding: 15px 15px;
-        margin: 15px 10px;
-        border: none;
-        margin-bottom: 15px;
-        border-spacing: 0px 5px;
-        border-collapse: separate;
-     }
-     .formHiddenFields {
-        display: none;
-        padding: 12px 20px;
-        margin-bottom: 15px;
-     }
+h2,p {
+  margin: 0 0 20px;
+  font-weight: 400;
+  color: #999;
+}      span {
+  color: #666;
+  display: block;
+  padding: 0 0 5px;
+}
+.openBtn {
+  display: flex;
+  justify-content: left;
+}
+.openButton {
+  border: none;
+  border-radius: 5px;
+  background-color: #1c87c9;
+  color: white;
+  padding: 14px 20px;
+  cursor: pointer;
+  position: fixed;
+}
+.loginPopup {
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+.formPopup {
+  display: none;
+  position: fixed;
+  left: 45%;
+  top: 5%;
+  transform: translate(-50%, 5%);
+  border: 3px solid #999999;
+  z-index: 9;
+}
+.formContainer {
+  /* max-width: 300px; */
+  padding: 20px;
+  background-color: #fff;
+}
+.formContainer input[type=text],
+.formContainer input[type=password] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 20px 0;
+  border: none;
+  background: #eee;
+}
+.formContainer input[type=text]:focus,
+.formContainer input[type=password]:focus {
+  background-color: #ddd;
+  outline: none;
+}
+.formContainer input[type=color] {
+
+}
+.btn {
+  padding: 5px 5px;
+  border: none;
+  background-color: #8ebf42;
+  color: #fff;
+  cursor: pointer;
+  width: 100px;
+  margin-bottom: 5px;
+  opacity: 0.8;
+}
+.formContainer .cancel {
+  background-color: #cc0000;
+}
+.btn:hover,
+.openButton:hover {
+  opacity: 1;
+}
+.formContainer .select {
+  padding: 5px 15px;
+  border: none;
+  background-color: #fff;
+  margin-bottom: 15px;
+  display: table-cell;
+  text-align: left;
+}
+.formContainer .lab {
+ display: table-cell;
+ text-align: right;
+}
+.inlineTable {
+  display: inline-block;
+  padding: 15px 15px;
+  margin: 15px 10px;
+  border: none;
+  margin-bottom: 15px;
+  border-spacing: 0px 5px;
+  border-collapse: separate;
+  text-align:right;
+}
+.formHiddenFields {
+  display: none;
+  padding: 12px 20px;
+  margin-bottom: 15px;
+}
+.loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #8ebf42;
+  border-right: 16px solid #8ebf42;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+  display: none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.disabledDiv {
+    pointer-events: none;
+    opacity: 0.1;
+}

@@ -12,25 +12,34 @@ class BarGraph : public UiElement {
   public:
     void onCreate() {
       range = kConstant_args[1] - kConstant_args[0];
+      min = static_cast<double>(kConstant_args[0]);
+      max = static_cast<double>(kConstant_args[1]);
+      kConstant_args[2] = std::min((uint8_t)(100), kConstant_args[2]); // Limiting these args to 100
+      kConstant_args[3] = std::min((uint8_t)(100), kConstant_args[3]);
+
+      if (kConstant_args[0] >= kConstant_args[1])
+        invalid = true;
     }
 
     void Draw(ProcessData* data, TFT_eSprite* sprite) {
-      if (kConstant_args[0] >= kConstant_args[1])  // Do nothing if minimum is bigger than maximum
+      if (invalid)  // Do nothing if minimum is bigger than maximum
         return;
 
-      if (!size && !position) {  // Calculate these the first time they're used
-        size = (kConstant_args[2] / 100) * sprite->getViewportHeight();
-        position = (kConstant_args[3] / 100) * sprite->getViewportHeight();
+      if (first_draw) {  // Calculate these the first time they're used
+        size = (kConstant_args[2] / 100.0) * sprite->getViewportHeight();
+        position = (kConstant_args[3] / 100.0) * sprite->getViewportHeight();
+        first_draw = false;
       }
 
-      double scale = (std::min(std::max(data->getDoubleData(kDataType_args[0]), kConstant_args[0]), kConstant_args[1]) - kConstant_args[0]) / range;
+      double scale = (std::min(std::max(data->getDoubleData(kDataType_args[0]), min), max) - min) / range;
       sprite->fillRoundRect(0, position, sprite->getViewportWidth() * scale, size, 3, kColour_args[0](data));
     }
   
   private:
     int32_t size = 0;
     int32_t position = 0;
-    double range;
+    bool first_draw = true, invalid = false;
+    double range = 0, min = 0, max = 0;
 };
 
 UI_REGISTER(BarGraph, 0x04)

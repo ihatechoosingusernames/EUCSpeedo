@@ -67,14 +67,14 @@ class UiElement {
 
     std::vector<DataType> kDataType_args;
     std::vector<ColourProvider> kColour_args;
-    std::vector<double> kConstant_args;
+    std::vector<uint8_t> kConstant_args;
     std::vector<String> kText_args;
   
   private:
     // Functions to decode argument data and assign the arguments 
     static ColourProvider getColourProvider(uint8_t data[], size_t data_len, size_t* bytes_used);
     static DataType getDataType(uint8_t data[], size_t data_len, size_t* bytes_used);
-    static double getConstant(uint8_t data[], size_t data_len, size_t* bytes_used);
+    static uint8_t getConstant(uint8_t data[], size_t data_len, size_t* bytes_used);
 
     // A function pointer array, points to an initialisation function for each registered UI element
     static UiElement* (*ui_element_lookup[kMaxUiElementCode])(uint8_t data[], size_t data_len);

@@ -117,6 +117,10 @@ void EucSpeedo::HandleAction(Action action) {
       for (;(new_screen != ui_handler.getCurrentScreen())
           && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active);
           new_screen = (new_screen + 1) % settings_handler.getNumScreens()) {}
+      
+      if (new_screen == ui_handler.getCurrentScreen())
+        break;
+
       ui_handler.ChangeScreen(new_screen);
       break;
     }
@@ -126,6 +130,10 @@ void EucSpeedo::HandleAction(Action action) {
       for (;(new_screen != ui_handler.getCurrentScreen())
           && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active);
           new_screen = (new_screen? new_screen - 1 : settings_handler.getNumScreens())) {}
+      
+      if (new_screen == ui_handler.getCurrentScreen())
+        break;
+        
       ui_handler.ChangeScreen(new_screen);
       break;
     }
@@ -156,7 +164,7 @@ void EucSpeedo::HandleAction(Action action) {
             if (!(ble_handler->isConnected() || ble_handler->isConnecting()))
               HandleAction(Action::kActivateBle); // Turn off ble handler if nothing to do
           });
-        device_handler.FlashLed(6); // 6 Hz
+        device_handler.FlashLed(8); // 8 Hz
       }
       break;
     }

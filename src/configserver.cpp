@@ -1,7 +1,7 @@
 #include "configserver.h"
 
 #include <functional>
-#include "SPIFFS.h"
+#include <SPIFFS.h>
 #include <Update.h>
 
 #include "constants.h"
@@ -499,10 +499,12 @@ void ConfigServer::ProcessUpdateRequest(AsyncWebServerRequest *request) {
     LOG_DEBUG("Upload rejected");
   }
 
-  bool shouldReboot = !Update.hasError();
-  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot?"OK":"FAIL");
+  bool should_reboot = !Update.hasError();
+  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", should_reboot?"OK":"FAIL");
   response->addHeader("Connection", "close");
   request->send(response);
+
+  ui_handler->ShowMessage("Updating firmware...", 60);
 }
 
 void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
@@ -510,23 +512,31 @@ void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String fi
     LOG_DEBUG_ARGS("Update Start: %s", filename.c_str());
     ui_handler->ShowMessage("Update Started", 20);
     if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
+      #ifdef DEBUG
       Update.printError(Serial);
+      #endif
     }
   } else if (!index && filename.equals(kSpiffsFilename)) {
     LOG_DEBUG_ARGS("Update Start: %s", filename.c_str());
     if(!Update.begin(UPDATE_SIZE_UNKNOWN, U_SPIFFS)) {
+      #ifdef DEBUG
       Update.printError(Serial);
+      #endif
     }
   }
   if (!Update.hasError()) {
     if(Update.write(data, len) != len){
+      #ifdef DEBUG
       Update.printError(Serial);
+      #endif
+      request->send(400);
     }
   }
   if(final){
     if(Update.end(true)){
       LOG_DEBUG_ARGS("Update Success: %uB", index+len);
       if (firmware_uploaded) {
+        request->send(200);
         ui_handler->ShowMessage("Update Succeeded, Restarting", 3);
         delay(3000);
         ESP.restart();
@@ -534,7 +544,9 @@ void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String fi
         firmware_uploaded = true;
       }
     } else {
+      #ifdef DEBUG
       Update.printError(Serial);
+      #endif
     }
   }
 }

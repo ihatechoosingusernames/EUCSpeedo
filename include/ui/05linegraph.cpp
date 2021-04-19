@@ -15,6 +15,9 @@ class LineGraph : public UiElement {
     void onCreate() {
       if (kConstant_args[1] > kConstant_args[0])  // Ensure maximum is smaller than minimum
         range = kConstant_args[1] - kConstant_args[0];
+      
+      min = static_cast<double>(kConstant_args[0]);
+      max = static_cast<double>(kConstant_args[1]);
     }
 
     void Draw(ProcessData* data, TFT_eSprite* sprite) {
@@ -25,7 +28,7 @@ class LineGraph : public UiElement {
         line_data.resize(sprite->getViewportWidth(), 255);
 
       // Limit the data to between the min and max, then subtract the min
-      double new_data = std::min(std::max(data->getDoubleData(kDataType_args[0]), kConstant_args[0]), kConstant_args[1]) - kConstant_args[0];
+      double new_data = std::min(std::max(data->getDoubleData(kDataType_args[0]), min), max) - min;
 
       // Calculate and store the pixel position of this data point
       line_data.emplace_back(sprite->getViewportHeight() - ((new_data / range) * sprite->getViewportHeight()));
@@ -43,7 +46,7 @@ class LineGraph : public UiElement {
 
   private:
     std::list<uint8_t> line_data;
-    double range = 0;
+    double range = 0, min = 0, max = 0;
 };
 
 UI_REGISTER(LineGraph, 0x05)

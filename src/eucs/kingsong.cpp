@@ -6,15 +6,15 @@ namespace euc {
 
 void Kingsong::ProcessInput(uint8_t data[], size_t data_len) {
   if (data_len >= 20) {
-    int a1 = data[0] & 255;
-    int a2 = data[1] & 255;
+    int a1 = data[0];
+    int a2 = data[1];
 
     if (a1 != 170 || a2 != 85) {
         return;
     }
 
     if (data[16] == 169) { // Live data
-      voltage = Utils::FromArray(data[2], data[3]);
+      voltage = Utils::FromArray(data[2], data[3]) / 100;
       
       speed = Utils::FromArray(data[4], data[5]);
 
@@ -35,20 +35,20 @@ void Kingsong::ProcessInput(uint8_t data[], size_t data_len) {
       }
 
       if ((model.compareTo("KS-18L") == 0) || (model.compareTo("KS-16X") == 0) || (model.compareTo("KS-18LH") == 0) || (model.compareTo("KS-S18") == 0)) {
-        if (voltage < 6250) {
+        if (voltage < 62.50) {
             battery_percent = 0;
-        } else if (voltage >= 8250) {
+        } else if (voltage >= 82.50) {
             battery_percent = 100;
         } else {
-            battery_percent = (voltage - 6250) / 20;
+            battery_percent = (voltage - 62.50) / 0.20;
         }
       } else {
-        if (voltage < 5000) {
+        if (voltage < 50.00) {
             battery_percent = 0;
-        } else if (voltage >= 6600) {
+        } else if (voltage >= 66.00) {
             battery_percent = 100;
         } else {
-            battery_percent = (voltage - 5000) / 16;
+            battery_percent = (voltage - 50.00) / 0.16;
         }
       }
       return;

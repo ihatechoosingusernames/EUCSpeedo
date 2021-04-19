@@ -8,86 +8,89 @@
 </head>
 
 <body>
-  <form action="/settings" method="post">
+  <div class="loader" id="loader"></div>
+  <div style="text-align:center" id="big_div">
     <table id="settingsTable" class="inlineTable">
-      <tr>
-        <th>General Settings</th>
-      </tr>
-      <tr>
-        <td>Set Time Using</td>
-        <td><button type="button" onclick="setTime(false)">
-            System Time
-          </button></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td><button type="button" onclick="setTime(true)">
-            Custom Time
-          </button></td>
-      </tr>
-      <tr>
-        <td>Set Date Using</td>
-        <td><button type="button" onclick="setDate(false)">
-            System Date
-          </button></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td><button type="button" onclick="setDate(true)">
-            Custom Date
-          </button></td>
-      </tr>
-      <tr>
-        <td>Update Firmware</td>
-        <td><input type="file" id="firmware" style="display:none;" onchange="uploadFirmware()" multiple><button
-            type="button" onclick="document.getElementById('firmware').click();">Upload</button></td>
-      </tr>
-      <tr>
-        <td>Temperature Units</td>
-        <td><input type="radio" name="temperature" value="0" %SETTINGS_CELCIUS_CHECKED%><label for="0">Celcius</label>
-        </td>
-      </tr>
-      <tr>
-        <td></td>
-        <td><input type="radio" name="temperature" value="1" %SETTINGS_FREEDOMS_CHECKED%><label for="1">Freedoms</label>
-        </td>
-      </tr>
-      <tr>
-        <td>Distance Units</td>
-        <td><input type="radio" name="distance" value="0" %SETTINGS_KILOMETRES_CHECKED%><label
-            for="0">Kilometres</label></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td><input type="radio" name="distance" value="1" %SETTINGS_MILES_CHECKED%><label for="1">Miles</label>
-        </td>
-      </tr>
-      <tr>
-        <td><button type="submit" class="btn">
-            Save
-          </button></td>
-      </tr>
+      <form action="/settings" method="post">
+        <tr>
+          <th>General Settings</th>
+        </tr>
+        <tr>
+          <td>Set Time Using</td>
+          <td><button type="button" style="float: left" onclick="setTime(false)">
+              System Time
+            </button></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><button type="button" style="float: left" onclick="setTime(true)">
+              Custom Time
+            </button></td>
+        </tr>
+        <tr>
+          <td>Set Date Using</td>
+          <td><button type="button" style="float: left" onclick="setDate(false)">
+              System Date
+            </button></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><button type="button" style="float: left" onclick="setDate(true)">
+              Custom Date
+            </button></td>
+        </tr>
+        <tr>
+          <td>Update Firmware</td>
+          <td><input type="file" id="firmware" style="display:none;" onchange="uploadFirmware()" multiple><button
+              type="button" style="float: left" onclick="document.getElementById('firmware').click();">Upload</button></td>
+        </tr>
+        <tr>
+          <td>Temperature Units</td>
+          <td><input type="radio" name="temperature" style="float: left" value="0" %SETTINGS_CELCIUS_CHECKED%><label for="0">Celcius</label>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><input type="radio" name="temperature" style="float: left" value="1" %SETTINGS_FREEDOMS_CHECKED%><label
+              for="1">Freedoms</label>
+          </td>
+        </tr>
+        <tr>
+          <td>Distance Units</td>
+          <td><input type="radio" name="distance" style="float: left" value="0" %SETTINGS_KILOMETRES_CHECKED%><label
+              for="0">Kilometres</label></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><input type="radio" name="distance" style="float: left" value="1" %SETTINGS_MILES_CHECKED%><label for="1">Miles</label>
+          </td>
+        </tr>
+        <tr>
+          <td><button type="submit" class="btn">
+              Save
+            </button></td>
+        </tr>
+      </form>
     </table>
-  </form>
-  <br>
-  <table class="inlineTable" id="ui_table">
-    <tr>
-      <th>UI Settings</th>
-    </tr>
-    %SETTINGS_SCREENS%
-    <!-- <tr>
+    <table class="inlineTable" id="ui_table">
+      <tr>
+        <th>UI Settings</th>
+      </tr>
+      %SETTINGS_SCREENS%
+      <!-- <tr>
       <td>Screen 1</td>
       <td><button type="button" onclick="deleteScreen(this)">Delete</button></td>
       <td><button type="button" onclick="editScreen(this)">Edit</button></td>
       <td><button onclick="moveScreenUp(this)">↑</button></td>
       <td><button onclick="moveScreenDown(this)">↓</button></td>
     </tr> -->
-    <tr>
-      <form action="/new_screen" method="POST">
-        <td><button type="submit" class="btn">New</button></td>
-      </form>
-    </tr>
-  </table>
+      <tr>
+        <form action="/new_screen" method="POST">
+          <td><button type="submit" class="btn">New</button></td>
+        </form>
+      </tr>
+    </table>
+  </div>
 
   <script>
     function setTime(custom) {
@@ -154,6 +157,7 @@
     }
     function uploadFirmware() {
       files = document.getElementById("firmware").files;  // files from input
+      document.getElementById("big_div").disabled = "true";
 
       if (files.length < 2) {
         alert("Both firmware.bin and spiffs.bin must be selected");
@@ -170,10 +174,25 @@
       if (!(has_spiffs && has_firmware)) {
         alert("Chosen files do not include spiffs.bin and firmware.bin");
         return;
+      } else if (!confirm("Are you sure you want to update? All settings will be lost.")) {
+        return;
       }
+
+      document.getElementById("big_div").className = "disabledDiv";
+      document.getElementById("loader").style.display = "block";
 
       req = new XMLHttpRequest();
       formData = new FormData();
+
+      req.onload = function () {
+        if (req.status == 200) {
+          alert("Update uploaded successfully, device will now restart");
+        } else {
+          alert("There's been a problem with the upload, ensure those were the correct files.");
+        }
+        document.getElementById("big_div").className = "";
+        document.getElementById("loader").style.display = "none"
+      }
 
       formData.append(files[0].name, files[0]);
       formData.append(files[1].name, files[1]);

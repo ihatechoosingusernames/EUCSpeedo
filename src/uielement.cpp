@@ -113,9 +113,9 @@ DataType UiElement::getDataType(uint8_t data[], size_t data_len, size_t* bytes_u
   return DataType::kLastValue;
 }
 
-double UiElement::getConstant(uint8_t data[], size_t data_len, size_t* bytes_used) {
+uint8_t UiElement::getConstant(uint8_t data[], size_t data_len, size_t* bytes_used) {
   if (data_len - (*bytes_used))
-    return static_cast<double>(data[(*bytes_used)++]);
+    return data[(*bytes_used)++];
 
   // Some defensive programming to deal with possibly faulty file inputs
   LOG_DEBUG("Data too small to supply Constant");
