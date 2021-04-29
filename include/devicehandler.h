@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <pthread.h>
 #include <mutex>
+#include <list>
 
 namespace euc {
 
@@ -25,8 +26,13 @@ class DeviceHandler {
     volatile uint32_t delay_time;  // 32 bits for max bus size
     long unsigned int timeout;
 
+    std::array<double, 10> battery_array;
+    size_t battery_array_pos = 0;
+    double battery_array_sum = 0;
+
     pthread_t update_thread;
-    std::mutex flash_mutex;
+    std::mutex flash_mutex, battery_mutex;
+    static portMUX_TYPE mux;
 };
 
 }

@@ -27,8 +27,7 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Measure and fix inaccurate returned wheel values
-// TODO: Ensure all unnecessary peripherals are disabled
+// TODO: Ensure all unused peripherals are disabled
 // TODO: Add portrait/landscape screen option
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?

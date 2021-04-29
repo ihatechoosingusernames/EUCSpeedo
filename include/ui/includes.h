@@ -7,5 +7,6 @@
 #include "03littlenum.cpp"
 #include "04bargraph.cpp"
 #include "05linegraph.cpp"
+#include "06dial.cpp"
 
 #endif

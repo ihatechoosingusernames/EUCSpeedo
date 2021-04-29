@@ -6,6 +6,8 @@
 
 namespace euc {
 
+portMUX_TYPE DeviceHandler::mux = portMUX_INITIALIZER_UNLOCKED;
+
 DeviceHandler::DeviceHandler() {
   pinMode(PIN_BATT, INPUT);
   pinMode(PIN_CHARGE, INPUT);
@@ -26,6 +28,16 @@ void* DeviceHandler::Update(void* in) {
       device->timeout += device->delay_time;
     }
     device->flash_mutex.unlock();
+
+    device->battery_mutex.lock();
+    // Last 10 battery voltages are stored and summed
+    device->battery_array_sum -= device->battery_array[device->battery_array_pos];
+    device->battery_array[device->battery_array_pos] = device->getBatteryVoltage();
+    device->battery_array_sum += device->battery_array[device->battery_array_pos];
+
+    device->battery_array_pos = ++(device->battery_array_pos) % device->battery_array.size();
+
+    device->battery_mutex.unlock();
 
     delay(100);
   }
@@ -60,20 +72,26 @@ double DeviceHandler::getBatteryVoltage() {
 }
 
 double DeviceHandler::getBatteryPercentage() {
-  double v = getBatteryVoltage();
+  battery_mutex.lock();
+  double v = battery_array_sum / battery_array.size();  // Averaging the last 10 voltage values
+  battery_mutex.unlock();
+
   if (v >= 3.7)
     return 100;
-  else if (v > 3.3)
-    return ((v - 3.3) / 0.4) * 100;
+  else if (v > 3.0)
+    return ((v - 3.0) / 0.7) * 100;
   else
     return 0;
 }
 
 void DeviceHandler::onCharge() {
+  portENTER_CRITICAL_ISR(&mux);
   if (digitalRead(PIN_CHARGE) == LOW)
     pinMode(PIN_LED, PULLUP); // Ensures it stays on even in sleep
   else
     pinMode(PIN_LED, OUTPUT_OPEN_DRAIN);  // AKA off
+
+  portEXIT_CRITICAL_ISR(&mux);
 }
 
 }

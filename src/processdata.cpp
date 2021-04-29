@@ -18,6 +18,7 @@ void ProcessData::Update(Euc* euc) {
   data[static_cast<size_t>(DataType::kSpeed)] = euc->getSpeed() * speed_factor;
   data[static_cast<size_t>(DataType::kVoltage)] = euc->getVoltage();
   data[static_cast<size_t>(DataType::kCurrent)] = euc->getCurrent();
+  data[static_cast<size_t>(DataType::kPower)] = euc->getCurrent() * euc->getVoltage();
   data[static_cast<size_t>(DataType::kTemp)] = (temp_in_freedoms? (euc->getTemperature() * kFreedomsConversionFactor) + kFreedomsConversionOffset : euc->getTemperature());
   data[static_cast<size_t>(DataType::kBattery)] = euc->getBatteryPercent();
   data[static_cast<size_t>(DataType::kTripDistance)] = euc->getDistance();
