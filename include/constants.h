@@ -65,7 +65,7 @@ enum class DataType : uint8_t {
   kLastValue  // IMPORTANT this value should stay as last value
 };
 
-const static char* kDataTypeNames[] = {"Speed", "Second", "Minute", "Hour", "Day", "Month", "Year", "Watch Battery (%)", "Battery (%)", "Temperature", "Alarm Level", "Trip Distance", "Total Distance", "Voltage", "Current", "Power (W/100)"};
+const static char* kDataTypeNames[] = {"Speed", "Second", "Minute", "Hour", "Day", "Month", "Year", "Watch Battery (percent)", "Battery (percent)", "Temperature", "Alarm Level", "Trip Distance", "Total Distance", "Voltage", "Current", "Power (W/100)"};
 
 enum class ColourType : uint8_t {
   kConstant = 0,
@@ -125,6 +125,11 @@ const static double kVoltageRef = 1100;
 
 const static char* kFirmwareFilename = "firmware.bin";
 const static char* kSpiffsFilename = "spiffs.bin";
+
+// MPU9250 constants
+const static uint8_t kMPU9250_ADDRESS = 0x69;
+const static uint8_t kPWR_MGMT_1 = 0x6B;
+const static uint8_t kPWR1_SLEEP_BIT = 0x6;
 
 }
 

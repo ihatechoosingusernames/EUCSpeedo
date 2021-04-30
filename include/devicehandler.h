@@ -23,6 +23,8 @@ class DeviceHandler {
     static void* Update(void* in);
     static void IRAM_ATTR onCharge();
 
+    void SetMpu9250Sleep();
+
     volatile uint32_t delay_time;  // 32 bits for max bus size
     long unsigned int timeout;
 

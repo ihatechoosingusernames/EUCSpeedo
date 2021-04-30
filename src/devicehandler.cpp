@@ -1,5 +1,7 @@
 #include "devicehandler.h"
 
+#include <Wire.h>
+
 #include "hwconfig.h"
 #include "constants.h"
 #include "logging.h"
@@ -12,6 +14,8 @@ DeviceHandler::DeviceHandler() {
   pinMode(PIN_BATT, INPUT);
   pinMode(PIN_CHARGE, INPUT);
   pinMode(PIN_LED, OUTPUT);
+
+  SetMpu9250Sleep();
 
   attachInterrupt(PIN_CHARGE, onCharge, CHANGE);
 
@@ -96,6 +100,24 @@ void DeviceHandler::onCharge() {
     pinMode(PIN_LED, OUTPUT_OPEN_DRAIN);  // AKA off
 
   portEXIT_CRITICAL_ISR(&mux);
+}
+
+void DeviceHandler::SetMpu9250Sleep() {
+  // Reading the PWR_MGMT register from the MPU9250
+  Wire.beginTransmission(kMPU9250_ADDRESS);
+  Wire.write(kPWR_MGMT_1);
+  Wire.endTransmission(false);
+  Wire.requestFrom(kMPU9250_ADDRESS, (uint8_t) 1);
+  uint8_t b = Wire.read();
+
+  // Copying the new bit into the PWR_MGMT byte
+  b = b | (1 << kPWR1_SLEEP_BIT);
+
+  // Writing the updated byte back into the register
+  Wire.beginTransmission(kMPU9250_ADDRESS);
+  Wire.write(kPWR_MGMT_1);
+  Wire.write(b);
+  Wire.endTransmission();
 }
 
 }
