@@ -53,7 +53,7 @@ void Gotway::ProcessInput(uint8_t data[], size_t data_len) {
         return;
       }
 
-      speed = abs(Utils::FromTwos((data[4] << 8) | data[5]) * 3.6) / 100.0;
+      speed = abs(Utils::FromTwos((data[4] << 8) | data[5]) * 5.4) / 100.0;
 
       temperature = ((Utils::FromTwos(data[12] << 8) | data[13]) / 340.0) + 35;
       temperature_2 = temperature;
