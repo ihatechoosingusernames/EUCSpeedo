@@ -65,7 +65,7 @@ enum class DataType : uint8_t {
   kLastValue  // IMPORTANT this value should stay as last value
 };
 
-const static char* kDataTypeNames[] = {"Speed", "Second", "Minute", "Hour", "Day", "Month", "Year", "Watch Battery", "Battery", "Temperature", "Alarm Level", "Trip Distance", "Total Distance", "Voltage", "Current", "Power"};
+const static char* kDataTypeNames[] = {"Speed", "Second", "Minute", "Hour", "Day", "Month", "Year", "Watch Battery (%)", "Battery (%)", "Temperature", "Alarm Level", "Trip Distance", "Total Distance", "Voltage", "Current", "Power (W/100)"};
 
 enum class ColourType : uint8_t {
   kConstant = 0,

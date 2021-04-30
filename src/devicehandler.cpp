@@ -15,6 +15,10 @@ DeviceHandler::DeviceHandler() {
 
   attachInterrupt(PIN_CHARGE, onCharge, CHANGE);
 
+  double volts = getBatteryVoltage(); // Start off the whole array at the current voltage
+  for (size_t index = 0; index < battery_array.size(); index++)
+    battery_array[index] = volts;
+
   pthread_create(&update_thread, NULL, Update, (void*)this);
 }
 
