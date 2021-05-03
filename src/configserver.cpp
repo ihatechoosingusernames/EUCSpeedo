@@ -266,6 +266,7 @@ ConfigServer::~ConfigServer() {
 
 void ConfigServer::Start() {
   started = true;
+  WiFi.mode(WIFI_MODE_AP);
   WiFi.softAP(kDefaultServerSSID);
   LOG_DEBUG(WiFi.softAPIP().toString().c_str());
 
@@ -278,6 +279,7 @@ void ConfigServer::Stop() {
   started = false;
   server.end();
   WiFi.disconnect();
+  WiFi.mode(WIFI_MODE_NULL);
 }
 
 bool ConfigServer::isStarted() {

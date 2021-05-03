@@ -12,6 +12,7 @@ namespace euc {
 BleHandler::BleHandler(std::function<void(EucType)> connection,
       std::function<void(uint8_t* data, size_t data_size)> notify) :
     connection_callback(connection), notify_callback(notify) {
+  
   NimBLEDevice::init("");
   NimBLEDevice::setPower(ESP_PWR_LVL_P9);
   NimBLEDevice::setSecurityIOCap(BLE_HS_IO_NO_INPUT_OUTPUT);
@@ -20,6 +21,7 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
 BleHandler::~BleHandler() {
   shutting_down = true;
   NimBLEDevice::deinit(true);
+  btStop();
 }
 
 void BleHandler::Scan(std::function<void(void)> scan_done_callback) {
