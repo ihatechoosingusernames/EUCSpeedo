@@ -13,7 +13,7 @@ namespace euc {
 EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
     file_handler(),
     settings_handler(&file_handler),
-    ui_handler(&file_handler) {
+    ui_handler(&file_handler, &settings_handler) {
   file_handler.listDir("/", 0);
 
   process_data.ApplySettings(&settings_handler);
@@ -21,9 +21,12 @@ EucSpeedo::EucSpeedo() : button_handler(ButtonHandler::getInstance()),
 
   // Set sleep timer if applicable
   uint8_t timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kSleepTimeout);
-  if (timeout) {
+  if (timeout)
     sleep_timeout = millis() + (timeout * 1000);
-  }
+  
+  timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kOffTimeout);
+  if (timeout)
+    off_timeout = millis() + (timeout * 1000);
 
   LOG_DEBUG_ARGS("battery voltage %f", device_handler.getBatteryVoltage());
 }
@@ -44,13 +47,15 @@ void EucSpeedo::Process() {
   process_data.Update(&rtc_handler);
   process_data.Update(&device_handler);
 
-  if (!config_server_active)  // Config server is asynchronous and takes over control of the UI
+  if (!config_server_active && !screen_sleep)  // Config server is asynchronous and takes over control of the UI
     ui_handler.Update(&process_data);
 
   if (ble_handler_active)
     ble_handler->Update();
 
-  if (sleep_timeout && (sleep_timeout < millis()) && (!config_server_active) && (!ble_handler_active))
+  if (sleep_timeout && (sleep_timeout < millis()) && (!config_server_active))
+    HandleAction(Action::kScreenSleep);
+  if (off_timeout && (off_timeout < millis()) && (!config_server_active) && (!ble_handler_active))
     HandleAction(Action::kOff);
 }
 
@@ -78,8 +83,6 @@ void EucSpeedo::onProcessInput(uint8_t* data, size_t data_size) {
   if (wheel_connected) {
     wheel->ProcessInput(data, data_size);  // Let the specific wheel process the data
     process_data.Update(wheel); // Update the wheel data supplied to the UI
-    // LOG_DEBUG_ARGS("Updated values\n\tspeed: %f\n\tvoltage: %f\n\tcurrent: %f\n\ttemperature: %f\n\tbattery_percent: %f\n\tdistance: %f\n\ttotal_distance: %f",
-    //   wheel->getSpeed(), wheel->getVoltage(), wheel->getCurrent(), wheel->getTemperature(), wheel->getBatteryPercent(), wheel->getDistance(), wheel->getTotalDistance());
   }
 }
 
@@ -103,24 +106,29 @@ void EucSpeedo::HandlePress(PressType press) {
 
 void EucSpeedo::HandleAction(Action action) {
   LOG_DEBUG_ARGS("Action: %s", kActionNames[static_cast<uint8_t>(action)]);
-  
-  if (screen_sleep && action != Action::kOff) { // Any action turns the screen back on when screen sleeping
-    ui_handler.Wake();
-    screen_sleep = false;
-    return;
-  }
 
   if (config_server_active && action != Action::kActivateConfig) // No actions to be done while config server active except to shut down the server
     return;
+  
+  if (screen_sleep && action != Action::kOff) // (Almost) any action turns the screen back on when screen sleeping
+    action = Action::kScreenSleep;
 
-  switch (action) {
+  switch (action) { // A classic switch case that should be a state machine. It does the job for now.
     case Action::kOff:
       ui_handler.Sleep();
       device_handler.Sleep();
       break;
     case Action::kScreenSleep:
-      ui_handler.Sleep();
-      screen_sleep = true;
+      if (screen_sleep) {
+        ui_handler.Wake();
+        screen_sleep = false;
+      } else {
+        ui_handler.Sleep();
+        screen_sleep = true;
+        sleep_timeout = 0;
+        return; // This avoids resetting the timer
+      }
+      break;
     case Action::kNextScreen: {
       uint8_t new_screen = (ui_handler.getCurrentScreen() + 1) % settings_handler.getNumScreens();
 
@@ -182,12 +190,22 @@ void EucSpeedo::HandleAction(Action action) {
       break;
   }
 
-  if (!config_server_active && !ble_handler_active) {
+  // Setting the sleep and off timers, if applicable
+  if (!config_server_active) {
     uint8_t timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kSleepTimeout);
     if (timeout) {
       sleep_timeout = millis() + (timeout * 1000);
     } else {
       sleep_timeout = 0;  // Resets if the new screen has no timeout
+    }
+
+    if (!ble_handler_active) {
+      timeout = settings_handler.getScreenSetting(ui_handler.getCurrentScreen(), ScreenSetting::kOffTimeout);
+      if (timeout) {
+        off_timeout = millis() + (timeout * 1000);
+      } else {
+        off_timeout = 0;  // Resets if the new screen has no timeout
+      }
     }
   }
 }

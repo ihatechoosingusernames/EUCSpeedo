@@ -39,8 +39,13 @@
         </select></td>
     </tr>
     <tr>
-      <td><label for="timeout">Sleep Timeout (sec)</label></td>
-      <td><input type="number" size="3" id="timeout" name="timeout" min="0" max="255" onchange="updateSetting(this)" style="float: left" value=%UI_TIMEOUT%></td>
+      <td><label for="sleep_timeout">Sleep Timeout (sec)</label></td>
+      <td><input type="number" size="3" id="sleep_timeout" name="sleep_timeout" min="0" max="255" onchange="updateSetting(this)" style="float: left" value=%UI_SLEEP_TIMEOUT%></td>
+    </tr>
+    <tr>
+      <td><label for="off_timeout">Off Timeout (sec)</label></td>
+      <td><input type="number" size="3" id="off_timeout" name="off_timeout" min="0" max="255" onchange="updateSetting(this)"
+          style="float: left" value=%UI_OFF_TIMEOUT%></td>
     </tr>
   </table>
 

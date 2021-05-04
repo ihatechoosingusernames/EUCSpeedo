@@ -8,11 +8,12 @@
 #include "uielement.h"
 #include "processdata.h"
 #include "filehandler.h"
+#include "settings.h"
 namespace euc {
 
 class UiHandler {
   public:
-    UiHandler(FileHandler* file_handler, uint8_t start_screen = 0);
+    UiHandler(FileHandler* file_handler, Settings* settings_handler, uint8_t start_screen = 0);
     ~UiHandler();
 
     void ChangeScreen(uint8_t new_ui_screen);
@@ -35,6 +36,10 @@ class UiHandler {
 
     uint8_t ui_screen; // Which 'screen' of the UI is currently being displayed
     FileHandler* file_handler;
+    Settings* settings_handler;
+
+    int rotation = 0;
+    bool is_landscape = false;
 
     String message;
     unsigned long message_timeout = 0;

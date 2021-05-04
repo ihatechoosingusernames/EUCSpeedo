@@ -28,6 +28,6 @@ void loop() {
 }
 
 // TODO: Work out what is up with the time data types
-// TODO: Add portrait/landscape screen option
+// TODO: Update the existing UI elements to support portrait mode
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?

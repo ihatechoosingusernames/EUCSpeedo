@@ -201,8 +201,11 @@ ConfigServer::ConfigServer(UiHandler* arg_ui_handler, FileHandler* files, RtcHan
       else
         settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOnlyConnected, 0);  // This is a checkbox, so we will get nothing if not ticked
       
-      if (request->hasParam("timeout", true))
-        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kSleepTimeout, std::atoi(request->getParam("timeout", true)->value().c_str()));
+      if (request->hasParam("sleep_timeout", true))
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kSleepTimeout, std::atoi(request->getParam("sleep_timeout", true)->value().c_str()));
+
+      if (request->hasParam("off_timeout", true))
+        settings_handler->setScreenSetting(ui_screen, ScreenSetting::kOffTimeout, std::atoi(request->getParam("off_timeout", true)->value().c_str()));
 
       settings_handler->SaveSettings();
 
@@ -343,9 +346,12 @@ String ConfigServer::ProcessUiPage(const String& placeholder) {
     // Replace with "checked" if value is set to 1
     if (settings_handler->getScreenSetting(ui_screen, ScreenSetting::kOnlyConnected))
       out += "checked";
-  } else if (placeholder == "UI_TIMEOUT") {
-    // Replace with the screen's timeout length
+  } else if (placeholder == "UI_SLEEP_TIMEOUT") {
+    // Replace with the screen's sleep timeout length
     out += String(static_cast<uint8_t>(settings_handler->getScreenSetting(ui_screen, ScreenSetting::kSleepTimeout)));
+  } else if (placeholder == "UI_OFF_TIMEOUT") {
+    // Replace with the screen's off timeout length
+    out += String(static_cast<uint8_t>(settings_handler->getScreenSetting(ui_screen, ScreenSetting::kOffTimeout)));
   }
 
   Serial.println(out);
@@ -370,6 +376,18 @@ String ConfigServer::ProcessSettingsPage(const String& placeholder) {
       out += "checked";
   } else if (placeholder == "SETTINGS_MILES_CHECKED") {
     if (settings_handler->getSetting(GeneralSetting::kDistanceUnits))
+      out += "checked";
+  } else if (placeholder == "SETTINGS_B_LEFT_CHECKED") {
+    if (settings_handler->getSetting(GeneralSetting::kOrientation) == 3)
+      out += "checked";
+  } else if (placeholder == "SETTINGS_B_RIGHT_CHECKED") {
+    if (settings_handler->getSetting(GeneralSetting::kOrientation) == 1)
+      out += "checked";
+  } else if (placeholder == "SETTINGS_B_DOWN_CHECKED") {
+    if (settings_handler->getSetting(GeneralSetting::kOrientation) == 0)
+      out += "checked";
+  } else if (placeholder == "SETTINGS_B_UP_CHECKED") {
+    if (settings_handler->getSetting(GeneralSetting::kOrientation) == 2)
       out += "checked";
   }
 
@@ -554,6 +572,9 @@ void ConfigServer::ProcessUpdateSettings(AsyncWebServerRequest *request) {
   }
   if (request->hasParam("distance", true)) {
     settings_handler->setSetting(GeneralSetting::kDistanceUnits, std::atoi((request->getParam("distance", true)->value().c_str())));
+  }
+  if (request->hasParam("orientation", true)) {
+    settings_handler->setSetting(GeneralSetting::kOrientation, std::atoi((request->getParam("orientation", true)->value().c_str())));
   }
   settings_handler->SaveSettings();
   request->send(SPIFFS, "/general_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessSettingsPage, this, std::placeholders::_1));

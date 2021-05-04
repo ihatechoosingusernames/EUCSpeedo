@@ -92,6 +92,7 @@ const static char* kDefaultURL = "speedo";
 enum class GeneralSetting : uint8_t {
   kTemperatureUnits = 0,
   kDistanceUnits,
+  kOrientation,
   kLastValue  // IMPORTANT this value should stay as last value
 };
 
@@ -103,6 +104,7 @@ enum class ScreenSetting : uint8_t {
   kOnDoublePress,
   kOnLongPress,
   kSleepTimeout,
+  kOffTimeout,
   kLastValue  // IMPORTANT this value should stay as last value
 };
 
