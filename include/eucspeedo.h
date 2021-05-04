@@ -38,7 +38,7 @@ class EucSpeedo {
     RtcHandler rtc_handler;
     DeviceHandler device_handler;
 
-    bool wheel_connected = false, config_server_active = false, ble_handler_active = false;
+    bool wheel_connected = false, config_server_active = false, ble_handler_active = false, screen_sleep = false;
     long unsigned int sleep_timeout = 0;
 };
 

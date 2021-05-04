@@ -51,7 +51,7 @@ void EucSpeedo::Process() {
     ble_handler->Update();
 
   if (sleep_timeout && (sleep_timeout < millis()) && (!config_server_active) && (!ble_handler_active))
-    HandleAction(Action::kSleep);
+    HandleAction(Action::kOff);
 }
 
 // Creates the correct type of wheel object
@@ -104,13 +104,23 @@ void EucSpeedo::HandlePress(PressType press) {
 void EucSpeedo::HandleAction(Action action) {
   LOG_DEBUG_ARGS("Action: %s", kActionNames[static_cast<uint8_t>(action)]);
   
+  if (screen_sleep && action != Action::kOff) { // Any action turns the screen back on when screen sleeping
+    ui_handler.Wake();
+    screen_sleep = false;
+    return;
+  }
+
   if (config_server_active && action != Action::kActivateConfig) // No actions to be done while config server active except to shut down the server
     return;
 
   switch (action) {
-    case Action::kSleep:
+    case Action::kOff:
       ui_handler.Sleep();
+      device_handler.Sleep();
       break;
+    case Action::kScreenSleep:
+      ui_handler.Sleep();
+      screen_sleep = true;
     case Action::kNextScreen: {
       uint8_t new_screen = (ui_handler.getCurrentScreen() + 1) % settings_handler.getNumScreens();
 
@@ -125,11 +135,11 @@ void EucSpeedo::HandleAction(Action action) {
       break;
     }
     case Action::kPreviousScreen: {
-      uint8_t new_screen = (ui_handler.getCurrentScreen()? ui_handler.getCurrentScreen() - 1 : settings_handler.getNumScreens());
+      uint8_t new_screen = (ui_handler.getCurrentScreen()? ui_handler.getCurrentScreen() - 1 : settings_handler.getNumScreens() - 1);
 
       for (;(new_screen != ui_handler.getCurrentScreen())
           && (settings_handler.getScreenSetting(new_screen, ScreenSetting::kOnlyConnected) > ble_handler_active);
-          new_screen = (new_screen? new_screen - 1 : settings_handler.getNumScreens())) {}
+          new_screen = (new_screen? new_screen - 1 : settings_handler.getNumScreens() - 1)) {}
       
       if (new_screen == ui_handler.getCurrentScreen())
         break;

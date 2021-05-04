@@ -17,9 +17,10 @@ DeviceHandler::DeviceHandler() {
 
   SetMpu9250Sleep();
 
-  attachInterrupt(PIN_CHARGE, onCharge, CHANGE);
+  attachInterrupt(PIN_CHARGE, DeviceHandler::onCharge, CHANGE);
 
   double volts = getBatteryVoltage(); // Start off the whole array at the current voltage
+  battery_array_sum = volts * battery_array.size();
   for (size_t index = 0; index < battery_array.size(); index++)
     battery_array[index] = volts;
 
@@ -38,13 +39,14 @@ void* DeviceHandler::Update(void* in) {
     device->flash_mutex.unlock();
 
     device->battery_mutex.lock();
-    // Last 10 battery voltages are stored and summed
-    device->battery_array_sum -= device->battery_array[device->battery_array_pos];
-    device->battery_array[device->battery_array_pos] = device->getBatteryVoltage();
-    device->battery_array_sum += device->battery_array[device->battery_array_pos];
+    if (device->battery_array_sum) {  // Only run if array has been initialised
+      // Last 10 battery voltages are stored and summed
+      device->battery_array_sum -= device->battery_array[device->battery_array_pos];
+      device->battery_array[device->battery_array_pos] = device->getBatteryVoltage();
+      device->battery_array_sum += device->battery_array[device->battery_array_pos];
 
-    device->battery_array_pos = ++(device->battery_array_pos) % device->battery_array.size();
-
+      device->battery_array_pos = ++(device->battery_array_pos) % device->battery_array.size();
+    }
     device->battery_mutex.unlock();
 
     delay(100);
@@ -72,6 +74,11 @@ void DeviceHandler::LedOff() {
   flash_mutex.unlock();
 
   digitalWrite(PIN_LED, LOW);
+}
+
+void DeviceHandler::Sleep() {
+  esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(PIN_223B_Q), HIGH);  // Wake on button press
+  esp_deep_sleep_start();
 }
 
 double DeviceHandler::getBatteryVoltage() {

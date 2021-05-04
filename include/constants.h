@@ -107,7 +107,8 @@ enum class ScreenSetting : uint8_t {
 };
 
 enum class Action : uint8_t {
-  kSleep = 0,
+  kOff = 0,
+  kScreenSleep,
   kNextScreen,
   kPreviousScreen,
   kActivateConfig,
@@ -115,7 +116,7 @@ enum class Action : uint8_t {
   kLastValue  // IMPORTANT this value should stay as last value
 };
 
-const static char* kActionNames[] = {"Sleep", "Next Screen", "Previous Screen", "Activate Config Server", "Activate Bluetooth"};
+const static char* kActionNames[] = {"Off","Sleep", "Next Screen", "Previous Screen", "Activate Config Server", "Activate Bluetooth"};
 
 const static double kMphConversionFactor = 0.6213712;
 const static double kFreedomsConversionFactor = 1.8;

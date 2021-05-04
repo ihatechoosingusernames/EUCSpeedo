@@ -270,7 +270,7 @@ void ConfigServer::Start() {
   WiFi.softAP(kDefaultServerSSID);
   LOG_DEBUG(WiFi.softAPIP().toString().c_str());
 
-  ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 60);
+  ui_handler->ShowMessage(WiFi.softAPIP().toString().c_str(), 3);
   ui_handler->Update(&test_process_data);
   server.begin();
 }
@@ -505,14 +505,11 @@ void ConfigServer::ProcessUpdateRequest(AsyncWebServerRequest *request) {
   AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", should_reboot?"OK":"FAIL");
   response->addHeader("Connection", "close");
   request->send(response);
-
-  ui_handler->ShowMessage("Updating firmware...", 60);
 }
 
 void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if(!index && filename.equals(kFirmwareFilename)) {
     LOG_DEBUG_ARGS("Update Start: %s", filename.c_str());
-    ui_handler->ShowMessage("Update Started", 20);
     if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
       #ifdef DEBUG
       Update.printError(Serial);
@@ -539,8 +536,6 @@ void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String fi
       LOG_DEBUG_ARGS("Update Success: %uB", index+len);
       if (firmware_uploaded) {
         request->send(200);
-        ui_handler->ShowMessage("Update Succeeded, Restarting", 3);
-        delay(3000);
         ESP.restart();
       } else {
         firmware_uploaded = true;

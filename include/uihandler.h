@@ -19,6 +19,7 @@ class UiHandler {
     void Update(ProcessData* data);
     void LoadFromData(uint8_t data[], size_t data_len);
     void Sleep();
+    void Wake();
     void ShowMessage(const char* message, double time); // Message to display, time to display it for in seconds
     void HandleInput(PressType type);
 

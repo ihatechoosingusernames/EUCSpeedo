@@ -66,8 +66,13 @@ void UiHandler::LoadFromData(uint8_t data[], size_t data_len) {
 void UiHandler::Sleep() {
   screen.writecommand(ST7735_SLPIN);
   screen.writecommand(ST7735_DISPOFF);
-  esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(PIN_223B_Q), HIGH);  // Wake on button press
-  esp_deep_sleep_start();
+  pinMode(PIN_ST7735_LEDK, OUTPUT_OPEN_DRAIN);
+}
+
+void UiHandler::Wake() {
+  screen.writecommand(ST7735_SLPIN);
+  screen.writecommand(ST7735_DISPON);
+  pinMode(PIN_ST7735_LEDK, PULLUP);
 }
 
 void UiHandler::ShowMessage(const char* in_message, double time) {

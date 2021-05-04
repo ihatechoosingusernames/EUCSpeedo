@@ -16,6 +16,8 @@ class DeviceHandler {
     void LedOn();
     void LedOff();
 
+    void Sleep();
+
     double getBatteryVoltage();
     double getBatteryPercentage();
 

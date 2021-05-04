@@ -27,7 +27,7 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// Work out what is up with the time data types
+// TODO: Work out what is up with the time data types
 // TODO: Add portrait/landscape screen option
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?
