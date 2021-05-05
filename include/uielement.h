@@ -46,7 +46,7 @@ class UiElement {
     virtual void onCreate() {};  // To allow setup and cleanup of UI elements
     virtual void onDestroy() {};
     
-    virtual void Draw(ProcessData* data, TFT_eSprite* sprite) = 0;   // Draws the element
+    virtual void Draw(ProcessData* data, TFT_eSprite* sprite, bool portrait) = 0;   // Draws the element
     
     virtual std::vector<String> ArgNames();   // Returns optional names of the args to help with config generation
     virtual std::vector<ArgType> ArgList() = 0; // Returns the number and type of args to help with config generation

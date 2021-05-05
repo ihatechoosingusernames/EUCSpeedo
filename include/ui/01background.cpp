@@ -10,7 +10,7 @@ class Background : public UiElement {
   UI_ARGS("Background Colour")  // Optional, but setting the argument names for display in the config server
   
   public:
-    void Draw(ProcessData* data, TFT_eSprite* sprite) override {
+    void Draw(ProcessData* data, TFT_eSprite* sprite, bool portrait) override {
       sprite->fillSprite(kColour_args[0](data));
     };
 

@@ -16,7 +16,7 @@ class Empty : public UiElement {
     String Name() { return "Empty"; }
     Empty(uint8_t data[], size_t data_len) {};
 
-    void Draw(ProcessData* data, TFT_eSprite* sprite) {}
+    void Draw(ProcessData* data, TFT_eSprite* sprite, bool portrait) {}
 
   private:
     static bool registered;

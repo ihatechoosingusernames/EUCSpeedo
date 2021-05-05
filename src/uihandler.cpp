@@ -31,7 +31,7 @@ void UiHandler::Update(ProcessData* data) {
     sprite.createSprite(TFT_WIDTH, TFT_HEIGHT);
 
   for (UiElement* element : draw_list) {
-    element->Draw(data, &sprite);
+    element->Draw(data, &sprite, !is_landscape);
   }
 
   if (message_timeout > millis()) {
@@ -47,7 +47,7 @@ void UiHandler::Update(ProcessData* data) {
   if (is_landscape)
     sprite.setPivot((screen.height() / 2) - 1, screen.width() / 2); // Subtracting 1 from the pivot point x to correct for division error
   else
-    sprite.setPivot(screen.width() / 2, (screen.height() / 2) - 1);
+    sprite.setPivot(screen.width() / 2, screen.height() / 2);
   sprite.pushRotated(rotation);  // Push the sprite to the screen, rotating so it's the right way up
   sprite.deleteSprite();
 }

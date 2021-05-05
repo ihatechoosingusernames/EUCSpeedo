@@ -14,20 +14,35 @@ class BigNum : public UiElement {
       kConstant_args[0] %= 3; // Max size for this arg is 2
     }
 
-    void Draw(ProcessData* data, TFT_eSprite* sprite) {
-      if (first_draw) {
-        if (!kConstant_args[0]) {
-          position[0] = 0;
-          datum = ML_DATUM;
-        } else if (kConstant_args[0] == 1) {
+    void Draw(ProcessData* data, TFT_eSprite* sprite, bool portrait) {
+      if (first_draw) { // Figuring out the position the first time this is drawn
+        if (portrait) {
+          if (!kConstant_args[0]) {
+            position[1] = 0;
+            datum = TC_DATUM;
+          } else if (kConstant_args[0] == 1) {
+            position[1] = sprite->getViewportHeight() / 2;
+            datum = MC_DATUM;
+          } else {
+            position[1] = sprite->getViewportHeight();
+            datum = BC_DATUM;
+          }
+          
           position[0] = sprite->getViewportWidth() / 2;
-          datum = MC_DATUM;
         } else {
-          position[0] = sprite->getViewportWidth();
-          datum = MR_DATUM;
+          if (!kConstant_args[0]) {
+            position[0] = 0;
+            datum = ML_DATUM;
+          } else if (kConstant_args[0] == 1) {
+            position[0] = sprite->getViewportWidth() / 2;
+            datum = MC_DATUM;
+          } else {
+            position[0] = sprite->getViewportWidth();
+            datum = MR_DATUM;
+          }
+          
+          position[1] = sprite->getViewportHeight() / 2;
         }
-        
-        position[1] = sprite->getViewportHeight() / 2;
         first_draw = false;
       }
       
