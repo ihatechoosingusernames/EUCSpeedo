@@ -7,8 +7,7 @@
 namespace euc {
 
 RtcHandler::RtcHandler() {
-  Wire.setPins(PIN_PCF8563_SDA, PIN_PCF8563_SCL);
-  Wire.begin();
+  Wire.begin(PIN_PCF8563_SDA, PIN_PCF8563_SCL, 400000);
 }
 
 void RtcHandler::UpdateTime() {
@@ -69,12 +68,12 @@ uint8_t RtcHandler::getDay() { return day; }
 uint8_t RtcHandler::getMonth() { return month; }
 uint8_t RtcHandler::getYear() { return year; }
 
-uint8_t RtcHandler::BcdToDecimal(uint8_t bcd) {
-  return (bcd / 10 * 16) + (bcd % 10);
+uint8_t RtcHandler::DecimalToBcd(uint8_t decimal) {
+  return ((decimal / 10) * 16) + (decimal % 10);
 }
 
-uint8_t RtcHandler::DecimalToBcd(uint8_t decimal) {
-  return (decimal / 16 * 10) + (decimal % 16);
+uint8_t RtcHandler::BcdToDecimal(uint8_t bcd) {
+  return ((bcd / 16) * 10) + (bcd % 16);
 }
 
 }

@@ -27,6 +27,6 @@ void loop() {
   speedo_ptr->Process();
 }
 
-// TODO: Work out what is up with the time data types
+// TODO: Fix the EUC recognition system so it doesn't suck
 // TODO: Implement controllers for Inmotion, Ninebot, and NinebotZ
 // TODO: Gestures?

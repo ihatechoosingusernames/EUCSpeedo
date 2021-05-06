@@ -21,8 +21,8 @@ void ProcessData::Update(Euc* euc) {
   data[static_cast<size_t>(DataType::kPower)] = (euc->getCurrent() * euc->getVoltage()) / 100;
   data[static_cast<size_t>(DataType::kTemp)] = (temp_in_freedoms? (euc->getTemperature() * kFreedomsConversionFactor) + kFreedomsConversionOffset : euc->getTemperature());
   data[static_cast<size_t>(DataType::kBattery)] = euc->getBatteryPercent();
-  data[static_cast<size_t>(DataType::kTripDistance)] = euc->getDistance();
-  data[static_cast<size_t>(DataType::kTotalDistance)] = euc->getTotalDistance();
+  data[static_cast<size_t>(DataType::kTripDistance)] = euc->getDistance()  * speed_factor;
+  data[static_cast<size_t>(DataType::kTotalDistance)] = euc->getTotalDistance()  * speed_factor;
 
   data_mutex.unlock();
 }
@@ -35,8 +35,6 @@ void ProcessData::Update(RtcHandler* rtc_handler, bool update_date) {
   data[static_cast<size_t>(DataType::kSecond)] = rtc_handler->getSecond();
   data[static_cast<size_t>(DataType::kMinute)] = rtc_handler->getMinute();
   data[static_cast<size_t>(DataType::kHour)] = rtc_handler->getHour();
-
-  // LOG_DEBUG_ARGS("Time: %d : %d : %d", data[static_cast<size_t>(DataType::kHour)], data[static_cast<size_t>(DataType::kMinute)], data[static_cast<size_t>(DataType::kSecond)]);
 
   if (update_date || (data[static_cast<size_t>(DataType::kHour)] == 0 && data[static_cast<size_t>(DataType::kMinute)] == 0)) { // Update date only the first minute of every day, or if ordered to
     rtc_handler->UpdateDate();

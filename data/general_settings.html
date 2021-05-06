@@ -134,9 +134,10 @@
         date.setHours(custom_time.substring(0, custom_time.indexOf(":")));
         date.setMinutes(custom_time.substring(custom_time.indexOf(":") + 1, custom_time.lastIndexOf(":")));
         date.setSeconds(custom_time.substring(custom_time.lastIndexOf(":") + 1));
-      }
-      if (!confirm("Set to " + date.toTimeString().slice(0, 8))) {
-        return;
+        
+        if (!confirm("Set to " + date.toTimeString().slice(0, 8))) {
+          return;
+        }
       }
 
       xhttp = new XMLHttpRequest();

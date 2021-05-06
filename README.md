@@ -6,3 +6,4 @@ This is intended to be run on a TTGO T-Wristband or similar hardware, with an ES
 ![Image of T-Watch](./res/ttgo-watch.jpg)
 
 It is intended to support all major brands of Electric Unicycle, and to connect directly, without requiring an app or other device.
+Currently only Gotway/Begode, Veteran, and Kingsong wheels are supported, however.
