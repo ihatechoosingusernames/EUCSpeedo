@@ -36,7 +36,8 @@ void ProcessData::Update(RtcHandler* rtc_handler, bool update_date) {
   data[static_cast<size_t>(DataType::kMinute)] = rtc_handler->getMinute();
   data[static_cast<size_t>(DataType::kHour)] = rtc_handler->getHour();
 
-  if (update_date || (data[static_cast<size_t>(DataType::kHour)] == 0 && data[static_cast<size_t>(DataType::kMinute)] == 0)) { // Update date only the first minute of every day, or if ordered to
+  // Update date only the first second of every day, or if ordered to
+  if (update_date || (!data[static_cast<size_t>(DataType::kHour)] && !data[static_cast<size_t>(DataType::kMinute)] && !data[static_cast<size_t>(DataType::kSecond)])) {
     rtc_handler->UpdateDate();
     data[static_cast<size_t>(DataType::kDay)] = rtc_handler->getDay();
     data[static_cast<size_t>(DataType::kMonth)] = rtc_handler->getMonth();

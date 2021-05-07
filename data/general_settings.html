@@ -182,22 +182,27 @@
       files = document.getElementById("firmware").files;  // files from input
       document.getElementById("big_div").disabled = "true";
 
-      if (files.length < 2) {
-        alert("Both firmware.bin and spiffs.bin must be selected");
-        return;
-      }
+      has_spiffs = false;
+      has_firmware = false;
+
       if (files.length > 2) {
-        alert("Only firmware.bin and spiffs.bin must be selected");
+        alert("Only firmware.bin and spiffs.bin can be uploaded");
         return;
+      } else if (files.length == 2) {
+        has_spiffs = files[0].name == "spiffs.bin" || files[1].name == "spiffs.bin";
+        has_firmware = files[0].name == "firmware.bin" || files[1].name == "firmware.bin";
+      } else {
+        has_spiffs = files[0].name == "spiffs.bin";
+        has_firmware = files[0].name == "firmware.bin";
       }
 
-      has_spiffs = files[0].name == "spiffs.bin" || files[1].name == "spiffs.bin";
-      has_firmware = files[0].name == "firmware.bin" || files[1].name == "firmware.bin";
-
-      if (!(has_spiffs && has_firmware)) {
+      if ((files.length == 2) && !(has_spiffs && has_firmware)) {
         alert("Chosen files do not include spiffs.bin and firmware.bin");
         return;
-      } else if (!confirm("Are you sure you want to update? All settings will be lost.")) {
+      } else if (!(has_spiffs || has_firmware)) {
+        alert("Chosen file is not spiffs.bin or firmware.bin");
+        return;
+      } else if (has_spiffs && !confirm("Are you sure you want to update? All settings will be lost.")) {
         return;
       }
 
@@ -218,7 +223,9 @@
       }
 
       formData.append(files[0].name, files[0]);
-      formData.append(files[1].name, files[1]);
+      if (files.length == 2) {
+        formData.append(files[1].name, files[1]);
+      }
       req.open("POST", "update");
       req.send(formData);
     }

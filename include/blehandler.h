@@ -24,8 +24,9 @@ class BleHandler {
   private:
     static void* StartScan(void* in);
 
-    bool Connect(NimBLEAdvertisedDevice* device, EucType type);
+    bool Connect(NimBLEAdvertisedDevice* device);
     void NotifyCallBack(NimBLERemoteCharacteristic* rc, uint8_t* data, size_t data_size, bool is_notify);
+    EucType CheckType(NimBLEClient* pClient);
 
     class AdvertisedDeviceCallbacks : public NimBLEAdvertisedDeviceCallbacks {
       public:
@@ -57,8 +58,7 @@ class BleHandler {
     pthread_t scan_task;
 
     volatile bool should_connect = false;
-    EucType brand;
-    NimBLEAdvertisedDevice* connect_device;
+    std::vector<NimBLEAdvertisedDevice*> connect_device;
 };
 
 }

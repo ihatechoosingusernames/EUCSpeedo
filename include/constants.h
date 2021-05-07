@@ -5,7 +5,7 @@
 #include <vector>
 namespace euc {
 
-enum class EucType : size_t { // The order here is important, as it is from least to most unique service list. And yes I agree, that is hacky.
+enum class EucType : size_t {
   kGotway = 0,
   kKingsong,
   kInmotion,
@@ -18,13 +18,14 @@ const static char* kServiceUuids[] = {"0000ffe0-0000-1000-8000-00805f9b34fb", "0
 const static char* kReadCharacteristicUuids[] = {"0000ffe1-0000-1000-8000-00805f9b34fb", "0000ffe1-0000-1000-8000-00805f9b34fb", "0000ffe4-0000-1000-8000-00805f9b34fb", "6e400003-b5a3-f393-e0a9-e50e24dcca9e", "0000ffe1-0000-1000-8000-00805f9b34fb"};
 const static char* kBrandName[] = {"GOTWAY", "KINGSONG", "INMOTION", "NINEBOTZ", "NINEBOT"};
 
-// const static std::vector<const char*> kGotwayServices = {"00001800_0000_1000_8000_00805f9b34fb", "00001801_0000_1000_8000_00805f9b34fb", "0000180a_0000_1000_8000_00805f9b34fb", "0000ffe0_0000_1000_8000_00805f9b34fb"};
-// const static std::vector<const char*> kKingSongServices = {"00001800_0000_1000_8000_00805f9b34fb", "00001801_0000_1000_8000_00805f9b34fb", "0000180a_0000_1000_8000_00805f9b34fb", "0000fff0_0000_1000_8000_00805f9b34fb", "0000ffe0_0000_1000_8000_00805f9b34fb"};
-// const static std::vector<const char*> kInmotionServices = {"0000180a_0000_1000_8000_00805f9b34fb", "0000180f_0000_1000_8000_00805f9b34fb", "0000ffe0_0000_1000_8000_00805f9b34fb", "0000ffe5_0000_1000_8000_00805f9b34fb", "0000fff0_0000_1000_8000_00805f9b34fb", "0000ffd0_0000_1000_8000_00805f9b34fb", "0000ffc0_0000_1000_8000_00805f9b34fb", "0000ffb0_0000_1000_8000_00805f9b34fb", "0000ffa0_0000_1000_8000_00805f9b34fb", "0000ff90_0000_1000_8000_00805f9b34fb", "0000fc60_0000_1000_8000_00805f9b34fb", "0000fe00_0000_1000_8000_00805f9b34fb"};
-// const static std::vector<const char*> kNinebotZServices = {"00001800_0000_1000_8000_00805f9b34fb", "00001801_0000_1000_8000_00805f9b34fb", "6e400001_b5a3_f393_e0a9_e50e24dcca9e", "0000fee7_0000_1000_8000_00805f9b34fb"};
-// const static std::vector<const char*> kNinebotServices = {"00001800_0000_1000_8000_00805f9b34fb", "00001801_0000_1000_8000_00805f9b34fb", "0000ffe0_0000_1000_8000_00805f9b34fb"};
+// Using vectors for these so they can be referenced by kServiceList, and provide their own size. std::arrays would all have to be the same length.
+const static std::vector<const char*> kGotwayServices = {"00001800-0000-1000-8000-00805f9b34fb", "00001801-0000-1000-8000-00805f9b34fb", "0000180a-0000-1000-8000-00805f9b34fb", "0000ffe0-0000-1000-8000-00805f9b34fb"};
+const static std::vector<const char*> kKingSongServices = {"00001800-0000-1000-8000-00805f9b34fb", "00001801-0000-1000-8000-00805f9b34fb", "0000180a-0000-1000-8000-00805f9b34fb", "0000fff0-0000-1000-8000-00805f9b34fb", "0000ffe0-0000-1000-8000-00805f9b34fb"};
+const static std::vector<const char*> kInmotionServices = {"0000180a-0000-1000-8000-00805f9b34fb", "0000180f-0000-1000-8000-00805f9b34fb", "0000ffe0-0000-1000-8000-00805f9b34fb", "0000ffe5-0000-1000-8000-00805f9b34fb", "0000fff0-0000-1000-8000-00805f9b34fb", "0000ffd0-0000-1000-8000-00805f9b34fb", "0000ffc0-0000-1000-8000-00805f9b34fb", "0000ffb0-0000-1000-8000-00805f9b34fb", "0000ffa0-0000-1000-8000-00805f9b34fb", "0000ff90-0000-1000-8000-00805f9b34fb", "0000fc60-0000-1000-8000-00805f9b34fb", "0000fe00-0000-1000-8000-00805f9b34fb"};
+const static std::vector<const char*> kNinebotZServices = {"00001800-0000-1000-8000-00805f9b34fb", "00001801-0000-1000-8000-00805f9b34fb", "6e400001-b5a3-f393-e0a9-e50e24dcca9e", "0000fee7-0000-1000-8000-00805f9b34fb"};
+const static std::vector<const char*> kNinebotServices = {"00001800-0000-1000-8000-00805f9b34fb", "00001801-0000-1000-8000-00805f9b34fb", "0000ffe0-0000-1000-8000-00805f9b34fb"};
 
-// const static std::array<std::vector<const char*>, 5> kServiceList = {kGotwayServices, kKingSongServices, kInmotionServices, kNinebotZServices, kNinebotServices};
+const static std::array<std::vector<const char*>, 5> kServiceList = {kGotwayServices, kKingSongServices, kInmotionServices, kNinebotZServices, kNinebotServices};
 
 enum class PressType : size_t {
   kNoPress = 0,

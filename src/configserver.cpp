@@ -514,15 +514,15 @@ void ConfigServer::ProcessNewElementRequest(AsyncWebServerRequest *request) {
 }
 
 void ConfigServer::ProcessUpdateRequest(AsyncWebServerRequest *request) {
-  if (!request->hasParam(kFirmwareFilename, true) && !request->hasParam(kSpiffsFilename, true)) {
-    request->send(400);
-    LOG_DEBUG("Upload rejected");
-  }
-
-  bool should_reboot = !Update.hasError();
-  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", should_reboot?"OK":"FAIL");
+  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", (Update.hasError() ? "FAIL" : "OK"));
   response->addHeader("Connection", "close");
   request->send(response);
+
+  if (request->hasParam(kFirmwareFilename, true, true) != request->hasParam(kSpiffsFilename, true, true)) {
+    // This means the ESP will reboot when only one file is uploaded
+    LOG_DEBUG("only one file")
+    ESP.restart();
+  }
 }
 
 void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
@@ -552,16 +552,17 @@ void ConfigServer::ProcessUpdateUpload(AsyncWebServerRequest *request, String fi
   if(final){
     if(Update.end(true)){
       LOG_DEBUG_ARGS("Update Success: %uB", index+len);
-      if (firmware_uploaded) {
+      if (final_upload) {
         request->send(200);
         ESP.restart();
       } else {
-        firmware_uploaded = true;
+        final_upload = true;
       }
     } else {
       #ifdef DEBUG
       Update.printError(Serial);
       #endif
+      request->send(400);
     }
   }
 }
@@ -578,6 +579,12 @@ void ConfigServer::ProcessUpdateSettings(AsyncWebServerRequest *request) {
   }
   settings_handler->SaveSettings();
   request->send(SPIFFS, "/general_settings.html", "text/html", false, std::bind(&ConfigServer::ProcessSettingsPage, this, std::placeholders::_1));
+
+  // This reloads the screen on orientation changes to display the change straight away
+  if (request->hasParam("orientation", true)) {
+    ui_handler->ChangeScreen(ui_handler->getCurrentScreen());
+    ui_handler->Update(&test_process_data);
+  }
 }
 
 std::vector<uint8_t> ConfigServer::ParseColour(String colour) {
