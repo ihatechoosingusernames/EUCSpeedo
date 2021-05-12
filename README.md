@@ -21,7 +21,8 @@ Alternatively, a double press on the button will activate a bluetooth scan, caus
 ![Image of T-Wristband programmer](./res/programmer.jpg)
 
 - Download the [latest EUC Speedo binaries](https://github.com/ihatechoosingusernames/EUCSpeedo/releases/) and find the file called '0x00.bin'
-- ![Instructions for opening the case and attaching the programmer](./res/case-instructions.webp) Follow the instructions for opening the device and attaching a programmer, but be careful; The T-Wristband has a very weak retainer clip which is prone to breaking when the case is opened, and the battery leads are also very easy to break when removing the mainboard from the case.
+- Follow the instructions for opening the device and attaching a programmer, but be careful; The T-Wristband has a very weak retainer clip which is prone to breaking when the case is opened, and the battery leads are also very easy to break when removing the mainboard from the case.
+![Instructions for opening the case and attaching the programmer](./res/case-instructions.webp)
 - Once the programmer is attached to the device, connect to your PC via either the USB-C or USB micro ports on the programmer.
 
 - Next, choose a flashing tool.
@@ -31,8 +32,10 @@ Alternatively, a double press on the button will activate a bluetooth scan, caus
 #### ESP32 Flash Download Tool (Windows Only)
 - [Download](https://www.espressif.com/sites/default/files/tools/flash_download_tool_v3.8.7.zip) the flash tool and extract the zip file.
 - Run the application.
-- ![Select ESP32 from the dropdown](./res/download-tool-1.jpg) Select ESP32 from the dropdown and click OK.
-- ![Select the binary](./res/download-tool-2.jpg) Select the EUC Speedo file called '0x00.bin' in the first input area, make sure the checkbox to the left of it is ticked, and set the offset box to the right of it to 0x00.
+- Select ESP32 from the dropdown and click OK.
+![Select ESP32 from the dropdown](./res/download-tool-1.jpg)
+- Select the EUC Speedo file called '0x00.bin' in the first input area, make sure the checkbox to the left of it is ticked, and set the offset box to the right of it to 0x00.
+![Select the binary](./res/download-tool-2.jpg)
 - Select the correct COM Port from the dropdown.
 - Press the 'Start' button, and wait for the upload to finish.
 - The device should restart and display the default EUC Speedo screen.
