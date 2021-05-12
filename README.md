@@ -33,8 +33,10 @@ Alternatively, a double press on the button will activate a bluetooth scan, caus
 - [Download](https://www.espressif.com/sites/default/files/tools/flash_download_tool_v3.8.7.zip) the flash tool and extract the zip file.
 - Run the application.
 - Select ESP32 from the dropdown and click OK.
+
 ![Select ESP32 from the dropdown](./res/download-tool-1.jpg)
 - Select the EUC Speedo file called '0x00.bin' in the first input area, make sure the checkbox to the left of it is ticked, and set the offset box to the right of it to 0x00.
+
 ![Select the binary](./res/download-tool-2.jpg)
 - Select the correct COM Port from the dropdown.
 - Press the 'Start' button, and wait for the upload to finish.
