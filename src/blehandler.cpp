@@ -13,7 +13,7 @@ BleHandler::BleHandler(std::function<void(EucType)> connection,
     connection_callback(connection), notify_callback(notify) {
   
   NimBLEDevice::init("");
-  NimBLEDevice::setPower(ESP_PWR_LVL_P9);
+  NimBLEDevice::setPower(ESP_PWR_LVL_P3);
   NimBLEDevice::setSecurityIOCap(BLE_HS_IO_NO_INPUT_OUTPUT);
 }
 
@@ -36,7 +36,7 @@ void BleHandler::Update() {
     if (Connect(connect_device.at(0)))
       should_connect = false;
     else
-      connect_device.erase(connect_device.begin()); // Erase this device if it could not be connected to
+      connect_device.erase(connect_device.begin()); // Erase this device from the list if it could not be connected to
   }
 }
 
@@ -68,9 +68,11 @@ bool BleHandler::Connect(NimBLEAdvertisedDevice* device) {
   connected = true;
   BLEClient* pClient = nullptr;
 
+  // If there are saved clients from previous connections try to use them as this saves memory
   if(NimBLEDevice::getClientListSize()) {
     pClient = NimBLEDevice::getClientByPeerAddress(device->getAddress());
 
+    // Reconnecting to a previous client when peer address matches
     if (pClient) {
       if (!pClient->connect(device)) {
         LOG_DEBUG("Failed to connect to server");
@@ -155,14 +157,14 @@ EucType BleHandler::CheckType(NimBLEClient* pClient) {
   }
 
   // Check that the device services match the type services
-  for (size_t index = 0; index < matching_types.size(); index++) {
+  for (size_t type : matching_types) {
     bool matches = true;
-    for (const char* uuid : kServiceList.at(matching_types.at(index)))
+    for (const char* uuid : kServiceList.at(type))
       matches &= (pClient->getService(NimBLEUUID(uuid)) != nullptr);
     
     // Return the first EucType that matches all.
     if (matches)
-      return static_cast<EucType>(matching_types.at(index));
+      return static_cast<EucType>(type);
   }
 
   return EucType::kLastType;  // Error value, no match found
