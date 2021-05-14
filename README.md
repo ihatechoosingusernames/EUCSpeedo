@@ -24,7 +24,6 @@ Alternatively, a double press on the button will activate a bluetooth scan, caus
 - Follow the instructions for opening the device and attaching a programmer, but be careful; The T-Wristband has a very weak retainer clip which is prone to breaking when the case is opened, and the battery leads are also very easy to break when removing the mainboard from the case.
 ![Instructions for opening the case and attaching the programmer](./res/case-instructions.webp)
 - Once the programmer is attached to the device, connect to your PC via either the USB-C or USB micro ports on the programmer.
-
 - Next, choose a flashing tool.
   * For Windows there is a GUI based flashing tool called [ESP32 Flash Download Tool](http://iot-bits.com/esp32/esp32-flash-download-tool-tutorial/).
   * For Mac and Linux there is [esptool](https://github.com/espressif/esptool), a Python based command line application. This can also work on Windows, but it requires Python to be installed first.
@@ -71,7 +70,7 @@ Pressing 'edit' on one of these screens will open the UI Settings page.
 
 On the left are the general settings for this screen:
 - Only If Connected: It will only be possible to navigate to this UI screen when an EUC is connected.
-- On (Single/Double/Long) Press: The action to take when this screen is active and the button is pressed once/twice/for more than three seconds.
+- On (Single/Double/Long) Press: The action to take when this screen is active and the button is pressed once/twice/for more than three seconds. Be careful that your configuration always allows you some way to activate the config server. If no button press on any screen is mapped to starting the config server, the device will have to be re-flashed with the programmer to access it again.
 - Sleep Timeout: How long this screen will stay on before going to sleep. In sleep mode the screen is deactivated, but the device remains connected via bluetooth. Any touch input will wake it up. The sleep timeout is deactivated with a value of 0.
 - Off Timeout: How long this screen will stay on before the device switches off. The timeout will deactivate if the device is connected via Bluetooth, if the config server is active, or if it is configured with a value of 0.
 
@@ -104,3 +103,16 @@ The available data types are:
 On the right are the test data.
 
 Each data type that is displayed by a UI element on this screen will be displayed in the list, allowing the user to update them and see the results in real time on the device.
+
+## Performance
+The TTGO T-Wristband comes with three battery sizes, 40mAh, 55mAh, and 105mAh. The largest version is the only one tested, and with the screen running and bluetooth connected, it reliably ran for between one hour and one hour twenty minutes.
+
+The screen is only just bright enough to read in direct sunlight. This is mostly due to the case, which has a tinted window for the screen, causing it to appear dimmer.
+
+## Acknowledgements
+The following open source projects have been essential for this project:
+- [Async TCP](https://github.com/me-no-dev/AsyncTCP) and [Async Web Server](https://github.com/me-no-dev/ESPAsyncWebServer) by me-no-dev.
+- h2zero's port of the [NimBLE](https://github.com/h2zero/NimBLE-Arduino) Bluetooth stack.
+- The driver firmware for the [PCF8563 Real Time Clock](https://github.com/orbitalair/Rtc_Pcf8563) by orbitalair.
+- The original logic for decoding the EUC bluetooth updates is adapted from the [Wheel Log](https://github.com/palachzzz/WheelLogAndroid) app by palachzz.
+- And Bodmer's [TFT eSPI Library](https://github.com/h2zero/NimBLE-Arduino) for the LCD driver.

@@ -93,8 +93,8 @@ double DeviceHandler::getBatteryPercentage() {
 
   if (v >= 3.7)
     return 100;
-  else if (v > 3.0)
-    return ((v - 3.0) / 0.7) * 100;
+  else if (v > 3.3)
+    return ((v - 3.3) / 0.4) * 100;
   else
     return 0;
 }
